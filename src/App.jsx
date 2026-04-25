@@ -1,34 +1,68 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import LoginForm from './components/auth/LoginForm'
 import RegisterForm from './components/auth/RegisterForm'
 import ForgotPasswordForm from './components/auth/ForgotPasswordForm'
+import ActivosPanel from './components/admin/ActivosPanel'
+import ServiciosPanel from './components/admin/ServiciosPanel'
+import ReservasPanel from './components/reservas/ReservasPanel'
 import authService from './services/authService'
 
 function ProtectedRoute({ children }) {
   return authService.isAuthenticated() ? children : <Navigate to="/login" />
 }
 
-function Dashboard() {
+const NAV_TABS = [
+  { to: '/dashboard/activos', label: 'Activos' },
+  { to: '/dashboard/servicios', label: 'Servicios' },
+  { to: '/dashboard/reservas', label: 'Reservas' },
+]
+
+function DashboardLayout() {
+  const user = authService.getUser()
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Flexibook</h1>
-          <button
-            onClick={() => {
-              authService.logout()
-              window.location.href = '/login'
-            }}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-          >
-            Cerrar sesión
-          </button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+          <span className="text-xl font-bold text-blue-600">Flexibook</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-500 hidden sm:block">{user?.correo}</span>
+            <button
+              onClick={() => { authService.logout(); window.location.href = '/login' }}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 border-t border-gray-100">
+          {NAV_TABS.map(tab => (
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              className={({ isActive }) =>
+                `px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  isActive
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`
+              }
+            >
+              {tab.label}
+            </NavLink>
+          ))}
         </div>
       </nav>
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-gray-900">Bienvenido a Flexibook</h2>
-        <p className="mt-4 text-gray-600">Panel de gestión - En construcción</p>
-      </div>
+
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <Routes>
+          <Route path="activos" element={<ActivosPanel />} />
+          <Route path="servicios" element={<ServiciosPanel />} />
+          <Route path="reservas" element={<ReservasPanel />} />
+          <Route index element={<Navigate to="activos" />} />
+        </Routes>
+      </main>
     </div>
   )
 }
@@ -41,10 +75,10 @@ export default function App() {
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/forgot-password" element={<ForgotPasswordForm />} />
         <Route
-          path="/dashboard"
+          path="/dashboard/*"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardLayout />
             </ProtectedRoute>
           }
         />
