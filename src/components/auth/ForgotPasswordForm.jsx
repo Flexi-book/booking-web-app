@@ -58,9 +58,7 @@ export default function ForgotPasswordForm() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">F</span>
-            </div>
+            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-14 h-14 object-contain" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Bienvenido a Flexibook</h1>
           <p className="text-gray-600 text-sm sm:text-base">Ingresa tu email para recibir un enlace de recuperación</p>
