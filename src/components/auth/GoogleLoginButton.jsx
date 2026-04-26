@@ -2,7 +2,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
 import authService from '../../services/authService'
 
-export default function GoogleLoginButton() {
+export default function GoogleLoginButton({ isRegister = false }) {
   const navigate = useNavigate()
 
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -20,22 +20,14 @@ export default function GoogleLoginButton() {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-50 text-gray-500">O continúa con</span>
-          </div>
-        </div>
-
-        <div className="mt-6 flex justify-center">
+      <div className={isRegister ? 'w-full' : ''}>
+        <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
-            size="large"
-            text="signin_with"
+            size={isRegister ? 'large' : 'large'}
+            text={isRegister ? 'signup_with' : 'signin_with'}
+            width={isRegister ? '100%' : 'auto'}
           />
         </div>
       </div>

@@ -53,7 +53,7 @@ export default function ReservasPanel() {
     }
   }
 
-  async function cancelar(id) {
+  async function cancelarReserva(id) {
     if (!confirm('¿Cancelar esta reserva?')) return
     setError('')
     try {
@@ -66,155 +66,179 @@ export default function ReservasPanel() {
 
   const servicioSeleccionado = servicios.find(s => s.id === form.servicioId)
 
-  const estadoColor = {
-    pendiente: 'bg-yellow-100 text-yellow-800',
-    confirmada: 'bg-green-100 text-green-800',
-    cancelada: 'bg-red-100 text-red-800',
-    completada: 'bg-blue-100 text-blue-800',
+  const getStatusColor = (estado) => {
+    switch(estado) {
+      case 'confirmada':
+        return 'bg-green-100 text-green-700'
+      case 'pendiente':
+        return 'bg-yellow-100 text-yellow-700'
+      case 'cancelada':
+        return 'bg-red-100 text-red-700'
+      case 'completada':
+        return 'bg-blue-100 text-blue-700'
+      default:
+        return 'bg-gray-100 text-gray-700'
+    }
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Reservas</h3>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900">Gestión de Reservas</h1>
+          <p className="text-gray-600 mt-2">Administra las reservas de tus servicios.</p>
+        </div>
         {!showForm && (
           <button
             onClick={() => { setShowForm(true); setError(''); setSuccess('') }}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+            className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
           >
-            + Nueva reserva
+            <span>+</span> Nueva Reserva
           </button>
         )}
       </div>
 
-      {error && <p className="mb-3 text-sm text-red-600 bg-red-50 p-3 rounded border border-red-200">{error}</p>}
-      {success && <p className="mb-3 text-sm text-green-700 bg-green-50 p-3 rounded border border-green-200">{success}</p>}
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p className="text-sm font-medium text-red-800">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+          <p className="text-sm font-medium text-green-800">{success}</p>
+        </div>
+      )}
 
       {showForm && (
-        <form onSubmit={crearReserva} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-          <h4 className="font-medium text-gray-700">Nueva reserva</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Servicio *</label>
-              <select
-                required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.servicioId}
-                onChange={e => setForm(f => ({ ...f, servicioId: e.target.value }))}
+        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Nueva Reserva</h2>
+          <form onSubmit={crearReserva} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Servicio *</label>
+                <select
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.servicioId}
+                  onChange={e => setForm(f => ({ ...f, servicioId: e.target.value }))}
+                >
+                  <option value="">Selecciona un servicio</option>
+                  {servicios.filter(s => s.estado === 'activo').map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.nombreServicio} ({s.duracionMinutos} min — €{Number(s.precio).toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+                {servicioSeleccionado && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    ⏱️ Duración: {servicioSeleccionado.duracionMinutos} min. La hora de término se calcula automáticamente.
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Activo / Recurso *</label>
+                <select
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.activoId}
+                  onChange={e => setForm(f => ({ ...f, activoId: e.target.value }))}
+                >
+                  <option value="">Selecciona un activo</option>
+                  {activos.filter(a => a.estadoDisponibilidad === 'Disponible' || a.estadoDisponibilidad === 'disponible').map(a => (
+                    <option key={a.id} value={a.id}>
+                      {a.nombreActivo} ({a.tipoActivo})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Cliente *</label>
+                <input
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.clienteNombre}
+                  onChange={e => setForm(f => ({ ...f, clienteNombre: e.target.value }))}
+                  placeholder="Juan Pérez"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email del Cliente *</label>
+                <input
+                  required
+                  type="email"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.clienteCorreo}
+                  onChange={e => setForm(f => ({ ...f, clienteCorreo: e.target.value }))}
+                  placeholder="cliente@email.com"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Fecha y hora de inicio *</label>
+                <input
+                  required
+                  type="datetime-local"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.fechaInicio}
+                  onChange={e => setForm(f => ({ ...f, fechaInicio: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
+                Confirmar Reserva
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowForm(false); setForm(emptyForm); setError('') }}
+                className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
               >
-                <option value="">Selecciona un servicio</option>
-                {servicios.filter(s => s.estado === 'activo').map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.nombreServicio} ({s.duracionMinutos} min — ${Number(s.precio).toLocaleString('es-CL')})
-                  </option>
-                ))}
-              </select>
-              {servicioSeleccionado && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Duración: {servicioSeleccionado.duracionMinutos} min. La hora de término se calcula automáticamente.
-                </p>
-              )}
+                Cancelar
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Activo / Recurso *</label>
-              <select
-                required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.activoId}
-                onChange={e => setForm(f => ({ ...f, activoId: e.target.value }))}
-              >
-                <option value="">Selecciona un activo</option>
-                {activos.filter(a => a.estadoDisponibilidad === 'disponible').map(a => (
-                  <option key={a.id} value={a.id}>
-                    {a.nombreActivo} ({a.tipoActivo})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Nombre del cliente *</label>
-              <input
-                required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.clienteNombre}
-                onChange={e => setForm(f => ({ ...f, clienteNombre: e.target.value }))}
-                placeholder="Juan Pérez"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Email del cliente *</label>
-              <input
-                required
-                type="email"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.clienteCorreo}
-                onChange={e => setForm(f => ({ ...f, clienteCorreo: e.target.value }))}
-                placeholder="cliente@email.com"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Fecha y hora de inicio *</label>
-              <input
-                required
-                type="datetime-local"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.fechaInicio}
-                onChange={e => setForm(f => ({ ...f, fechaInicio: e.target.value }))}
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-              Confirmar reserva
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowForm(false); setForm(emptyForm); setError('') }}
-              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100"
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       )}
 
       {loading ? (
         <p className="text-sm text-gray-500">Cargando...</p>
       ) : reservas.length === 0 ? (
-        <p className="text-sm text-gray-500 py-6 text-center">No hay reservas registradas aún.</p>
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <p className="text-gray-500">No hay reservas registradas aún.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Cliente</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Inicio</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Fin</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Estado</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Acciones</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">CLIENTE</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">SERVICIO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">FECHA / HORA</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">ESTADO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACCIONES</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-200">
               {reservas.map(r => (
                 <tr key={r.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4">
                     <p className="font-medium text-gray-900">{r.clienteNombre || '—'}</p>
                     <p className="text-xs text-gray-500">{r.clienteCorreo || ''}</p>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-6 py-4 text-gray-600">
+                    {servicios.find(s => s.id === r.servicioId)?.nombreServicio || '—'}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
                     {r.fechaInicio ? new Date(r.fechaInicio).toLocaleString('es-CL') : '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {r.fechaFin ? new Date(r.fechaFin).toLocaleString('es-CL') : '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${estadoColor[r.estado] || 'bg-gray-100'}`}>
-                      {r.estado || 'pendiente'}
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(r.estado || 'pendiente')}`}>
+                      {r.estado || 'Pendiente'}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4">
                     {r.estado !== 'cancelada' && r.estado !== 'completada' && (
-                      <button onClick={() => cancelar(r.id)} className="text-red-500 hover:underline text-xs">
+                      <button onClick={() => cancelarReserva(r.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
                         Cancelar
                       </button>
                     )}

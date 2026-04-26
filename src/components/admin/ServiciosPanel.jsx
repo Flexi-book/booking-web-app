@@ -71,125 +71,147 @@ export default function ServiciosPanel() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Servicios ofrecidos</h3>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900">Catálogo de Servicios</h1>
+          <p className="text-gray-600 mt-2">Administra los servicios y precios disponibles.</p>
+        </div>
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+            className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
           >
-            + Nuevo servicio
+            <span>+</span> Nuevo Servicio
           </button>
         )}
       </div>
 
-      {error && <p className="mb-3 text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p className="text-sm font-medium text-red-800">{error}</p>
+        </div>
+      )}
 
       {showForm && (
-        <form onSubmit={guardar} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-          <h4 className="font-medium text-gray-700">{editingId ? 'Editar servicio' : 'Nuevo servicio'}</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Nombre *</label>
-              <input
-                required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.nombreServicio}
-                onChange={e => setForm(f => ({ ...f, nombreServicio: e.target.value }))}
-                placeholder="Ej: Corte de cabello"
-              />
+        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{editingId ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
+          <form onSubmit={guardar} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                <input
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.nombreServicio}
+                  onChange={e => setForm(f => ({ ...f, nombreServicio: e.target.value }))}
+                  placeholder="Ej: Masaje Deportivo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Duración (minutos) *</label>
+                <input
+                  required
+                  type="number"
+                  min="5"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.duracionMinutos}
+                  onChange={e => setForm(f => ({ ...f, duracionMinutos: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Precio (€)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.precio}
+                  onChange={e => setForm(f => ({ ...f, precio: parseFloat(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.estado}
+                  onChange={e => setForm(f => ({ ...f, estado: e.target.value }))}
+                >
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                  <option value="pausado">Pausado</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <textarea
+                  rows={3}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.descripcion}
+                  onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
+                  placeholder="Describe el servicio..."
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Duración (minutos) *</label>
-              <input
-                required
-                type="number"
-                min="5"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.duracionMinutos}
-                onChange={e => setForm(f => ({ ...f, duracionMinutos: parseInt(e.target.value) }))}
-              />
+            <div className="flex gap-3 pt-2">
+              <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
+                {editingId ? 'Actualizar' : 'Crear'}
+              </button>
+              <button type="button" onClick={cancelar} className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                Cancelar
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Precio ($)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.precio}
-                onChange={e => setForm(f => ({ ...f, precio: parseFloat(e.target.value) }))}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Estado</label>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.estado}
-                onChange={e => setForm(f => ({ ...f, estado: e.target.value }))}
-              >
-                <option value="activo">activo</option>
-                <option value="inactivo">inactivo</option>
-                <option value="pausado">pausado</option>
-              </select>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Descripción</label>
-              <textarea
-                rows={2}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.descripcion}
-                onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
-                placeholder="Describe el servicio..."
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-              {editingId ? 'Actualizar' : 'Crear'}
-            </button>
-            <button type="button" onClick={cancelar} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100">
-              Cancelar
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       )}
 
       {loading ? (
         <p className="text-sm text-gray-500">Cargando...</p>
       ) : servicios.length === 0 ? (
-        <p className="text-sm text-gray-500 py-6 text-center">No hay servicios registrados aún.</p>
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <p className="text-gray-500">No hay servicios registrados aún.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Nombre</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Duración</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Precio</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Estado</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Acciones</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">SERVICIO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">DURACIÓN</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">PRECIO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">ESTADO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACCIONES</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-200">
               {servicios.map(s => (
                 <tr key={s.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{s.nombreServicio}</td>
-                  <td className="px-4 py-3 text-gray-600">{s.duracionMinutos} min</td>
-                  <td className="px-4 py-3 text-gray-600">${Number(s.precio).toLocaleString('es-CL')}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      s.estado === 'activo' ? 'bg-green-100 text-green-800' :
-                      s.estado === 'pausado' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-600'
+                  <td className="px-6 py-4 font-medium text-gray-900">{s.nombreServicio}</td>
+                  <td className="px-6 py-4 text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00-.293.707l-1.414 1.414a1 1 0 101.414 1.414L9 10.586V6z" clipRule="evenodd"></path>
+                      </svg>
+                      {s.duracionMinutos} min
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 font-semibold">€{Number(s.precio).toFixed(2)}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      s.estado === 'activo' ? 'bg-green-100 text-green-700' :
+                      s.estado === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
                     }`}>
                       {s.estado}
                     </span>
                   </td>
-                  <td className="px-4 py-3 flex gap-2">
-                    <button onClick={() => iniciarEdicion(s)} className="text-blue-600 hover:underline text-xs">Editar</button>
-                    <button onClick={() => eliminar(s.id)} className="text-red-500 hover:underline text-xs">Eliminar</button>
+                  <td className="px-6 py-4 flex gap-3">
+                    <button onClick={() => iniciarEdicion(s)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">
+                      Editar
+                    </button>
+                    <button onClick={() => eliminar(s.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
+                      Eliminar
+                    </button>
                   </td>
                 </tr>
               ))}
