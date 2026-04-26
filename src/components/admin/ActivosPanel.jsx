@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { activosApi } from '../../services/gestionService'
 
-const TIPOS = ['sala', 'profesional', 'equipo']
-const ESTADOS = ['disponible', 'no_disponible', 'inactivo']
+const TIPOS = ['Espacio', 'Personal', 'Equipo']
+const ESTADOS = ['Disponible', 'No disponible', 'En mantenimiento']
 
-const emptyForm = { nombreActivo: '', descripcion: '', tipoActivo: 'sala', estadoDisponibilidad: 'disponible' }
+const emptyForm = { nombreActivo: '', descripcion: '', tipoActivo: 'Espacio', estadoDisponibilidad: 'Disponible' }
 
 export default function ActivosPanel() {
   const [activos, setActivos] = useState([])
@@ -72,111 +72,162 @@ export default function ActivosPanel() {
     }
   }
 
-  const badgeColor = {
-    disponible: 'bg-green-100 text-green-800',
-    no_disponible: 'bg-red-100 text-red-800',
-    inactivo: 'bg-gray-100 text-gray-600',
+  const getStatusColor = (estado) => {
+    switch(estado) {
+      case 'Disponible':
+      case 'disponible':
+        return 'bg-green-100 text-green-700'
+      case 'No disponible':
+      case 'no_disponible':
+        return 'bg-red-100 text-red-700'
+      case 'En mantenimiento':
+      case 'inactivo':
+        return 'bg-orange-100 text-orange-700'
+      default:
+        return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  const getTypeIcon = (tipo) => {
+    switch(tipo.toLowerCase()) {
+      case 'espacio':
+      case 'sala':
+        return '📍'
+      case 'personal':
+      case 'profesional':
+        return '👤'
+      case 'equipo':
+        return '⚙️'
+      default:
+        return '📦'
+    }
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Activos de la empresa</h3>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900">Gestión de Activos</h1>
+          <p className="text-gray-600 mt-2">Personal y espacios de trabajo disponibles.</p>
+        </div>
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+            className="bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-800 transition flex items-center gap-2"
           >
-            + Nuevo activo
+            <span>+</span> Añadir Activo
           </button>
         )}
       </div>
 
-      {error && <p className="mb-3 text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p className="text-sm font-medium text-red-800">{error}</p>
+        </div>
+      )}
 
       {showForm && (
-        <form onSubmit={guardar} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-          <h4 className="font-medium text-gray-700">{editingId ? 'Editar activo' : 'Nuevo activo'}</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Nombre *</label>
-              <input
-                required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.nombreActivo}
-                onChange={e => setForm(f => ({ ...f, nombreActivo: e.target.value }))}
-                placeholder="Ej: Sala A, Dr. García"
-              />
+        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{editingId ? 'Editar Activo' : 'Nuevo Activo'}</h2>
+          <form onSubmit={guardar} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                <input
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.nombreActivo}
+                  onChange={e => setForm(f => ({ ...f, nombreActivo: e.target.value }))}
+                  placeholder="Ej: Sala Zen A1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.tipoActivo}
+                  onChange={e => setForm(f => ({ ...f, tipoActivo: e.target.value }))}
+                >
+                  {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.estadoDisponibilidad}
+                  onChange={e => setForm(f => ({ ...f, estadoDisponibilidad: e.target.value }))}
+                >
+                  {ESTADOS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.descripcion}
+                  onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
+                  placeholder="Opcional"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Tipo</label>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.tipoActivo}
-                onChange={e => setForm(f => ({ ...f, tipoActivo: e.target.value }))}
-              >
-                {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
+            <div className="flex gap-3 pt-2">
+              <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
+                {editingId ? 'Actualizar' : 'Crear'}
+              </button>
+              <button type="button" onClick={cancelar} className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                Cancelar
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Estado</label>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.estadoDisponibilidad}
-                onChange={e => setForm(f => ({ ...f, estadoDisponibilidad: e.target.value }))}
-              >
-                {ESTADOS.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Descripción</label>
-              <input
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={form.descripcion}
-                onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
-                placeholder="Opcional"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-              {editingId ? 'Actualizar' : 'Crear'}
-            </button>
-            <button type="button" onClick={cancelar} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100">
-              Cancelar
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       )}
 
       {loading ? (
         <p className="text-sm text-gray-500">Cargando...</p>
       ) : activos.length === 0 ? (
-        <p className="text-sm text-gray-500 py-6 text-center">No hay activos registrados aún.</p>
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <p className="text-gray-500">No hay activos registrados aún.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Nombre</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Tipo</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Estado</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">Acciones</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACTIVO / RECURSO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">TIPO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">ESTADO</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACCIONES</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-200">
               {activos.map(a => (
                 <tr key={a.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{a.nombreActivo}</td>
-                  <td className="px-4 py-3 text-gray-600 capitalize">{a.tipoActivo}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${badgeColor[a.estadoDisponibilidad] || 'bg-gray-100'}`}>
-                      {a.estadoDisponibilidad}
-                    </span>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{getTypeIcon(a.tipoActivo)}</span>
+                      <div>
+                        <p className="font-medium text-gray-900">{a.nombreActivo}</p>
+                        {a.descripcion && <p className="text-xs text-gray-500">{a.descripcion}</p>}
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-3 flex gap-2">
-                    <button onClick={() => iniciarEdicion(a)} className="text-blue-600 hover:underline text-xs">Editar</button>
-                    <button onClick={() => eliminar(a.id)} className="text-red-500 hover:underline text-xs">Eliminar</button>
+                  <td className="px-6 py-4 text-gray-600 capitalize">{a.tipoActivo}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(a.estadoDisponibilidad)}`}>
+                        {a.estadoDisponibilidad}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 flex gap-3">
+                    <button onClick={() => iniciarEdicion(a)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">
+                      Editar
+                    </button>
+                    <button onClick={() => eliminar(a.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
+                      Eliminar
+                    </button>
                   </td>
                 </tr>
               ))}

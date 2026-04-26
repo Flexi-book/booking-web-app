@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import authService from '../../services/authService'
+import GoogleLoginButton from './GoogleLoginButton'
 
 export default function RegisterForm() {
   const navigate = useNavigate()
@@ -43,7 +44,7 @@ export default function RegisterForm() {
     try {
       const { confirmPassword, ...dataToSend } = formData
       await authService.register(dataToSend)
-      navigate('/login', { state: { message: 'Registro exitoso. Por favor, inicia sesión.' } })
+      navigate('/register-success', { state: { email: formData.correoUsuario } })
     } catch (err) {
       setError(err.response?.data || 'Error al registrarse')
     } finally {
@@ -52,99 +53,133 @@ export default function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Flexibook</h2>
-          <p className="mt-2 text-gray-600">Crea tu cuenta para empezar</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">F</span>
+            </div>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Bienvenido a Flexibook</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Crea tu cuenta de administrador</p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {/* Form Card */}
+        <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+              <p className="text-sm font-medium text-red-800">{error}</p>
             </div>
           )}
 
-          <div className="space-y-4">
+          {/* Google Register Option */}
+          <div>
+            <GoogleLoginButton isRegister={true} />
+          </div>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-3 bg-white text-gray-500 font-medium">O completa el formulario</span>
+            </div>
+          </div>
+
+          {/* Registration Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Nombre Empresa */}
             <div>
-              <label htmlFor="nombreEmpresa" className="block text-sm font-medium text-gray-700">
-                Nombre de empresa
+              <label htmlFor="nombreEmpresa" className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre del Negocio
               </label>
               <input
                 id="nombreEmpresa"
                 name="nombreEmpresa"
                 type="text"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Ej. Mi Studio Fitness"
                 value={formData.nombreEmpresa}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
 
+            {/* Tipo Negocio */}
             <div>
-              <label htmlFor="correoContacto" className="block text-sm font-medium text-gray-700">
-                Email de contacto
-              </label>
-              <input
-                id="correoContacto"
-                name="correoContacto"
-                type="email"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={formData.correoContacto}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="tipoNegocio" className="block text-sm font-medium text-gray-700">
-                Tipo de negocio
+              <label htmlFor="tipoNegocio" className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de Negocio
               </label>
               <input
                 id="tipoNegocio"
                 name="tipoNegocio"
                 type="text"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Ej. Fitness, Salón de belleza"
                 value={formData.tipoNegocio}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
 
+            {/* Email Contacto */}
             <div>
-              <label htmlFor="nombreUsuario" className="block text-sm font-medium text-gray-700">
-                Nombre de usuario
+              <label htmlFor="correoContacto" className="block text-sm font-medium text-gray-700 mb-2">
+                Email de Contacto
+              </label>
+              <input
+                id="correoContacto"
+                name="correoContacto"
+                type="email"
+                required
+                placeholder="contacto@empresa.com"
+                value={formData.correoContacto}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              />
+            </div>
+
+            {/* Nombre Usuario */}
+            <div>
+              <label htmlFor="nombreUsuario" className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre de Usuario
               </label>
               <input
                 id="nombreUsuario"
                 name="nombreUsuario"
                 type="text"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Tu nombre"
                 value={formData.nombreUsuario}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
 
+            {/* Email Usuario */}
             <div>
-              <label htmlFor="correoUsuario" className="block text-sm font-medium text-gray-700">
-                Email
+              <label htmlFor="correoUsuario" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Corporativo
               </label>
               <input
                 id="correoUsuario"
                 name="correoUsuario"
                 type="email"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="admin@empresa.com"
                 value={formData.correoUsuario}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña (mín. 8 caracteres)
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Contraseña
               </label>
               <input
                 id="password"
@@ -152,15 +187,17 @@ export default function RegisterForm() {
                 type="password"
                 required
                 minLength="8"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Mínimo 8 caracteres"
                 value={formData.password}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
 
+            {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirmar contraseña
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                Confirmar Contraseña
               </label>
               <input
                 id="confirmPassword"
@@ -168,28 +205,44 @@ export default function RegisterForm() {
                 type="password"
                 required
                 minLength="8"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Confirma tu contraseña"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Registrando...' : 'Registrarse'}
-          </button>
+            {/* Register Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+            >
+              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            </button>
+          </form>
 
-          <div className="text-center">
-            <span className="text-gray-600">¿Ya tienes cuenta? </span>
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+          {/* Login Link */}
+          <p className="text-center text-gray-600 text-sm">
+            ¿Ya tienes cuenta?{' '}
+            <Link
+              to="/login"
+              className="font-semibold text-blue-600 hover:text-blue-700 transition"
+            >
               Inicia sesión
             </Link>
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-xs text-gray-500 space-y-1">
+          <p>© 2024 Flexibook. Todos los derechos reservados.</p>
+          <div className="flex justify-center gap-4">
+            <a href="#" className="hover:text-gray-700 transition">Privacidad</a>
+            <a href="#" className="hover:text-gray-700 transition">Términos</a>
+            <a href="#" className="hover:text-gray-700 transition">Soporte</a>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )
