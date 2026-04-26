@@ -26,9 +26,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-8 border-b border-gray-200">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">F</span>
-          </div>
+          <img src="/flexibook-logo.svg" alt="Flexibook" className="w-10 h-10 object-contain" />
           <div>
             <h1 className="font-bold text-gray-900">Flexibook</h1>
             <p className="text-xs text-gray-500">Admin Panel</p>
