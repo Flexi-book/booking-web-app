@@ -1,11 +1,9 @@
-import axios from 'axios'
-
-const API_URL = 'http://localhost:8080/api/auth'
+import { authApi } from '../api/apiClients'
 
 const authService = {
-  login: async (correo, password) => {
-    const response = await axios.post(`${API_URL}/login`, {
-      correo,
+  login: async (email, password) => {
+    const response = await authApi.post('/login', {
+      email,
       password,
     })
     if (response.data.token) {
@@ -16,12 +14,12 @@ const authService = {
   },
 
   register: async (data) => {
-    const response = await axios.post(`${API_URL}/register`, data)
+    const response = await authApi.post('/register', data)
     return response.data
   },
 
   googleLogin: async (idToken) => {
-    const response = await axios.post(`${API_URL}/google`, {
+    const response = await authApi.post('/google', {
       idToken,
     })
     if (response.data.token) {
