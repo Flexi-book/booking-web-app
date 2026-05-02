@@ -1,7 +1,7 @@
 import axios from 'axios'
 import authService from './authService'
 
-const GESTION_URL = 'http://localhost:8081/api'
+const GESTION_URL = 'http://localhost:8090/api/user'
 
 function authHeaders() {
   return { Authorization: `Bearer ${authService.getToken()}` }
