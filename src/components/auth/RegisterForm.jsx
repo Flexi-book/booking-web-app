@@ -42,7 +42,15 @@ export default function RegisterForm() {
     setLoading(true)
 
     try {
-      const { confirmPassword, ...dataToSend } = formData
+      const { confirmPassword, ...data } = formData
+      const dataToSend = {
+        companyName: data.nombreEmpresa,
+        contactEmail: data.correoContacto,
+        businessType: data.tipoNegocio,
+        userName: data.nombreUsuario,
+        userEmail: data.correoUsuario,
+        password: data.password,
+      }
       await authService.register(dataToSend)
       navigate('/register-success', { state: { email: formData.correoUsuario } })
     } catch (err) {

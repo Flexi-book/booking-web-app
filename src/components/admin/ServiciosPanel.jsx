@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { serviciosApi } from '../../services/gestionService'
 
-const emptyForm = { nombreServicio: '', descripcion: '', duracionMinutos: 30, precio: 0, estado: 'activo' }
+const emptyForm = { nombreServicio: '', descripcion: '', duracionMinutos: 30, precio: 0, estadoServicioId: 'activo' }
 
 export default function ServiciosPanel() {
   const [servicios, setServicios] = useState([])
@@ -30,7 +30,7 @@ export default function ServiciosPanel() {
       descripcion: s.descripcion || '',
       duracionMinutos: s.duracionMinutos,
       precio: s.precio,
-      estado: s.estado,
+      estadoServicioId: s.estadoServicioId,
     })
     setEditingId(s.id)
     setShowForm(true)
@@ -134,8 +134,8 @@ export default function ServiciosPanel() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.estado}
-                  onChange={e => setForm(f => ({ ...f, estado: e.target.value }))}
+                  value={form.estadoServicioId}
+                  onChange={e => setForm(f => ({ ...f, estadoServicioId: e.target.value }))}
                 >
                   <option value="activo">Activo</option>
                   <option value="inactivo">Inactivo</option>
@@ -198,11 +198,11 @@ export default function ServiciosPanel() {
                   <td className="px-6 py-4 text-gray-600 font-semibold">€{Number(s.precio).toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      s.estado === 'activo' ? 'bg-green-100 text-green-700' :
-                      s.estado === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
+                      s.estadoServicioId === 'activo' ? 'bg-green-100 text-green-700' :
+                      s.estadoServicioId === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
-                      {s.estado}
+                      {s.estadoServicioId}
                     </span>
                   </td>
                   <td className="px-6 py-4 flex gap-3">

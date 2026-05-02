@@ -5,7 +5,7 @@ import GoogleLoginButton from './GoogleLoginButton'
 
 export default function LoginForm() {
   const navigate = useNavigate()
-  const [correo, setCorreo] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +17,7 @@ export default function LoginForm() {
     setLoading(true)
 
     try {
-      await authService.login(correo, password)
+      await authService.login(email, password)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data || 'Error al iniciar sesión')
@@ -56,8 +56,8 @@ export default function LoginForm() {
                 id="email"
                 type="email"
                 required
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="nombre@empresa.com"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
