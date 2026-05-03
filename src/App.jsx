@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LandingPage from './components/landing/LandingPage'
+import PublicBookingPage from './components/landing/PublicBookingPage'
 import LoginForm from './components/auth/LoginForm'
 import RegisterForm from './components/auth/RegisterForm'
 import RegisterSuccessForm from './components/auth/RegisterSuccessForm'
@@ -79,6 +80,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/empresa/:empresaId" element={<PublicBookingPage />} />
         <Route path="/" element={<LandingPage />} />
       </Routes>
     </BrowserRouter>

@@ -22,6 +22,11 @@ export const serviciosApi = {
     catalogApi.delete(`/service-offerings/${id}`),
 }
 
+export const lookupsApi = {
+  estadosServicio: () =>
+    catalogApi.get('/lookups/estado-servicio').then(r => r.data),
+}
+
 export const reservasApi = {
   listar: () =>
     bookingApi.get('').then(r => r.data),
