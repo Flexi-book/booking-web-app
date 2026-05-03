@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-import axios from 'axios'
-
-const API_URL = 'http://localhost:8090/api/user/auth'
-=======
 import { authApi } from '../api/apiClients'
->>>>>>> 2a370b3 (feat: integrate frontend with backend services (auth, catalog, booking))
 
 const authService = {
   login: async (email, password) => {

@@ -3,6 +3,16 @@ import { useNavigate, Link } from 'react-router-dom'
 import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
 
+const BUSINESS_TYPES = [
+  'Barbería',
+  'Peluquería',
+  'Centro Médico',
+  'Cancha Deportiva',
+  'Sala de Reuniones',
+  'Spa',
+  'Otro',
+]
+
 export default function RegisterForm() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
@@ -63,7 +73,6 @@ export default function RegisterForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center mb-4">
             <img src="/flexibook-logo.svg" alt="Flexibook" className="w-14 h-14 object-contain" />
@@ -72,7 +81,6 @@ export default function RegisterForm() {
           <p className="text-gray-600 text-sm sm:text-base">Crea tu cuenta de administrador</p>
         </div>
 
-        {/* Form Card */}
         <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
           {error && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-4">
@@ -80,12 +88,10 @@ export default function RegisterForm() {
             </div>
           )}
 
-          {/* Google Register Option */}
           <div>
             <GoogleLoginButton isRegister={true} />
           </div>
 
-          {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
@@ -95,9 +101,7 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nombre Empresa */}
             <div>
               <label htmlFor="nombreEmpresa" className="block text-sm font-medium text-gray-700 mb-2">
                 Nombre del Negocio
@@ -114,24 +118,29 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Tipo Negocio */}
             <div>
               <label htmlFor="tipoNegocio" className="block text-sm font-medium text-gray-700 mb-2">
                 Tipo de Negocio
               </label>
-              <input
+              <select
                 id="tipoNegocio"
                 name="tipoNegocio"
-                type="text"
                 required
-                placeholder="Ej. Fitness, Salón de belleza"
                 value={formData.tipoNegocio}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
+                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition appearance-none"
+              >
+                <option value="" disabled>
+                  Selecciona un tipo de negocio
+                </option>
+                {BUSINESS_TYPES.map((businessType) => (
+                  <option key={businessType} value={businessType}>
+                    {businessType}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Email Contacto */}
             <div>
               <label htmlFor="correoContacto" className="block text-sm font-medium text-gray-700 mb-2">
                 Email de Contacto
@@ -148,7 +157,6 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Nombre Usuario */}
             <div>
               <label htmlFor="nombreUsuario" className="block text-sm font-medium text-gray-700 mb-2">
                 Nombre de Usuario
@@ -165,7 +173,6 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Email Usuario */}
             <div>
               <label htmlFor="correoUsuario" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Corporativo
@@ -182,7 +189,6 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Contraseña
@@ -200,7 +206,6 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirmar Contraseña
@@ -218,7 +223,6 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Register Button */}
             <button
               type="submit"
               disabled={loading}
@@ -228,7 +232,6 @@ export default function RegisterForm() {
             </button>
           </form>
 
-          {/* Login Link */}
           <p className="text-center text-gray-600 text-sm">
             ¿Ya tienes cuenta?{' '}
             <Link
@@ -240,7 +243,6 @@ export default function RegisterForm() {
           </p>
         </div>
 
-        {/* Footer */}
         <div className="mt-8 text-center text-xs text-gray-500 space-y-1">
           <p>© 2024 Flexibook. Todos los derechos reservados.</p>
           <div className="flex justify-center gap-4">
