@@ -1,25 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 export default function RegisterSuccessForm() {
-  const navigate = useNavigate()
   const location = useLocation()
   const [email] = useState(location.state?.email || 'tu email')
-  const [seconds, setSeconds] = useState(10)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSeconds((prev) => {
-        if (prev <= 1) {
-          navigate('/login')
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [navigate])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -80,18 +64,12 @@ export default function RegisterSuccessForm() {
             </div>
           </div>
 
-          {/* Redirect Button and Timer */}
-          <div className="space-y-3">
-            <Link
-              to="/login"
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition inline-block text-center"
-            >
-              Ir al Inicio de Sesión
-            </Link>
-            <p className="text-xs text-gray-500 text-center">
-              Serás redirigido automáticamente en {seconds}s
-            </p>
-          </div>
+          <Link
+            to="/login"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition inline-block text-center"
+          >
+            Volver al login
+          </Link>
         </div>
 
         {/* Support Info */}
