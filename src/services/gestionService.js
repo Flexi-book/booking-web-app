@@ -1,8 +1,9 @@
 import { bookingApi, catalogApi } from '../api/apiClients'
 
+
 export const activosApi = {
-  listar: (empresaId = 1) =>
-    catalogApi.get(`/assets?empresaId=${empresaId}`).then(r => r.data),
+  listar: () =>
+    catalogApi.get('/assets').then(r => r.data),
   crear: (activo) =>
     catalogApi.post('/assets', activo).then(r => r.data),
   actualizar: (id, activo) =>
@@ -12,8 +13,8 @@ export const activosApi = {
 }
 
 export const serviciosApi = {
-  listar: (empresaId = 1) =>
-    catalogApi.get(`/service-offerings?empresaId=${empresaId}`).then(r => r.data),
+  listar: () =>
+    catalogApi.get('/service-offerings').then(r => r.data),
   crear: (servicio) =>
     catalogApi.post('/service-offerings', servicio).then(r => r.data),
   actualizar: (id, servicio) =>
@@ -22,10 +23,6 @@ export const serviciosApi = {
     catalogApi.delete(`/service-offerings/${id}`),
 }
 
-export const lookupsApi = {
-  estadosServicio: () =>
-    catalogApi.get('/lookups/estado-servicio').then(r => r.data),
-}
 
 export const reservasApi = {
   listar: () =>

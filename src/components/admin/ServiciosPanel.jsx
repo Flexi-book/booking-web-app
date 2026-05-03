@@ -1,82 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { activosApi, lookupsApi, serviciosApi } from '../../services/gestionService'
 
-const DIAS = [
-  { value: 1, label: 'Lunes' },
-  { value: 2, label: 'Martes' },
-  { value: 3, label: 'Miércoles' },
-  { value: 4, label: 'Jueves' },
-  { value: 5, label: 'Viernes' },
-  { value: 6, label: 'Sábado' },
-  { value: 7, label: 'Domingo' },
-]
-
-const emptyBloque = {
-  activoId: '',
-  diasSemana: [1],
-  horaInicio: '09:00',
-  horaFin: '18:00',
-}
-
-const BUFFER_MINUTOS = 10
-
-const emptyForm = {
-  nombreServicio: '',
-  descripcion: '',
-  duracionMinutos: 30,
-  precio: 0,
-  estadoServicioId: '',
-  disponibilidades: [],
-}
-
-function getUserCompanyId() {
-  try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
-    return user.empresaId || user.companyId || ''
-  } catch {
-    return ''
-  }
-}
-
-function calcularCupos(horaInicio, horaFin, duracionMinutos) {
-  return generarTramos(horaInicio, horaFin, duracionMinutos).length
-}
-
-function generarTramos(horaInicio, horaFin, duracionMinutos) {
-  const [hiH, hiM] = horaInicio.split(':').map(Number)
-  const [hfH, hfM] = horaFin.split(':').map(Number)
-  const inicio = hiH * 60 + hiM
-  const fin = hfH * 60 + hfM
-
-  if (fin <= inicio || duracionMinutos <= 0) return []
-
-  const tramos = []
-  let cursor = inicio
-  while (cursor + duracionMinutos <= fin) {
-    const inicioSlot = `${String(Math.floor(cursor / 60)).padStart(2, '0')}:${String(cursor % 60).padStart(2, '0')}`
-    const end = cursor + duracionMinutos
-    const finSlot = `${String(Math.floor(end / 60)).padStart(2, '0')}:${String(end % 60).padStart(2, '0')}`
-    tramos.push(`${inicioSlot} - ${finSlot}`)
-    cursor = end + BUFFER_MINUTOS
-  }
-
-  return tramos
-}
-
-
-function rangosSeSuperponen(inicioA, finA, inicioB, finB) {
-  const [aH, aM] = inicioA.split(':').map(Number)
-  const [afH, afM] = finA.split(':').map(Number)
-  const [bH, bM] = inicioB.split(':').map(Number)
-  const [bfH, bfM] = finB.split(':').map(Number)
-
-  const aInicio = aH * 60 + aM
-  const aFin = afH * 60 + afM
-  const bInicio = bH * 60 + bM
-  const bFin = bfH * 60 + bfM
-
-  return aInicio < bFin && bInicio < aFin
-}
+const emptyForm = { nombreServicio: '', descripcion: '', duracionMinutos: 30, precio: 0, estadoServicioId: 'activo' }
 
 export default function ServiciosPanel() {
   const [servicios, setServicios] = useState([])
@@ -139,15 +64,6 @@ export default function ServiciosPanel() {
       duracionMinutos: s.duracionMinutos,
       precio: s.precio,
       estadoServicioId: s.estadoServicioId,
-      disponibilidades: (s.disponibilidades || []).map((d) => ({
-        id: d.id,
-        activoId: d.activoId,
-        diaSemana: d.diaSemana,
-        horaInicio: d.horaInicio?.slice(0, 5) || '09:00',
-        horaFin: d.horaFin?.slice(0, 5) || '18:00',
-        activoNombre: d.activoNombre,
-        cuposPorDia: d.cuposPorDia,
-      })),
     })
     setEditingId(s.id)
     setShowForm(true)
@@ -407,11 +323,14 @@ export default function ServiciosPanel() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                <select className="w-full h-12 border border-gray-300 rounded-lg px-4 text-sm bg-white" value={form.estadoServicioId} onChange={e => setForm(f => ({ ...f, estadoServicioId: e.target.value }))}>
-                  <option value="">Selecciona estado</option>
-                  {estadosServicio.map((estado) => (
-                    <option key={estado.id} value={estado.id}>{estado.nombre}</option>
-                  ))}
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={form.estadoServicioId}
+                  onChange={e => setForm(f => ({ ...f, estadoServicioId: e.target.value }))}
+                >
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                  <option value="pausado">Pausado</option>
                 </select>
               </div>
               <div className="md:col-span-2">
@@ -499,9 +418,24 @@ export default function ServiciosPanel() {
               {servicios.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900">{s.nombreServicio}</td>
-                  <td className="px-6 py-4 text-gray-600">{s.duracionMinutos} min</td>
-                  <td className="px-6 py-4 text-gray-600 font-semibold">${Number(s.precio).toLocaleString('es-CL')}</td>
-                  <td className="px-6 py-4 text-gray-600">{s.disponibilidades?.length || 0} bloques</td>
+                  <td className="px-6 py-4 text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00-.293.707l-1.414 1.414a1 1 0 101.414 1.414L9 10.586V6z" clipRule="evenodd"></path>
+                      </svg>
+                      {s.duracionMinutos} min
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 font-semibold">€{Number(s.precio).toFixed(2)}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      s.estadoServicioId === 'activo' ? 'bg-green-100 text-green-700' :
+                      s.estadoServicioId === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {s.estadoServicioId}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 flex gap-3">
                     <button onClick={() => iniciarEdicion(s)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">Editar</button>
                     <button onClick={() => eliminar(s.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">Eliminar</button>
