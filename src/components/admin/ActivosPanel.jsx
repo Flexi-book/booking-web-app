@@ -4,7 +4,7 @@ import { activosApi } from '../../services/gestionService'
 const TIPOS = ['Espacio', 'Personal', 'Equipo']
 const ESTADOS = ['Disponible', 'No disponible', 'En mantenimiento']
 
-const emptyForm = { nombreActivo: '', descripcion: '', tipoActivo: 'Espacio', estadoDisponibilidad: 'Disponible' }
+const emptyForm = { nombre: '', descripcion: '', tipoActivoId: 'Espacio', estadoDisponibilidadId: 'Disponible' }
 
 export default function ActivosPanel() {
   const [activos, setActivos] = useState([])
@@ -29,10 +29,10 @@ export default function ActivosPanel() {
 
   function iniciarEdicion(activo) {
     setForm({
-      nombreActivo: activo.nombreActivo,
+      nombre: activo.nombre,
       descripcion: activo.descripcion || '',
-      tipoActivo: activo.tipoActivo,
-      estadoDisponibilidad: activo.estadoDisponibilidad,
+      tipoActivoId: activo.tipoActivoId,
+      estadoDisponibilidadId: activo.estadoDisponibilidadId,
     })
     setEditingId(activo.id)
     setShowForm(true)
@@ -136,8 +136,8 @@ export default function ActivosPanel() {
                 <input
                   required
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.nombreActivo}
-                  onChange={e => setForm(f => ({ ...f, nombreActivo: e.target.value }))}
+                  value={form.nombre}
+                  onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
                   placeholder="Ej: Sala Zen A1"
                 />
               </div>
@@ -145,8 +145,8 @@ export default function ActivosPanel() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.tipoActivo}
-                  onChange={e => setForm(f => ({ ...f, tipoActivo: e.target.value }))}
+                  value={form.tipoActivoId}
+                  onChange={e => setForm(f => ({ ...f, tipoActivoId: e.target.value }))}
                 >
                   {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -155,8 +155,8 @@ export default function ActivosPanel() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.estadoDisponibilidad}
-                  onChange={e => setForm(f => ({ ...f, estadoDisponibilidad: e.target.value }))}
+                  value={form.estadoDisponibilidadId}
+                  onChange={e => setForm(f => ({ ...f, estadoDisponibilidadId: e.target.value }))}
                 >
                   {ESTADOS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -205,19 +205,19 @@ export default function ActivosPanel() {
                 <tr key={a.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{getTypeIcon(a.tipoActivo)}</span>
+                      <span className="text-xl">{getTypeIcon(a.tipoActivoId)}</span>
                       <div>
-                        <p className="font-medium text-gray-900">{a.nombreActivo}</p>
+                        <p className="font-medium text-gray-900">{a.nombre}</p>
                         {a.descripcion && <p className="text-xs text-gray-500">{a.descripcion}</p>}
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-600 capitalize">{a.tipoActivo}</td>
+                  <td className="px-6 py-4 text-gray-600 capitalize">{a.tipoActivoId}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(a.estadoDisponibilidad)}`}>
-                        {a.estadoDisponibilidad}
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(a.estadoDisponibilidadId)}`}>
+                        {a.estadoDisponibilidadId}
                       </span>
                     </div>
                   </td>
