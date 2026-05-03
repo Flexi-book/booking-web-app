@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
 
-const emptyForm = { servicioId: '', activoId: '', clienteNombre: '', clienteCorreo: '', fechaInicio: '' }
+const emptyForm = { serviceOfferingId: '', assetId: '', customerName: '', customerEmail: '', customerPhone: '', startTime: '', note: '' }
 
 export default function ReservasPanel() {
   const [reservas, setReservas] = useState([])
@@ -36,11 +36,13 @@ export default function ReservasPanel() {
     setSuccess('')
     try {
       const payload = {
-        servicioId: form.servicioId,
-        activoId: form.activoId,
-        clienteNombre: form.clienteNombre,
-        clienteCorreo: form.clienteCorreo,
-        fechaInicio: form.fechaInicio + ':00',
+        serviceOfferingId: form.serviceOfferingId,
+        assetId: form.assetId,
+        customerName: form.customerName,
+        customerEmail: form.customerEmail,
+        customerPhone: form.customerPhone || undefined,
+        startTime: form.startTime,
+        note: form.note || undefined,
       }
       await reservasApi.crear(payload)
       setSuccess('Reserva creada correctamente')
@@ -64,7 +66,7 @@ export default function ReservasPanel() {
     }
   }
 
-  const servicioSeleccionado = servicios.find(s => s.id === form.servicioId)
+  const servicioSeleccionado = servicios.find(s => s.id === form.serviceOfferingId)
 
   const getStatusColor = (estado) => {
     switch(estado) {
@@ -120,11 +122,11 @@ export default function ReservasPanel() {
                 <select
                   required
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.servicioId}
-                  onChange={e => setForm(f => ({ ...f, servicioId: e.target.value }))}
+                  value={form.serviceOfferingId}
+                  onChange={e => setForm(f => ({ ...f, serviceOfferingId: e.target.value }))}
                 >
                   <option value="">Selecciona un servicio</option>
-                  {servicios.filter(s => s.estado === 'activo').map(s => (
+                  {servicios.filter(s => s.estadoServicioId === 'activo').map(s => (
                     <option key={s.id} value={s.id}>
                       {s.nombreServicio} ({s.duracionMinutos} min — €{Number(s.precio).toFixed(2)})
                     </option>
@@ -141,8 +143,8 @@ export default function ReservasPanel() {
                 <select
                   required
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.activoId}
-                  onChange={e => setForm(f => ({ ...f, activoId: e.target.value }))}
+                  value={form.assetId}
+                  onChange={e => setForm(f => ({ ...f, assetId: e.target.value }))}
                 >
                   <option value="">Selecciona un activo</option>
                   {activos.filter(a => a.estadoDisponibilidad === 'Disponible' || a.estadoDisponibilidad === 'disponible').map(a => (
