@@ -1,258 +1,212 @@
 import { useState, useEffect } from 'react'
+import { 
+  Plus, Search, MoreHorizontal, Pencil, Trash2, 
+  Tag, Users, LayoutGrid, Info
+} from "lucide-react"
+import { 
+  Card, CardContent, CardHeader, CardTitle 
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { activosApi } from '../../services/gestionService'
-
-const TIPOS = [
-  { id: 'c76b683f-3b17-4058-b26f-2a43f9067441', nombre: 'barbero' },
-  { id: '7da96ce4-1f8b-4fb3-97b3-51e8b6c9593d', nombre: 'cancha' },
-  { id: '60cf6474-bc41-4bc3-8a90-a1907396610e', nombre: 'otro' },
-  { id: '6b0b614a-3fba-48d0-b411-d349b3f003ae', nombre: 'peluquero' },
-  { id: 'ba1e470c-25ea-4871-96ff-5aba2ce68ab5', nombre: 'profesional' },
-  { id: 'f072393c-016b-47af-ad8d-df4a08ec0a79', nombre: 'sala' },
-  { id: '318dd191-b1b2-42d1-87e3-6cfc044bec8b', nombre: 'silla' },
-]
-
-const emptyForm = { nombre: '', descripcion: '', tipoActivoId: 'Espacio', estadoDisponibilidadId: 'Disponible' }
+import { TableLoader } from "@/components/ui/table-loader"
+import AssetDialog from './AssetDialog'
+import { Badge } from "@/components/ui/badge"
 
 export default function ActivosPanel() {
   const [activos, setActivos] = useState([])
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [showForm, setShowForm] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedAsset, setSelectedAsset] = useState(null)
 
-  useEffect(() => { cargar() }, [])
+  useEffect(() => {
+    cargarActivos()
+  }, [])
 
-  function getUserCompanyId() {
-    try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      return user.empresaId || user.companyId || ''
-    } catch {
-      return ''
-    }
-  }
-
-  async function cargar() {
-    const empresaId = getUserCompanyId()
-    if (!empresaId) {
-      setError('No se encontró empresa asociada al usuario.')
-      return
-    }
-
+  const cargarActivos = async () => {
     setLoading(true)
     try {
-      setActivos(await activosApi.listar(empresaId))
-      setForm((prev) => ({ ...prev, empresaId }))
-    } catch {
-      setError('Error al cargar activos')
+      const user = JSON.parse(localStorage.getItem('user') || '{}')
+      const empresaId = user.empresaId || user.companyId
+      const data = await activosApi.listar(empresaId)
+      setActivos(data)
+    } catch (err) {
+      console.error("Error al cargar activos:", err)
     } finally {
       setLoading(false)
     }
   }
 
-  function iniciarEdicion(activo) {
-    setForm({
-      nombre: activo.nombreActivo,
-      descripcion: activo.descripcion || '',
-      tipoActivoId: activo.tipoActivo,
-      estadoDisponibilidadId: activo.estadoDisponibilidad,
-    })
-    setEditingId(activo.id)
-    setShowForm(true)
-    setError('')
+  const handleEdit = (asset) => {
+    setSelectedAsset(asset)
+    setDialogOpen(true)
   }
 
-  function cancelar() {
-    setForm({ ...emptyForm, empresaId: getUserCompanyId() })
-    setEditingId(null)
-    setShowForm(false)
-    setError('')
-  }
-
-  async function guardar(e) {
-    e.preventDefault()
-    setError('')
-
-    if (!form.empresaId || !form.tipoActivoId || !form.estadoDisponibilidadId) {
-      setError('Faltan datos obligatorios para crear el activo.')
-      return
-    }
-
-    try {
-      if (editingId) {
-        await activosApi.actualizar(editingId, form)
-      } else {
-        await activosApi.crear(form)
+  const handleDelete = async (id) => {
+    if (window.confirm("¿Estás seguro de eliminar este recurso?")) {
+      try {
+        await activosApi.eliminar(id)
+        cargarActivos()
+      } catch (err) {
+        alert("Error al eliminar el activo")
       }
-      cancelar()
-      cargar()
-    } catch (err) {
-      const backendMsg =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        (typeof err.response?.data === 'string' ? err.response.data : null)
-      setError(backendMsg || 'Error al guardar activo')
     }
   }
 
-  async function eliminar(id) {
-    if (!confirm('¿Eliminar este activo?')) return
-    try {
-      await activosApi.eliminar(id)
-      cargar()
-    } catch {
-      setError('Error al eliminar activo')
+  const filteredActivos = activos.filter(a => 
+    (a.nombreActivo || a.nombre || '').toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const getStatusBadge = (estado) => {
+    const isAvailable = (estado || '').toLowerCase() === 'disponible'
+    if (isAvailable) {
+      return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100">Disponible</Badge>
     }
-  }
-
-  const getStatusColor = (estado) => {
-    const v = String(estado || '').toLowerCase()
-    if (v.includes('disponible') && !v.includes('no_')) return 'bg-green-100 text-green-700'
-    if (v.includes('no_disponible') || v.includes('no disponible')) return 'bg-red-100 text-red-700'
-    if (v.includes('inactivo') || v.includes('mantenimiento')) return 'bg-orange-100 text-orange-700'
-    return 'bg-gray-100 text-gray-700'
-  }
-
-  const getTypeIcon = (tipo) => {
-    const v = String(tipo || '').toLowerCase()
-    if (v.includes('sala') || v.includes('cancha')) return '📍'
-    if (v.includes('barbero') || v.includes('peluquero') || v.includes('profesional')) return '👤'
-    if (v.includes('silla')) return '🪑'
-    return '📦'
+    return <Badge variant="secondary" className="bg-slate-50 text-slate-500 border-slate-200">No Disponible</Badge>
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900">Gestión de Activos</h1>
-          <p className="text-gray-600 mt-2">Personal y espacios de trabajo disponibles.</p>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            Recursos
+          </h1>
+          <p className="text-slate-500 font-medium">Gestiona tus salas, profesionales y equipos</p>
         </div>
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-800 transition flex items-center gap-2"
-          >
-            <span>+</span> Añadir Activo
-          </button>
-        )}
+        <Button 
+          onClick={() => { setSelectedAsset(null); setDialogOpen(true) }}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 h-12 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 font-bold gap-2"
+        >
+          <Plus className="w-5 h-5" /> Nuevo Recurso
+        </Button>
       </div>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-800">{error}</p>
-        </div>
-      )}
-
-      {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{editingId ? 'Editar Activo' : 'Nuevo Activo'}</h2>
-          <form onSubmit={guardar} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                <input
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.nombre}
-                  onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
-                  placeholder="Ej: Sala Zen A1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.tipoActivoId}
-                  onChange={e => setForm(f => ({ ...f, tipoActivoId: e.target.value }))}
-                >
-                  {TIPOS.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.estadoDisponibilidadId}
-                  onChange={e => setForm(f => ({ ...f, estadoDisponibilidadId: e.target.value }))}
-                >
-                  {ESTADOS.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                <input
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm h-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.descripcion}
-                  onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
-                  placeholder="Opcional"
-                />
-              </div>
+      {/* Main Content Area */}
+      <Card className="border-none shadow-xl shadow-slate-200/50 bg-white ring-1 ring-slate-100 overflow-hidden relative">
+        <CardHeader className="bg-white border-b border-slate-50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <CardTitle className="text-lg font-bold text-slate-800">Inventario de Activos</CardTitle>
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input 
+                placeholder="Buscar activo..." 
+                className="pl-10 bg-slate-50/50 border-slate-100 focus:bg-white transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <div className="flex gap-3 pt-2">
-              <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
-                {editingId ? 'Actualizar' : 'Crear'}
-              </button>
-              <button type="button" onClick={cancelar} className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-                Cancelar
-              </button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-8">
+              <TableLoader columns={4} rows={4} />
             </div>
-          </form>
-        </div>
-      )}
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-slate-50/30">
+                  <TableRow className="hover:bg-transparent border-slate-100">
+                    <TableHead className="font-bold text-slate-700 py-4 text-xs uppercase tracking-wider px-8">Activo / Recurso</TableHead>
+                    <TableHead className="font-bold text-slate-700 text-xs uppercase tracking-wider">Tipo</TableHead>
+                    <TableHead className="font-bold text-slate-700 text-xs uppercase tracking-wider">Capacidad</TableHead>
+                    <TableHead className="font-bold text-slate-700 text-xs uppercase tracking-wider">Estado</TableHead>
+                    <TableHead className="text-right font-bold text-slate-700 px-8 text-xs uppercase tracking-wider">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredActivos.length > 0 ? (
+                    filteredActivos.map((a) => (
+                      <TableRow key={a.id} className="hover:bg-slate-50/50 transition-colors border-slate-100">
+                        <TableCell className="py-5 px-8">
+                          <div className="font-bold text-slate-900">{a.nombreActivo || a.nombre}</div>
+                          <div className="text-xs text-slate-500 truncate max-w-[300px] mt-0.5">
+                            {a.descripcion || "Sin descripción adicional"}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-slate-700 font-medium bg-slate-100/50 w-fit px-2 py-1 rounded-md text-xs uppercase tracking-wider border border-slate-200/50">
+                            <Tag className="mr-1.5 h-3 w-3 text-slate-500" />
+                            {a.tipoActivoNombre || a.tipoActivo || "General"}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-slate-700 font-medium">
+                            <Users className="mr-1.5 h-3.5 w-3.5 text-slate-400" />
+                            {a.capacidad || 1} personas
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(a.estado)}</TableCell>
+                        <TableCell className="text-right px-8">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-9 w-9 p-0 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 rounded-full transition-all">
+                                <MoreHorizontal className="h-5 w-5 text-slate-500" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 shadow-2xl border-slate-100 p-1 rounded-xl">
+                              <DropdownMenuLabel className="text-[10px] font-bold text-slate-400 uppercase px-2 py-1.5">Gestión</DropdownMenuLabel>
+                              <DropdownMenuSeparator className="bg-slate-100" />
+                              <DropdownMenuItem onClick={() => handleEdit(a)} className="cursor-pointer py-2.5 rounded-lg gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                                  <Pencil className="h-4 w-4 text-blue-600" /> 
+                                </div>
+                                <span className="font-semibold text-slate-700">Editar</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDelete(a.id)} className="cursor-pointer py-2.5 rounded-lg gap-3 text-red-600 focus:text-red-600 focus:bg-red-50">
+                                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                                  <Trash2 className="h-4 w-4" /> 
+                                </div>
+                                <span className="font-semibold">Eliminar</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-48 text-center text-slate-400">
+                        <div className="flex flex-col items-center gap-2">
+                          <LayoutGrid className="h-10 w-10 opacity-20" />
+                          <p>No se encontraron activos registrados.</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {loading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
-      ) : activos.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-500">No hay activos registrados aún.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACTIVO / RECURSO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">TIPO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ESTADO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {activos.map(a => (
-                <tr key={a.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{getTypeIcon(a.tipoActivo || '')}</span>
-                      <div>
-                        <p className="font-medium text-gray-900">{a.nombreActivo}</p>
-                        {a.descripcion && <p className="text-xs text-gray-500">{a.descripcion}</p>}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 capitalize">{a.tipoActivo}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(a.estadoDisponibilidad)}`}>
-                        {a.estadoDisponibilidad}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 flex gap-3">
-                    <button onClick={() => iniciarEdicion(a)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">
-                      Editar
-                    </button>
-                    <button onClick={() => eliminar(a.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <AssetDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+        asset={selectedAsset}
+        onSave={cargarActivos}
+      />
     </div>
   )
 }
