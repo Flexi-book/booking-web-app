@@ -10,8 +10,14 @@ const createClient = (baseURL) => {
 
   client.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const empresaId = user.empresaId || user.companyId;
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (empresaId) {
+      config.headers['X-Empresa-Id'] = empresaId;
     }
     return config;
   });

@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-import { bookingApi, catalogApi } from '../api/apiClients'
-
-=======
 import { backofficeApi } from '../api/apiClients'
->>>>>>> feature/auth-ui-enhancements/antigravity
 
 export const activosApi = {
   listar: () =>
