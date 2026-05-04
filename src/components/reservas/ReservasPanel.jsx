@@ -159,8 +159,8 @@ export default function ReservasPanel() {
                 <input
                   required
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.clienteNombre}
-                  onChange={e => setForm(f => ({ ...f, clienteNombre: e.target.value }))}
+                  value={form.customerName}
+                  onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
                   placeholder="Juan Pérez"
                 />
               </div>
@@ -170,8 +170,8 @@ export default function ReservasPanel() {
                   required
                   type="email"
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.clienteCorreo}
-                  onChange={e => setForm(f => ({ ...f, clienteCorreo: e.target.value }))}
+                  value={form.customerEmail}
+                  onChange={e => setForm(f => ({ ...f, customerEmail: e.target.value }))}
                   placeholder="cliente@email.com"
                 />
               </div>
@@ -181,8 +181,8 @@ export default function ReservasPanel() {
                   required
                   type="datetime-local"
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.fechaInicio}
-                  onChange={e => setForm(f => ({ ...f, fechaInicio: e.target.value }))}
+                  value={form.startTime}
+                  onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))}
                 />
               </div>
             </div>
@@ -224,14 +224,14 @@ export default function ReservasPanel() {
               {reservas.map(r => (
                 <tr key={r.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <p className="font-medium text-gray-900">{r.clienteNombre || '—'}</p>
-                    <p className="text-xs text-gray-500">{r.clienteCorreo || ''}</p>
+                    <p className="font-medium text-gray-900">{r.customerName || '—'}</p>
+                    <p className="text-xs text-gray-500">{r.customerEmail || ''}</p>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {servicios.find(s => s.id === r.servicioId)?.nombreServicio || '—'}
+                    {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio || '—'}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {r.fechaInicio ? new Date(r.fechaInicio).toLocaleString('es-CL') : '—'}
+                    {r.startTime ? new Date(r.startTime).toLocaleString('es-CL') : '—'}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(r.estado || 'pendiente')}`}>
