@@ -1,7 +1,43 @@
 import { useState, useEffect } from 'react'
+import { 
+  Calendar, Search, Filter, MoreHorizontal, 
+  Clock, User, Mail, Phone, CalendarClock,
+  Trash2, X, Plus, CheckCircle2, LayoutGrid
+} from 'lucide-react'
+import { 
+  Card, CardContent, CardHeader, CardTitle, CardDescription 
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { TableLoader } from "@/components/ui/table-loader"
 import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
 
-const emptyForm = { serviceOfferingId: '', assetId: '', customerName: '', customerEmail: '', customerPhone: '', startTime: '', note: '' }
+const emptyForm = { 
+  serviceOfferingId: '', 
+  assetId: '', 
+  customerName: '', 
+  customerEmail: '', 
+  customerPhone: '', 
+  startTime: '', 
+  note: '' 
+}
 
 export default function ReservasPanel() {
   const [reservas, setReservas] = useState([])
@@ -12,19 +48,26 @@ export default function ReservasPanel() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    cargar()
-    activosApi.listar().then(setActivos).catch(() => {})
-    serviciosApi.listar().then(setServicios).catch(() => {})
+    cargarTodo()
   }, [])
 
-  async function cargar() {
+  async function cargarTodo() {
     setLoading(true)
+    setError('')
     try {
-      setReservas(await reservasApi.listar())
-    } catch {
-      setError('Error al cargar reservas')
+      const [res, act, serv] = await Promise.all([
+        reservasApi.listar(),
+        activosApi.listar(),
+        serviciosApi.listar()
+      ])
+      setReservas(res)
+      setActivos(act)
+      setServicios(serv)
+    } catch (err) {
+      setError('Error al sincronizar datos de reservas')
     } finally {
       setLoading(false)
     }
@@ -32,225 +75,239 @@ export default function ReservasPanel() {
 
   async function crearReserva(e) {
     e.preventDefault()
+    setLoading(true)
     setError('')
     setSuccess('')
     try {
-      const payload = {
-        serviceOfferingId: form.serviceOfferingId,
-        assetId: form.assetId,
-        customerName: form.customerName,
-        customerEmail: form.customerEmail,
-        customerPhone: form.customerPhone || undefined,
-        startTime: form.startTime,
-        note: form.note || undefined,
-      }
-      await reservasApi.crear(payload)
-      setSuccess('Reserva creada correctamente')
+      await reservasApi.crear(form)
+      setSuccess('Reserva confirmada con éxito')
       setForm(emptyForm)
       setShowForm(false)
-      cargar()
+      cargarTodo()
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data || 'Error al crear reserva'
-      setError(typeof msg === 'string' ? msg : 'Horario no disponible — el activo ya tiene una reserva en ese horario.')
+      setError(err.response?.data?.message || 'Error al procesar la reserva. Verifica la disponibilidad.')
+    } finally {
+      setLoading(false)
     }
   }
 
   async function cancelarReserva(id) {
-    if (!confirm('¿Cancelar esta reserva?')) return
     setError('')
     try {
       await reservasApi.cancelar(id)
-      cargar()
+      cargarTodo()
     } catch {
-      setError('Error al cancelar reserva')
+      setError('No se pudo cancelar la reserva')
     }
   }
 
-  const servicioSeleccionado = servicios.find(s => s.id === form.serviceOfferingId)
-
-  const getStatusColor = (estado) => {
-    switch(estado) {
+  const getStatusBadge = (estado) => {
+    const est = (estado || 'pendiente').toLowerCase()
+    switch(est) {
       case 'confirmada':
-        return 'bg-green-100 text-green-700'
-      case 'pendiente':
-        return 'bg-yellow-100 text-yellow-700'
+        return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100">Confirmada</Badge>
       case 'cancelada':
-        return 'bg-red-100 text-red-700'
+        return <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-100 hover:bg-red-100">Cancelada</Badge>
       case 'completada':
-        return 'bg-blue-100 text-blue-700'
+        return <Badge className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100">Completada</Badge>
       default:
-        return 'bg-gray-100 text-gray-700'
+        return <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100">Pendiente</Badge>
     }
   }
+
+  const filteredReservas = reservas.filter(r => 
+    r.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.customerEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900">Gestión de Reservas</h1>
-          <p className="text-gray-600 mt-2">Administra las reservas de tus servicios.</p>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+            Reservas
+          </h1>
+          <p className="text-slate-500 font-medium">Control de citas y ocupación en tiempo real</p>
         </div>
-        {!showForm && (
-          <button
-            onClick={() => { setShowForm(true); setError(''); setSuccess('') }}
-            className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
-          >
-            <span>+</span> Nueva Reserva
-          </button>
-        )}
+        <Button 
+          onClick={() => setShowForm(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 h-12 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 font-bold gap-2"
+        >
+          <Plus className="w-5 h-5" /> Nueva Reserva
+        </Button>
       </div>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-800">{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-          <p className="text-sm font-medium text-green-800">{success}</p>
-        </div>
-      )}
-
-      {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Nueva Reserva</h2>
-          <form onSubmit={crearReserva} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Servicio *</label>
-                <select
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.serviceOfferingId}
-                  onChange={e => setForm(f => ({ ...f, serviceOfferingId: e.target.value }))}
-                >
-                  <option value="">Selecciona un servicio</option>
-                  {servicios.filter(s => s.estadoServicioId === 'activo').map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.nombreServicio} ({s.duracionMinutos} min — €{Number(s.precio).toFixed(2)})
-                    </option>
-                  ))}
-                </select>
-                {servicioSeleccionado && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    ⏱️ Duración: {servicioSeleccionado.duracionMinutos} min. La hora de término se calcula automáticamente.
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Activo / Recurso *</label>
-                <select
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.assetId}
-                  onChange={e => setForm(f => ({ ...f, assetId: e.target.value }))}
-                >
-                  <option value="">Selecciona un activo</option>
-                  {activos.filter(a => a.estadoDisponibilidad === 'Disponible' || a.estadoDisponibilidad === 'disponible').map(a => (
-                    <option key={a.id} value={a.id}>
-                      {a.nombreActivo} ({a.tipoActivo})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Cliente *</label>
-                <input
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.customerName}
-                  onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
-                  placeholder="Juan Pérez"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email del Cliente *</label>
-                <input
-                  required
-                  type="email"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.customerEmail}
-                  onChange={e => setForm(f => ({ ...f, customerEmail: e.target.value }))}
-                  placeholder="cliente@email.com"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fecha y hora de inicio *</label>
-                <input
-                  required
-                  type="datetime-local"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.startTime}
-                  onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))}
-                />
-              </div>
+      {/* STATS MINI CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="border-none shadow-sm bg-white p-4 flex items-center gap-4 ring-1 ring-slate-100">
+          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+            <Calendar className="text-blue-600 w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Hoy</div>
+            <div className="text-2xl font-bold text-slate-900">{reservas.length}</div>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-white p-4 flex items-center gap-4 ring-1 ring-slate-100">
+          <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+            <CheckCircle2 className="text-emerald-600 w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Confirmadas</div>
+            <div className="text-2xl font-bold text-slate-900">
+              {reservas.filter(r => r.estado === 'confirmada').length}
             </div>
-            <div className="flex gap-3 pt-2">
-              <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
-                Confirmar Reserva
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowForm(false); setForm(emptyForm); setError('') }}
-                className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
-              >
-                Cancelar
-              </button>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-white p-4 flex items-center gap-4 ring-1 ring-slate-100">
+          <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+            <Clock className="text-amber-600 w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Pendientes</div>
+            <div className="text-2xl font-bold text-slate-900">
+              {reservas.filter(r => !r.estado || r.estado === 'pendiente').length}
             </div>
-          </form>
+          </div>
+        </Card>
+      </div>
+
+      {/* FEEDBACK MESSAGES */}
+      {(error || success) && (
+        <div className={cn(
+          "p-4 rounded-xl border flex items-center gap-3 animate-in slide-in-from-top-2 duration-300",
+          error ? "bg-red-50 border-red-100 text-red-700" : "bg-emerald-50 border-emerald-100 text-emerald-700"
+        )}>
+          <Info className="w-5 h-5" />
+          <span className="font-semibold text-sm">{error || success}</span>
         </div>
       )}
 
-      {loading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
-      ) : reservas.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-500">No hay reservas registradas aún.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">CLIENTE</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">SERVICIO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">FECHA / HORA</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ESTADO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {reservas.map(r => (
-                <tr key={r.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-gray-900">{r.customerName || '—'}</p>
-                    <p className="text-xs text-gray-500">{r.customerEmail || ''}</p>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio || '—'}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {r.startTime ? new Date(r.startTime).toLocaleString('es-CL') : '—'}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(r.estado || 'pendiente')}`}>
-                      {r.estado || 'Pendiente'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {r.estado !== 'cancelada' && r.estado !== 'completada' && (
-                      <button onClick={() => cancelarReserva(r.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
-                        Cancelar
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* MAIN TABLE AREA */}
+      <Card className="border-none shadow-xl shadow-slate-200/50 bg-white ring-1 ring-slate-100 overflow-hidden relative">
+        <CardHeader className="bg-white border-b border-slate-50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <CardTitle className="text-lg font-bold text-slate-800">Listado de Reservas</CardTitle>
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input 
+                placeholder="Buscar por cliente o email..." 
+                className="pl-10 bg-slate-50/50 border-slate-100 focus:bg-white transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-8">
+              <TableLoader rows={5} columns={5} />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-slate-50/30">
+                  <TableRow className="hover:bg-transparent border-slate-100">
+                    <TableHead className="font-bold text-slate-700 py-4 px-8">Cliente</TableHead>
+                    <TableHead className="font-bold text-slate-700">Servicio</TableHead>
+                    <TableHead className="font-bold text-slate-700">Recurso</TableHead>
+                    <TableHead className="font-bold text-slate-700">Fecha y Hora</TableHead>
+                    <TableHead className="font-bold text-slate-700">Estado</TableHead>
+                    <TableHead className="text-right font-bold text-slate-700 px-8">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredReservas.length > 0 ? (
+                    filteredReservas.map((r) => (
+                      <TableRow key={r.id} className="hover:bg-slate-50/50 transition-colors border-slate-100">
+                        <TableCell className="py-5 px-8">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 font-bold uppercase">
+                              {r.customerName?.charAt(0) || '?'}
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900">{r.customerName || 'Cliente Anónimo'}</div>
+                              <div className="text-xs text-slate-500 flex items-center gap-1">
+                                <Mail className="w-3 h-3" /> {r.customerEmail}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-semibold text-slate-700">
+                            {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio || 'Servicio no especificado'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-500">
+                            {activos.find(a => a.id === r.assetId)?.nombreActivo || 'Recurso genérico'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                              {new Date(r.startTime).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' })}
+                            </div>
+                            <div className="text-xs text-slate-500 flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5" />
+                              {new Date(r.startTime).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(r.estado)}</TableCell>
+                        <TableCell className="text-right px-6">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-9 w-9 p-0 hover:bg-slate-100 rounded-full">
+                                <MoreHorizontal className="h-5 w-5 text-slate-500" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 shadow-2xl border-slate-100">
+                              <DropdownMenuLabel className="text-xs font-bold text-slate-400 uppercase">Acciones</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="cursor-pointer py-2">
+                                <Phone className="mr-3 h-4 w-4 text-blue-600" /> 
+                                <span className="font-medium">Llamar Cliente</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => cancelarReserva(r.id)} 
+                                className="cursor-pointer py-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+                                disabled={r.estado === 'cancelada'}
+                              >
+                                <X className="mr-3 h-4 w-4" /> 
+                                <span className="font-medium">Anular Reserva</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-48 text-center text-slate-400">
+                        <div className="flex flex-col items-center gap-2">
+                          <LayoutGrid className="h-10 w-10 opacity-20" />
+                          <p>No hay reservas que coincidan con tu búsqueda.</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* TODO: Implement Reservation Dialog to match Assets/Services */}
     </div>
   )
+}
+
+function cn(...classes) {
+  return classes.filter(Boolean).join(' ')
 }
