@@ -95,37 +95,7 @@ export default function AdminLayout() {
 
             <Separator orientation="vertical" className="data-[orientation=vertical]:h-5 hidden sm:block" />
 
-            {/* Profile */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                  <div className="relative">
-                    <Avatar className="h-8 w-8 rounded-xl">
-                      <AvatarImage src="https://avatar.vercel.sh/flexiadmin" />
-                      <AvatarFallback className="rounded-xl bg-blue-600 text-white text-xs font-bold">AD</AvatarFallback>
-                      <AvatarBadge className="bg-emerald-500 h-2.5 w-2.5" />
-                    </Avatar>
-                  </div>
-                  <div className="hidden lg:grid text-left leading-none">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Administrador</span>
-                    <span className="text-xs text-slate-400">Plan Pro</span>
-                  </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 p-2 rounded-xl shadow-xl">
-                <DropdownMenuLabel className="text-xs text-slate-400 uppercase tracking-wider px-2 pb-1">Mi Cuenta</DropdownMenuLabel>
-                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5">
-                  <User className="h-4 w-4 text-slate-400" /> Ver Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5" onClick={() => navigate("/admin/config")}>
-                  <Settings className="h-4 w-4 text-slate-400" /> Configuración
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-1" />
-                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5 text-red-600 focus:text-red-600 focus:bg-red-50">
-                  <LogOut className="h-4 w-4" /> Cerrar sesión
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Profile information removed as it is now in the Sidebar */}
           </div>
         </header>
 

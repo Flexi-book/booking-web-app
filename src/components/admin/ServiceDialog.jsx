@@ -10,7 +10,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Loader2, Sparkles, Clock, DollarSign,
   Plus, Trash2, Info
@@ -50,12 +56,29 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
     if (open) {
       cargarActivos()
       if (service) {
+        // Agrupar disponibilidades planas del backend por (activoId, horaInicio, horaFin)
+        const groupedMap = new Map()
+        if (service.disponibilidades) {
+          service.disponibilidades.forEach(av => {
+            const key = `${av.activoId}-${av.horaInicio}-${av.horaFin}`
+            if (!groupedMap.has(key)) {
+              groupedMap.set(key, {
+                activoId: av.activoId,
+                horaInicio: av.horaInicio ? av.horaInicio.substring(0, 5) : '',
+                horaFin: av.horaFin ? av.horaFin.substring(0, 5) : '',
+                diasSeleccionados: []
+              })
+            }
+            groupedMap.get(key).diasSeleccionados.push(av.diaSemana)
+          })
+        }
+
         setFormData({
           ...service,
           precio: service.precio || '',
           moneda: service.moneda || 'CLP',
           estado: service.estado || 'activo',
-          disponibilidades: service.disponibilidades || []
+          disponibilidades: Array.from(groupedMap.values())
         })
       } else {
         setFormData(emptyForm)
@@ -93,12 +116,12 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
   }
 
   const addAvailability = () => {
-    if (activos.length === 0) return
+    // El usuario pidió que NO haya datos pre-completados.
     const newAv = {
-      activoId: activos[0].id,
-      diasSeleccionados: [1, 2, 3, 4, 5],
-      horaInicio: '09:00',
-      horaFin: '18:00'
+      activoId: '', // Vacío para que el usuario elija
+      diasSeleccionados: [], // Vacío para que el usuario elija
+      horaInicio: '', // Vacío para que el usuario elija
+      horaFin: '' // Vacío para que el usuario elija
     }
     setFormData(prev => ({
       ...prev,
@@ -131,6 +154,15 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
   const handleSubmit = async () => {
     setLoading(true)
     setError('')
+
+    // Validación básica de disponibilidades
+    for (const av of formData.disponibilidades) {
+      if (!av.activoId || av.diasSeleccionados.length === 0 || !av.horaInicio || !av.horaFin) {
+        setError("Por favor, completa todos los campos de disponibilidad o elimina las filas vacías.")
+        setLoading(false)
+        return
+      }
+    }
 
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -241,14 +273,18 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
                   <Label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Moneda
                   </Label>
-                  <Select
-                    value={formData.moneda}
-                    onChange={(e) => handleSelectChange('moneda', e.target.value)}
-                    className="h-10 sm:h-12 border-slate-200 rounded-xl bg-white"
+                  <Select 
+                    value={formData.moneda} 
+                    onValueChange={(val) => handleSelectChange('moneda', val)}
                   >
-                    <option value="CLP">CLP ($)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
+                    <SelectTrigger className="h-10 sm:h-12 border-slate-200 rounded-xl bg-white focus:ring-blue-500">
+                      <SelectValue placeholder="Moneda" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CLP">CLP ($)</SelectItem>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -284,23 +320,13 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
                   size="sm"
                   onClick={addAvailability}
                   className="h-8 border-blue-200 text-blue-600 hover:bg-blue-50 rounded-lg text-xs"
-                  disabled={activos.length === 0}
                 >
                   <Plus className="w-3.5 h-3.5 mr-1" /> Añadir
                 </Button>
               </div>
 
               <div className="space-y-3">
-                {activos.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
-                      <Info className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-slate-500 max-w-[200px]">
-                      No tienes activos creados. Necesitas al menos uno para asignar horarios.
-                    </p>
-                  </div>
-                ) : formData.disponibilidades.length === 0 ? (
+                {formData.disponibilidades.length === 0 ? (
                   <div className="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center text-[10px] sm:text-xs text-slate-400 leading-relaxed">
                     Define cuándo y dónde se ofrece este servicio pulsando "Añadir".
                   </div>
@@ -315,16 +341,20 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
                       </button>
 
                       <div className="space-y-3">
-                        <Select
-                          value={av.activoId}
-                          onChange={(e) => updateAvailability(idx, 'activoId', e.target.value)}
-                          className="h-9 text-xs border-slate-200 bg-slate-50/50"
+                        <Select 
+                          value={av.activoId} 
+                          onValueChange={(val) => updateAvailability(idx, 'activoId', val)}
                         >
-                          {activos.map(a => (
-                            <option key={a.id} value={a.id}>
-                              {a.nombreActivo || a.nombre}
-                            </option>
-                          ))}
+                          <SelectTrigger className="h-9 text-xs border-slate-200 bg-slate-50/50">
+                            <SelectValue placeholder="Seleccionar Profesional" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {activos.map(a => (
+                              <SelectItem key={a.id} value={a.id}>
+                                {a.nombreActivo || a.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
 
                         <div className="flex flex-wrap gap-1.5">
@@ -352,14 +382,16 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
                           <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                           <Input
                             type="time"
-                            value={av.horaInicio}
+                            step="60"
+                            value={av.horaInicio || ''}
                             onChange={(e) => updateAvailability(idx, 'horaInicio', e.target.value)}
                             className="h-9 flex-1 text-[11px] border-slate-200 bg-white"
                           />
                           <span className="text-slate-300 text-xs">a</span>
                           <Input
                             type="time"
-                            value={av.horaFin}
+                            step="60"
+                            value={av.horaFin || ''}
                             onChange={(e) => updateAvailability(idx, 'horaFin', e.target.value)}
                             className="h-9 flex-1 text-[11px] border-slate-200 bg-white"
                           />

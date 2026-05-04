@@ -30,3 +30,8 @@ export const reservasApi = {
   cancelar: (id) =>
     backofficeApi.delete(`/reservas/${id}`),
 }
+
+export const catalogApi = {
+  obtenerCatalogo: (empresaId) =>
+    backofficeApi.get(`/catalog?empresaId=${empresaId}`).then(r => r.data),
+}

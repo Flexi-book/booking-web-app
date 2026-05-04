@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -10,17 +10,30 @@ import {
   AlertCircle,
   MoreVertical,
   PartyPopper,
-  X
+  X,
+  ArrowUpRight,
+  Activity
 } from "lucide-react"
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  AreaChart,
+  Area
+} from 'recharts'
 import { 
   Card, 
   CardContent, 
   CardDescription, 
   CardHeader, 
   CardTitle 
-} from "@/components/ui/card.jsx"
-import { Button } from "@/components/ui/button.jsx"
-import { Badge } from "@/components/ui/badge.jsx"
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { 
   Table, 
   TableBody, 
@@ -28,278 +41,299 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from "@/components/ui/table.jsx"
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs.jsx"
+} from "@/components/ui/table"
+import { TableLoader } from "@/components/ui/table-loader"
 import authService from '../../services/authService'
-
-const stats = [
-  {
-    name: "Total Reservas",
-    value: "154",
-    change: "+12.5%",
-    trend: "up",
-    icon: CalendarIcon,
-    description: "Este mes"
-  },
-  {
-    name: "Ventas Totales",
-    value: "$2,450",
-    change: "+18.2%",
-    trend: "up",
-    icon: DollarSign,
-    description: "Últimos 30 días"
-  },
-  {
-    name: "Nuevos Clientes",
-    value: "28",
-    change: "-4.3%",
-    trend: "down",
-    icon: Users,
-    description: "Vs mes anterior"
-  },
-  {
-    name: "Tasa Ocupación",
-    value: "82%",
-    change: "+5.1%",
-    trend: "up",
-    icon: TrendingUp,
-    description: "Promedio semanal"
-  }
-]
-
-const recentReservations = [
-  {
-    id: "RES-001",
-    client: "Juan Perez",
-    service: "Masaje Relajante",
-    date: "Hoy, 14:30",
-    status: "Confirmada",
-    amount: "$45"
-  },
-  {
-    id: "RES-002",
-    client: "Maria Garcia",
-    service: "Tratamiento Facial",
-    date: "Hoy, 16:00",
-    status: "Pendiente",
-    amount: "$60"
-  },
-  {
-    id: "RES-003",
-    client: "Carlos Ruiz",
-    service: "Yoga Sesión",
-    date: "Mañana, 09:00",
-    status: "Cancelada",
-    amount: "$15"
-  },
-  {
-    id: "RES-004",
-    client: "Ana Lopez",
-    service: "Manicura Premium",
-    date: "Mañana, 11:30",
-    status: "Confirmada",
-    amount: "$25"
-  }
-]
+import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
 
 export default function Dashboard() {
   const [user, setUser] = useState(authService.getUser())
   const [showWelcome, setShowWelcome] = useState(false)
+  const [reservas, setReservas] = useState([])
+  const [activos, setActivos] = useState([])
+  const [servicios, setServicios] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (user?.isNewUser) {
       setShowWelcome(true)
-      // Limpiar el flag después de mostrarlo una vez
       const updatedUser = { ...user, isNewUser: false }
       localStorage.setItem('user', JSON.stringify(updatedUser))
     }
-  }, [user])
+    cargarDatos()
+  }, [])
+
+  async function cargarDatos() {
+    setLoading(true)
+    try {
+      const [res, act, serv] = await Promise.all([
+        reservasApi.listar(),
+        activosApi.listar(),
+        serviciosApi.listar()
+      ])
+      setReservas(res || [])
+      setActivos(act || [])
+      setServicios(serv || [])
+    } catch (err) {
+      console.error("Error loading dashboard data:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Cálculos dinámicos de métricas
+  const dashboardStats = useMemo(() => {
+    const hoy = new Date()
+    const hoyStr = hoy.toDateString()
+    
+    // 1. Ingresos Totales (Solo confirmadas/completadas)
+    const ingresos = reservas
+      .filter(r => r.estado !== 'cancelada')
+      .reduce((acc, r) => {
+        const serv = servicios.find(s => s.id === r.serviceOfferingId)
+        return acc + (serv?.precio || 0)
+      }, 0)
+
+    // 2. Citas de hoy
+    const citasHoy = reservas.filter(r => new Date(r.startTime).toDateString() === hoyStr).length
+
+    // 3. Clientes Únicos
+    const clientesUnicos = new Set(reservas.map(r => r.customerEmail)).size
+
+    // 4. Ocupación (Activos con reservas hoy vs total activos)
+    const activosConReservaHoy = new Set(
+      reservas
+        .filter(r => new Date(r.startTime).toDateString() === hoyStr && r.estado !== 'cancelada')
+        .map(r => r.assetId)
+    ).size
+    const tasaOcupacion = activos.length > 0 ? Math.round((activosConReservaHoy / activos.length) * 100) : 0
+
+    return [
+      { name: "Ingresos Totales", value: `$${ingresos.toLocaleString()}`, icon: DollarSign, trend: "+12%", desc: "Desde el inicio" },
+      { name: "Citas para Hoy", value: citasHoy.toString(), icon: Clock, trend: "+5%", desc: "Día actual" },
+      { name: "Clientes Reales", value: clientesUnicos.toString(), icon: Users, trend: "+8%", desc: "Usuarios únicos" },
+      { name: "Tasa Ocupación", value: `${tasaOcupacion}%`, icon: TrendingUp, trend: "+2%", desc: "Capacidad utilizada" }
+    ]
+  }, [reservas, servicios, activos])
+
+  // Datos para la gráfica de tendencia (últimos 7 días)
+  const chartData = useMemo(() => {
+    const data = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const label = d.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric' })
+      const count = reservas.filter(r => new Date(r.startTime).toDateString() === d.toDateString()).length
+      data.push({ name: label, reservas: count })
+    }
+    return data
+  }, [reservas])
+
+  const recentReservations = useMemo(() => {
+    return [...reservas]
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+      .slice(0, 5)
+  }, [reservas])
+
+  const getStatusBadge = (estado) => {
+    const est = (estado || 'pendiente').toLowerCase()
+    switch(est) {
+      case 'confirmada': return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 font-medium">Confirmada</Badge>
+      case 'cancelada': return <Badge variant="destructive" className="bg-slate-50 text-slate-400 border-slate-200 line-through">Cancelada</Badge>
+      default: return <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-100">Pendiente</Badge>
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-8 p-4">
+        <div className="h-10 w-64 bg-slate-100 animate-pulse rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-slate-50 animate-pulse rounded-xl" />)}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-8">
+          <div className="md:col-span-4 h-64 bg-slate-50 animate-pulse rounded-xl" />
+          <div className="md:col-span-3 h-64 bg-slate-50 animate-pulse rounded-xl" />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* New User Welcome Banner */}
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* Welcome Banner */}
       {showWelcome && (
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white shadow-lg shadow-blue-200">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="rounded-full bg-white/20 p-3 backdrop-blur-sm">
-                <PartyPopper className="h-8 w-8 text-white" />
+        <Card className="relative overflow-hidden border-none bg-slate-900 text-white shadow-2xl">
+          <CardContent className="p-8 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-start gap-5">
+                <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-md">
+                  <PartyPopper className="h-10 w-10 text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black tracking-tight">¡Bienvenido, {user?.companyName}!</h2>
+                  <p className="mt-2 text-slate-400 max-w-xl font-medium">
+                    Tu centro de mando está listo. Ya puedes empezar a gestionar tus servicios, configurar profesionales y recibir reservas en tiempo real.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold">¡Bienvenido a Flexibook, {user?.companyName || 'tu negocio'}!</h2>
-                <p className="mt-1 text-blue-100 max-w-2xl">
-                  Estamos muy felices de que hayas elegido nuestra plataforma. Tu cuenta de administrador está lista para que empieces a gestionar tus servicios y clientes.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
               <Button 
                 variant="secondary" 
-                className="bg-white text-blue-600 hover:bg-blue-50"
+                className="bg-white text-slate-900 hover:bg-slate-100 font-bold h-12 px-8 rounded-xl"
                 onClick={() => setShowWelcome(false)}
               >
                 Comenzar ahora
               </Button>
             </div>
-          </div>
-          {/* Decorative elements */}
-          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-8 left-1/2 h-24 w-24 rounded-full bg-white/5 blur-xl" />
-          <button 
-            onClick={() => setShowWelcome(false)}
-            className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+            <button 
+              onClick={() => setShowWelcome(false)}
+              className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </CardContent>
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/10 blur-[100px]" />
+          <div className="absolute -bottom-20 left-1/2 h-64 w-64 rounded-full bg-indigo-600/5 blur-[100px]" />
+        </Card>
       )}
 
-      {/* Welcome Section */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Panel de {user?.companyName || 'Control'}
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400">
-          Hola {user?.name || 'Administrador'}, aquí tienes un resumen de lo que está pasando hoy.
-        </p>
+      {/* Header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Resumen Ejecutivo</h1>
+        <p className="text-slate-500 font-medium">Hola {user?.name}, esto es lo que ha ocurrido en {user?.companyName} esta semana.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.name} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow">
+        {dashboardStats.map((stat) => (
+          <Card key={stat.name} className="border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden hover:border-slate-300 transition-all group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
                 {stat.name}
               </CardTitle>
-              <stat.icon className="h-4 w-4 text-slate-400" />
+              <stat.icon className="h-4 w-4 text-slate-400 group-hover:text-slate-900 transition-colors" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</div>
-              <div className="flex items-center gap-1 mt-1">
-                {stat.trend === "up" ? (
-                  <TrendingUp className="h-3 w-3 text-emerald-500" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-red-500" />
-                )}
-                <span className={cn(
-                  "text-xs font-medium",
-                  stat.trend === "up" ? "text-emerald-600" : "text-red-600"
-                )}>
-                  {stat.change}
+              <div className="text-2xl font-semibold text-slate-950">{stat.value}</div>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="flex items-center text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                  <TrendingUp className="h-3 w-3 mr-0.5" /> {stat.trend}
                 </span>
-                <span className="text-xs text-slate-400 ml-1">{stat.description}</span>
+                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{stat.desc}</span>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-7">
-        {/* Main Chart/Table Area */}
-        <Card className="lg:col-span-4 border-none shadow-sm">
-          <CardHeader>
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Trend Chart */}
+        <Card className="lg:col-span-4 border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden">
+          <CardHeader className="pb-0">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Reservas Recientes</CardTitle>
-                <CardDescription>Tienes 4 reservas programadas para las próximas 24 horas.</CardDescription>
+                <CardTitle className="text-lg font-semibold">Actividad Semanal</CardTitle>
+                <CardDescription className="text-xs">Número de reservas por día</CardDescription>
               </div>
-              <Button variant="outline" size="sm">Ver todas</Button>
+              <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                <div className="w-2 h-2 rounded-full bg-blue-600" /> Reservas
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Servicio</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Monto</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentReservations.map((res) => (
-                  <TableRow key={res.id}>
-                    <TableCell>
-                      <div className="font-medium">{res.client}</div>
-                      <div className="text-xs text-slate-500">{res.date}</div>
-                    </TableCell>
-                    <TableCell>{res.service}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={
-                          res.status === "Confirmada" ? "success" : 
-                          res.status === "Pendiente" ? "warning" : 
-                          "destructive"
-                        }
-                      >
-                        {res.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">{res.amount}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <CardContent className="h-[320px] pt-8">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRes" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fontWeight: 500, fill: '#94a3b8' }} 
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fontWeight: 500, fill: '#94a3b8' }} 
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: '500' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="reservas" 
+                  stroke="#2563eb" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorRes)" 
+                  animationDuration={2000}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Side Panels */}
-        <div className="lg:col-span-3 space-y-8">
-          {/* Active Assets Status */}
-          <Card className="border-none shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Estado de Activos</CardTitle>
-              <CardDescription>Uso de recursos en tiempo real</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-sm font-medium text-emerald-900 dark:text-emerald-300">Sala de Masajes 1</span>
-                </div>
-                <Badge variant="success">Libre</Badge>
+        {/* Recent Reservations Table */}
+        <Card className="lg:col-span-3 border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden flex flex-col">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold">Últimos Movimientos</CardTitle>
+                <CardDescription className="text-xs">Actualizado hace un momento</CardDescription>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="text-sm font-medium text-blue-900 dark:text-blue-300">Box Tratamiento 2</span>
-                </div>
-                <Badge className="bg-blue-500 text-white">En uso</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-slate-400" />
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Sala de Yoga</span>
-                </div>
-                <Badge variant="secondary">Cerrada</Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Tips/Help */}
-          <Card className="bg-blue-600 text-white border-none shadow-lg">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5" />
-                <CardTitle className="text-lg">Consejo de hoy</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-blue-100">
-                "Los clientes que reservan con más de 3 días de antelación tienen un 40% menos de probabilidad de cancelar. ¡Ofrece incentivos por reserva anticipada!"
-              </p>
-              <Button variant="secondary" size="sm" className="mt-4 w-full bg-white text-blue-600 hover:bg-blue-50">
-                Aprender más
+              <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-blue-600 hover:bg-blue-50">
+                Ver todo
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 flex-1">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableBody>
+                  {recentReservations.length > 0 ? recentReservations.map((res) => (
+                    <TableRow key={res.id} className="hover:bg-slate-50/50 border-slate-50 transition-colors">
+                      <TableCell className="py-4 pl-6">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-slate-900">{res.customerName || 'Anónimo'}</span>
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter">
+                            {new Date(res.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {servicios.find(s => s.id === res.serviceOfferingId)?.nombreServicio}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right pr-6">
+                        {getStatusBadge(res.estado)}
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan={2} className="h-48 text-center text-slate-400 font-medium">
+                        Sin actividad reciente
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+          <div className="p-6 pt-0 mt-auto">
+             <div className="bg-slate-50 rounded-xl p-4 flex items-center gap-4 border border-slate-100">
+                <div className="h-10 w-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-100">
+                  <Activity className="h-5 w-5" />
+                </div>
+                <div>
+                   <p className="text-xs font-semibold text-slate-900 uppercase">Sistema Operativo</p>
+                   <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-widest">Sincronización Activa</p>
+                </div>
+             </div>
+          </div>
+        </Card>
       </div>
     </div>
   )
