@@ -1,26 +1,32 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost/api'
+const USER_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api/user';
+const BACKOFFICE_API_URL = import.meta.env.VITE_BACKOFFICE_URL || 'http://localhost:8091/api/backoffice';
 
-const createClient = (basePath) => {
+const createClient = (baseURL) => {
   const client = axios.create({
-    baseURL: `${API_BASE_URL}${basePath}`,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    baseURL,
+  });
 
   client.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return config
-  })
+    return config;
+  });
 
-  return client
-}
+  return client;
+};
 
-export const authApi = createClient('/auth')
-export const bookingApi = createClient('/reservations')
-export const catalogApi = createClient('/catalog')
+export const authApi = createClient(`${USER_API_URL}/auth`);
+export const catalogApi = createClient(USER_API_URL);
+export const bookingApi = createClient(`${USER_API_URL}/reservas`);
+export const backofficeApi = createClient(BACKOFFICE_API_URL);
+
+export default {
+  authApi,
+  catalogApi,
+  bookingApi,
+  backofficeApi,
+};

@@ -52,10 +52,10 @@ export default function ActivosPanel() {
 
   function iniciarEdicion(activo) {
     setForm({
-      nombre: activo.nombre,
+      nombre: activo.nombreActivo,
       descripcion: activo.descripcion || '',
-      tipoActivoId: activo.tipoActivoId,
-      estadoDisponibilidadId: activo.estadoDisponibilidadId,
+      tipoActivoId: activo.tipoActivo,
+      estadoDisponibilidadId: activo.estadoDisponibilidad,
     })
     setEditingId(activo.id)
     setShowForm(true)
@@ -223,19 +223,19 @@ export default function ActivosPanel() {
                 <tr key={a.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{getTypeIcon(a.tipoActivoId)}</span>
+                      <span className="text-xl">{getTypeIcon(a.tipoActivo || '')}</span>
                       <div>
-                        <p className="font-medium text-gray-900">{a.nombre}</p>
+                        <p className="font-medium text-gray-900">{a.nombreActivo}</p>
                         {a.descripcion && <p className="text-xs text-gray-500">{a.descripcion}</p>}
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-600 capitalize">{a.tipoActivoId}</td>
+                  <td className="px-6 py-4 text-gray-600 capitalize">{a.tipoActivo}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(a.estadoDisponibilidadId)}`}>
-                        {a.estadoDisponibilidadId}
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(a.estadoDisponibilidad)}`}>
+                        {a.estadoDisponibilidad}
                       </span>
                     </div>
                   </td>

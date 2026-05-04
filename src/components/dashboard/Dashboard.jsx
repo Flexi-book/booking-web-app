@@ -1,282 +1,310 @@
-import { useState, useEffect } from 'react'
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { reservasApi } from '../../services/gestionService'
+import { useState, useEffect } from "react"
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Users, 
+  Calendar as CalendarIcon, 
+  DollarSign, 
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  MoreVertical,
+  PartyPopper,
+  X
+} from "lucide-react"
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card.jsx"
+import { Button } from "@/components/ui/button.jsx"
+import { Badge } from "@/components/ui/badge.jsx"
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table.jsx"
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs.jsx"
+import authService from '../../services/authService'
 
-const occupationData = [
-  { day: 'Lun', value: 65 },
-  { day: 'Mar', value: 59 },
-  { day: 'Mié', value: 80 },
-  { day: 'Jue', value: 81 },
-  { day: 'Vie', value: 56 },
-  { day: 'Sab', value: 85 },
-  { day: 'Dom', value: 73 },
+const stats = [
+  {
+    name: "Total Reservas",
+    value: "154",
+    change: "+12.5%",
+    trend: "up",
+    icon: CalendarIcon,
+    description: "Este mes"
+  },
+  {
+    name: "Ventas Totales",
+    value: "$2,450",
+    change: "+18.2%",
+    trend: "up",
+    icon: DollarSign,
+    description: "Últimos 30 días"
+  },
+  {
+    name: "Nuevos Clientes",
+    value: "28",
+    change: "-4.3%",
+    trend: "down",
+    icon: Users,
+    description: "Vs mes anterior"
+  },
+  {
+    name: "Tasa Ocupación",
+    value: "82%",
+    change: "+5.1%",
+    trend: "up",
+    icon: TrendingUp,
+    description: "Promedio semanal"
+  }
 ]
 
-const recentActivityMock = [
+const recentReservations = [
   {
-    id: 1,
-    type: 'reserva',
-    message: 'Nueva reserva confirmada',
-    detail: 'Lucia Sánchez - Masaje Relajante',
-    timestamp: 'Hace 5 minutos',
-    color: 'blue',
+    id: "RES-001",
+    client: "Juan Perez",
+    service: "Masaje Relajante",
+    date: "Hoy, 14:30",
+    status: "Confirmada",
+    amount: "$45"
   },
   {
-    id: 2,
-    type: 'cancelacion',
-    message: 'Cita cancelada',
-    detail: 'María López - Meditación Express',
-    timestamp: 'Hace 27 minutos',
-    color: 'red',
+    id: "RES-002",
+    client: "Maria Garcia",
+    service: "Tratamiento Facial",
+    date: "Hoy, 16:00",
+    status: "Pendiente",
+    amount: "$60"
   },
   {
-    id: 3,
-    type: 'pago',
-    message: 'Pago recibido',
-    detail: 'Transacción #0021 - $45.00',
-    timestamp: 'Hace 2 horas',
-    color: 'green',
+    id: "RES-003",
+    client: "Carlos Ruiz",
+    service: "Yoga Sesión",
+    date: "Mañana, 09:00",
+    status: "Cancelada",
+    amount: "$15"
   },
   {
-    id: 4,
-    type: 'recordatorio',
-    message: 'Recordatorio enviado',
-    detail: 'SMS enviado a 12 clientes de mañana',
-    timestamp: 'Hace 2 horas',
-    color: 'amber',
-  },
-]
-
-const upcomingReservations = [
-  {
-    id: 1,
-    client: 'Lucia Sánchez',
-    service: 'Masaje Relajante (60min)',
-    time: 'Hoy, 16:30',
-    status: 'Confirmada',
-    statusColor: 'bg-green-100 text-green-800',
-  },
-  {
-    id: 2,
-    client: 'Roberto Pérez',
-    service: 'Limpieza Facial Profunda',
-    time: 'Hoy, 18:00',
-    status: 'En Curso',
-    statusColor: 'bg-blue-100 text-blue-800',
-  },
-  {
-    id: 3,
-    client: 'Ana Martínez',
-    service: 'Manicura Permanente',
-    time: 'Mañana, 10:00',
-    status: 'Pendiente',
-    statusColor: 'bg-yellow-100 text-yellow-800',
-  },
+    id: "RES-004",
+    client: "Ana Lopez",
+    service: "Manicura Premium",
+    date: "Mañana, 11:30",
+    status: "Confirmada",
+    amount: "$25"
+  }
 ]
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({
-    reservasHoy: 42,
-    ingresos: 2450,
-    cancelaciones: 3,
-    pendientes: 1250,
-  })
-  const [reservas, setReservas] = useState([])
+  const [user, setUser] = useState(authService.getUser())
+  const [showWelcome, setShowWelcome] = useState(false)
 
   useEffect(() => {
-    cargarReservas()
-  }, [])
-
-  async function cargarReservas() {
-    try {
-      const data = await reservasApi.listar()
-      setReservas(data.slice(0, 3))
-    } catch (err) {
-      console.error('Error cargando reservas:', err)
+    if (user?.isNewUser) {
+      setShowWelcome(true)
+      // Limpiar el flag después de mostrarlo una vez
+      const updatedUser = { ...user, isNewUser: false }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
     }
-  }
-
-  const StatCard = ({ label, value, trend, icon: Icon, color }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-600 text-sm font-medium">{label}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
-          <p className={`text-xs mt-2 ${trend.includes('+') ? 'text-green-600' : 'text-red-600'}`}>
-            {trend}
-          </p>
-        </div>
-        <div className={`p-3 rounded-lg ${color}`}>
-          <Icon className="w-8 h-8 text-white" />
-        </div>
-      </div>
-    </div>
-  )
-
-  const ActivityIcon = ({ type }) => {
-    switch (type) {
-      case 'reserva':
-        return <div className="w-2 h-2 bg-blue-500 rounded-full" />
-      case 'cancelacion':
-        return <div className="w-2 h-2 bg-red-500 rounded-full" />
-      case 'pago':
-        return <div className="w-2 h-2 bg-green-500 rounded-full" />
-      case 'recordatorio':
-        return <div className="w-2 h-2 bg-amber-500 rounded-full" />
-      default:
-        return null
-    }
-  }
+  }, [user])
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Bienvenido de nuevo, aquí tienes el resumen de hoy.</p>
-        </div>
-        <button className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
-          <span>+</span> Nueva Reserva
-        </button>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          label="Reservas del día"
-          value="42"
-          trend="↑ 12% vs ayer"
-          icon={({ className }) => (
-            <svg className={className} fill="currentColor" viewBox="0 0 20 20">
-              <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5H4v8a2 2 0 002 2h12a2 2 0 002-2V7h-2v1a1 1 0 11-2 0V7H9v1a1 1 0 11-2 0V7H6v1a1 1 0 11-2 0V7z"></path>
-            </svg>
-          )}
-          color="bg-blue-600"
-        />
-        <StatCard
-          label="Ingresos"
-          value="$2,450"
-          trend="↑ 8% vs sem. pasada"
-          icon={({ className }) => (
-            <svg className={className} fill="currentColor" viewBox="0 0 20 20">
-              <path d="M8.16 5.314l4.897-4.796A1 1 0 0115 4.03V14a2 2 0 01-2 2H3a2 2 0 01-2-2V6a2 2 0 012-2h10.16z"></path>
-            </svg>
-          )}
-          color="bg-green-600"
-        />
-        <StatCard
-          label="Cancelaciones"
-          value="3"
-          trend="↓ 2% vs ayer"
-          icon={({ className }) => (
-            <svg className={className} fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path>
-            </svg>
-          )}
-          color="bg-red-600"
-        />
-        <StatCard
-          label="Reservas Pendientes"
-          value="1,250"
-          trend="↑ 15% vs mês ant."
-          icon={({ className }) => (
-            <svg className={className} fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
-            </svg>
-          )}
-          color="bg-amber-600"
-        />
-      </div>
-
-      {/* Charts and Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Occupation Chart */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Ocupación Semanal</h2>
-          <p className="text-gray-600 text-sm mb-4">Porcentaje de capacidad ocupada por día</p>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={occupationData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="day" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                }}
-              />
-              <Bar dataKey="value" fill="#0674f6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Actividad Reciente</h2>
-          <div className="space-y-4">
-            {recentActivityMock.map((activity) => (
-              <div key={activity.id} className="flex gap-3 pb-4 border-b border-gray-200 last:border-b-0 last:pb-0">
-                <ActivityIcon type={activity.type} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm">{activity.message}</p>
-                  <p className="text-xs text-gray-600 mt-1">{activity.detail}</p>
-                  <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
-                </div>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* New User Welcome Banner */}
+      {showWelcome && (
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white shadow-lg shadow-blue-200">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="rounded-full bg-white/20 p-3 backdrop-blur-sm">
+                <PartyPopper className="h-8 w-8 text-white" />
               </div>
-            ))}
-            <a href="#" className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 block">
-              Ver todo el historial →
-            </a>
+              <div>
+                <h2 className="text-2xl font-bold">¡Bienvenido a Flexibook, {user?.companyName || 'tu negocio'}!</h2>
+                <p className="mt-1 text-blue-100 max-w-2xl">
+                  Estamos muy felices de que hayas elegido nuestra plataforma. Tu cuenta de administrador está lista para que empieces a gestionar tus servicios y clientes.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                variant="secondary" 
+                className="bg-white text-blue-600 hover:bg-blue-50"
+                onClick={() => setShowWelcome(false)}
+              >
+                Comenzar ahora
+              </Button>
+            </div>
           </div>
+          {/* Decorative elements */}
+          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+          <div className="absolute -bottom-8 left-1/2 h-24 w-24 rounded-full bg-white/5 blur-xl" />
+          <button 
+            onClick={() => setShowWelcome(false)}
+            className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
+      )}
+
+      {/* Welcome Section */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+          Panel de {user?.companyName || 'Control'}
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400">
+          Hola {user?.name || 'Administrador'}, aquí tienes un resumen de lo que está pasando hoy.
+        </p>
       </div>
 
-      {/* Upcoming Reservations */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Próximas Reservas</h2>
-          </div>
-          <a href="#" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-            Ver Calendario →
-          </a>
-        </div>
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.name} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                {stat.name}
+              </CardTitle>
+              <stat.icon className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</div>
+              <div className="flex items-center gap-1 mt-1">
+                {stat.trend === "up" ? (
+                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-red-500" />
+                )}
+                <span className={cn(
+                  "text-xs font-medium",
+                  stat.trend === "up" ? "text-emerald-600" : "text-red-600"
+                )}>
+                  {stat.change}
+                </span>
+                <span className="text-xs text-slate-400 ml-1">{stat.description}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">CLIENTE</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">SERVICIO</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">FECHA / HORA</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">ESTADO</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {upcomingReservations.map((res) => (
-                <tr key={res.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{res.client}</td>
-                  <td className="px-6 py-4 text-gray-600">{res.service}</td>
-                  <td className="px-6 py-4 text-gray-600">{res.time}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${res.statusColor}`}>
-                      {res.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button className="text-blue-600 hover:text-blue-700 text-xs font-medium">
-                      ⋮
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="grid gap-8 lg:grid-cols-7">
+        {/* Main Chart/Table Area */}
+        <Card className="lg:col-span-4 border-none shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Reservas Recientes</CardTitle>
+                <CardDescription>Tienes 4 reservas programadas para las próximas 24 horas.</CardDescription>
+              </div>
+              <Button variant="outline" size="sm">Ver todas</Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Servicio</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Monto</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentReservations.map((res) => (
+                  <TableRow key={res.id}>
+                    <TableCell>
+                      <div className="font-medium">{res.client}</div>
+                      <div className="text-xs text-slate-500">{res.date}</div>
+                    </TableCell>
+                    <TableCell>{res.service}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={
+                          res.status === "Confirmada" ? "success" : 
+                          res.status === "Pendiente" ? "warning" : 
+                          "destructive"
+                        }
+                      >
+                        {res.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">{res.amount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Side Panels */}
+        <div className="lg:col-span-3 space-y-8">
+          {/* Active Assets Status */}
+          <Card className="border-none shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg">Estado de Activos</CardTitle>
+              <CardDescription>Uso de recursos en tiempo real</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-sm font-medium text-emerald-900 dark:text-emerald-300">Sala de Masajes 1</span>
+                </div>
+                <Badge variant="success">Libre</Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-300">Box Tratamiento 2</span>
+                </div>
+                <Badge className="bg-blue-500 text-white">En uso</Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-slate-400" />
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Sala de Yoga</span>
+                </div>
+                <Badge variant="secondary">Cerrada</Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Tips/Help */}
+          <Card className="bg-blue-600 text-white border-none shadow-lg">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                <CardTitle className="text-lg">Consejo de hoy</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-blue-100">
+                "Los clientes que reservan con más de 3 días de antelación tienen un 40% menos de probabilidad de cancelar. ¡Ofrece incentivos por reserva anticipada!"
+              </p>
+              <Button variant="secondary" size="sm" className="mt-4 w-full bg-white text-blue-600 hover:bg-blue-50">
+                Aprender más
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
   )
+}
+
+function cn(...inputs) {
+  return inputs.filter(Boolean).join(" ")
 }

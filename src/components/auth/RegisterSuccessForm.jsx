@@ -1,96 +1,97 @@
-import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle2, Mail, ArrowRight, Home } from "lucide-react"
 
 export default function RegisterSuccessForm() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [email] = useState(location.state?.email || 'tu email')
+  const [seconds, setSeconds] = useState(5)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          navigate('/login')
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [navigate])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center mb-4">
-            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-14 h-14 object-contain" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Bienvenido a Flexibook</h1>
-          <p className="text-gray-600 text-sm sm:text-base">¡Tu cuenta ha sido creada exitosamente!</p>
-        </div>
-
-        {/* Success Card */}
-        <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
-          {/* Confirmation Message */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center space-y-3">
-            <p className="text-sm text-gray-700">
-              Hemos enviado un email de confirmación a:
-            </p>
-            <p className="font-semibold text-lg text-gray-900 break-all">{email}</p>
-            <p className="text-xs text-gray-500">
-              Revisa tu bandeja de entrada para confirmar tu cuenta
-            </p>
-          </div>
-
-          {/* What's Next */}
-          <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900 text-lg">Próximos pasos:</h2>
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-sm font-bold text-blue-600">1</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Confirma tu email</p>
-                  <p className="text-xs text-gray-600">Abre el enlace que enviamos a tu bandeja</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-sm font-bold text-blue-600">2</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Inicia sesión</p>
-                  <p className="text-xs text-gray-600">Usa tus credenciales para acceder</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-sm font-bold text-blue-600">3</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Comienza a gestionar</p>
-                  <p className="text-xs text-gray-600">Administra tus activos, servicios y reservas</p>
-                </div>
+        <Card className="border-none shadow-xl shadow-slate-200/60 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="text-center pb-2">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="w-10 h-10 text-green-600" />
               </div>
             </div>
-          </div>
+            <CardTitle className="text-2xl font-bold text-slate-900">¡Cuenta Creada!</CardTitle>
+            <CardDescription className="text-base">
+              Tu registro se ha completado con éxito
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-4">
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-slate-500">Hemos enviado un correo a:</p>
+                <p className="font-semibold text-slate-900 break-all">{email}</p>
+              </div>
+            </div>
 
-          <Link
-            to="/login"
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition inline-block text-center"
-          >
-            Volver al login
-          </Link>
-        </div>
-
-        {/* Support Info */}
-        <div className="mt-8 bg-white rounded-lg p-4 text-center">
-          <p className="text-sm text-gray-600 mb-2">¿Necesitas ayuda?</p>
-          <div className="flex justify-center gap-4 text-xs">
-            <a href="#" className="text-blue-600 hover:text-blue-700 transition font-medium">Centro de Ayuda</a>
-            <span className="text-gray-300">•</span>
-            <a href="#" className="text-blue-600 hover:text-blue-700 transition font-medium">Contactar Soporte</a>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-xs text-gray-500 space-y-1">
-          <p>© 2024 Flexibook. Todos los derechos reservados.</p>
-          <div className="flex justify-center gap-4">
-            <a href="#" className="hover:text-gray-700 transition">Privacidad</a>
-            <a href="#" className="hover:text-gray-700 transition">Términos</a>
-            <a href="#" className="hover:text-gray-700 transition">Soporte</a>
-          </div>
-        </div>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-slate-900">¿Qué sigue ahora?</h3>
+              <ul className="space-y-3">
+                {[
+                  { step: "1", text: "Confirma tu dirección de correo" },
+                  { step: "2", text: "Inicia sesión con tu nueva cuenta" },
+                  { step: "3", text: "Configura tus primeros servicios" }
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                    <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                      {item.step}
+                    </span>
+                    {item.text}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button 
+              asChild 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
+            >
+              <Link to="/login">
+                Ir al Inicio de Sesión
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </Button>
+            <div className="text-center">
+              <p className="text-xs text-slate-400">
+                Serás redirigido automáticamente en <span className="font-bold text-slate-600">{seconds}s</span>
+              </p>
+            </div>
+            <Button asChild variant="ghost" className="text-slate-500 hover:text-slate-700">
+              <Link to="/">
+                <Home className="mr-2 w-4 h-4" />
+                Volver al Inicio
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )

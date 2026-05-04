@@ -63,7 +63,7 @@ export default function ServiciosPanel() {
       descripcion: s.descripcion || '',
       duracionMinutos: s.duracionMinutos,
       precio: s.precio,
-      estadoServicioId: s.estadoServicioId,
+      estadoServicioId: s.estado,
     })
     setEditingId(s.id)
     setShowForm(true)
@@ -429,11 +429,11 @@ export default function ServiciosPanel() {
                   <td className="px-6 py-4 text-gray-600 font-semibold">€{Number(s.precio).toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      s.estadoServicioId === 'activo' ? 'bg-green-100 text-green-700' :
-                      s.estadoServicioId === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
+                      s.estado?.toLowerCase() === 'activo' ? 'bg-green-100 text-green-700' :
+                      s.estado?.toLowerCase() === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
-                      {s.estadoServicioId}
+                      {s.estado || 'activo'}
                     </span>
                   </td>
                   <td className="px-6 py-4 flex gap-3">

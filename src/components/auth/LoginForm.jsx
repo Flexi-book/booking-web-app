@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
+import { Button } from "@/components/ui/button"
+import { LoadingScreen } from "@/components/ui/loading-screen"
+import { ArrowLeft } from "lucide-react"
 
 export default function LoginForm() {
   const navigate = useNavigate()
@@ -18,16 +21,32 @@ export default function LoginForm() {
 
     try {
       await authService.login(email, password)
-      navigate('/dashboard')
+      navigate('/admin/dashboard')
     } catch (err) {
-      setError(err.response?.data || 'Error al iniciar sesión')
+      setError(err.response?.data || 'Credenciales incorrectas. Intenta nuevamente.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+      <LoadingScreen
+        visible={loading}
+        title="Iniciando sesión..."
+        description="Verificando tus credenciales. Por favor espera un momento."
+      />
+      <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Volver al inicio</span>
+        </Button>
+      </div>
+
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-10">
@@ -128,7 +147,7 @@ export default function LoginForm() {
           </div>
 
           {/* Google Login */}
-          <GoogleLoginButton />
+          <GoogleLoginButton setLoading={setLoading} />
 
           {/* Register Link */}
           <p className="text-center text-gray-600 text-sm">

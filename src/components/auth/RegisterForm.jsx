@@ -1,5 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { LoadingScreen } from "@/components/ui/loading-screen"
+import { Loader2, ArrowRight, UserPlus, Building2, Mail, Lock, User } from "lucide-react"
 import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
 
@@ -61,197 +68,212 @@ export default function RegisterForm() {
         userEmail: data.correoUsuario,
         password: data.password,
       }
+      
+      console.log('Enviando registro:', dataToSend)
       await authService.register(dataToSend)
-      navigate('/register-success', { state: { email: formData.correoUsuario } })
+      console.log('Registro exitoso, navegando...')
+      
+      navigate('/register-success', { 
+        state: { email: formData.correoUsuario },
+        replace: true 
+      })
     } catch (err) {
-      setError(err.response?.data || 'Error al registrarse')
+      console.error('Error en registro:', err)
+      const errorMessage = typeof err.response?.data === 'string' 
+        ? err.response.data 
+        : err.response?.data?.message || 'Error al conectar con el servidor'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center mb-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <LoadingScreen
+        visible={loading}
+        title="Creando tu cuenta..."
+        description="Estamos registrando tu empresa en Flexibook. Solo tomará un momento."
+      />
+      <div className="w-full max-w-lg">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Link to="/" className="flex items-center gap-2">
             <img src="/flexibook-logo.svg" alt="Flexibook" className="w-14 h-14 object-contain" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Bienvenido a Flexibook</h1>
-          <p className="text-gray-600 text-sm sm:text-base">Crea tu cuenta de administrador</p>
+            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
+              Flexibook
+            </span>
+          </Link>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
-          {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-              <p className="text-sm font-medium text-red-800">{error}</p>
-            </div>
-          )}
+<<<<<<< HEAD
+        <Card className="border-none shadow-xl shadow-slate-200/60 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold">Crea tu cuenta</CardTitle>
+            <CardDescription>
+              Comienza a gestionar tu negocio hoy mismo
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {error && (
+              <Alert variant="destructive" className="bg-red-50 border-red-100">
+                <AlertDescription className="text-red-800 font-medium">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <div>
-            <GoogleLoginButton isRegister={true} />
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Datos de Empresa */}
+                <div className="space-y-4 col-span-1 md:col-span-2">
+                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm border-b pb-2">
+                    <Building2 className="w-4 h-4" />
+                    Información del Negocio
+                  </div>
+                </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-gray-500 font-medium">O completa el formulario</span>
-            </div>
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nombreEmpresa">Nombre del Negocio</Label>
+                  <Input
+                    id="nombreEmpresa"
+                    name="nombreEmpresa"
+                    placeholder="Mi Local"
+                    required
+                    value={formData.nombreEmpresa}
+                    onChange={handleChange}
+                  />
+                </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="nombreEmpresa" className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del Negocio
-              </label>
-              <input
-                id="nombreEmpresa"
-                name="nombreEmpresa"
-                type="text"
-                required
-                placeholder="Ej. Mi Studio Fitness"
-                value={formData.nombreEmpresa}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tipoNegocio">Rubro / Tipo</Label>
+                  <Input
+                    id="tipoNegocio"
+                    name="tipoNegocio"
+                    placeholder="Barbería, Gym, etc."
+                    required
+                    value={formData.tipoNegocio}
+                    onChange={handleChange}
+                  />
+                </div>
 
-            <div>
-              <label htmlFor="tipoNegocio" className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Negocio
-              </label>
-              <select
-                id="tipoNegocio"
-                name="tipoNegocio"
-                required
-                value={formData.tipoNegocio}
-                onChange={handleChange}
-                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition appearance-none"
+                <div className="space-y-2 col-span-1 md:col-span-2">
+                  <Label htmlFor="correoContacto">Email de la Empresa</Label>
+                  <Input
+                    id="correoContacto"
+                    name="correoContacto"
+                    type="email"
+                    placeholder="contacto@miempresa.com"
+                    required
+                    value={formData.correoContacto}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Datos de Usuario */}
+                <div className="space-y-4 col-span-1 md:col-span-2 mt-4">
+                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm border-b pb-2">
+                    <User className="w-4 h-4" />
+                    Cuenta Administrador
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nombreUsuario">Tu Nombre</Label>
+                  <Input
+                    id="nombreUsuario"
+                    name="nombreUsuario"
+                    placeholder="Ej. Juan Pérez"
+                    required
+                    value={formData.nombreUsuario}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="correoUsuario">Email de Acceso</Label>
+                  <Input
+                    id="correoUsuario"
+                    name="correoUsuario"
+                    type="email"
+                    placeholder="admin@miempresa.com"
+                    required
+                    value={formData.correoUsuario}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6" 
+                disabled={loading}
               >
-                <option value="" disabled>
-                  Selecciona un tipo de negocio
-                </option>
-                {BUSINESS_TYPES.map((businessType) => (
-                  <option key={businessType} value={businessType}>
-                    {businessType}
-                  </option>
-                ))}
-              </select>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creando cuenta...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Crear Cuenta
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground">O continúa con</span>
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="correoContacto" className="block text-sm font-medium text-gray-700 mb-2">
-                Email de Contacto
-              </label>
-              <input
-                id="correoContacto"
-                name="correoContacto"
-                type="email"
-                required
-                placeholder="contacto@empresa.com"
-                value={formData.correoContacto}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
+            <GoogleLoginButton isRegister={true} setLoading={setLoading} />
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="text-sm text-center text-slate-600">
+              ¿Ya tienes cuenta?{' '}
+              <Link to="/login" className="text-blue-600 font-semibold hover:underline">
+                Inicia sesión
+              </Link>
             </div>
-
-            <div>
-              <label htmlFor="nombreUsuario" className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre de Usuario
-              </label>
-              <input
-                id="nombreUsuario"
-                name="nombreUsuario"
-                type="text"
-                required
-                placeholder="Tu nombre"
-                value={formData.nombreUsuario}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="correoUsuario" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Corporativo
-              </label>
-              <input
-                id="correoUsuario"
-                name="correoUsuario"
-                type="email"
-                required
-                placeholder="admin@empresa.com"
-                value={formData.correoUsuario}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                minLength="8"
-                placeholder="Mínimo 8 caracteres"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirmar Contraseña
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                minLength="8"
-                placeholder="Confirma tu contraseña"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-            >
-              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-            </button>
-          </form>
-
-          <p className="text-center text-gray-600 text-sm">
-            ¿Ya tienes cuenta?{' '}
-            <Link
-              to="/login"
-              className="font-semibold text-blue-600 hover:text-blue-700 transition"
-            >
-              Inicia sesión
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-8 text-center text-xs text-gray-500 space-y-1">
-          <p>© 2024 Flexibook. Todos los derechos reservados.</p>
-          <div className="flex justify-center gap-4">
-            <a href="#" className="hover:text-gray-700 transition">Privacidad</a>
-            <a href="#" className="hover:text-gray-700 transition">Términos</a>
-            <a href="#" className="hover:text-gray-700 transition">Soporte</a>
-          </div>
-        </div>
+            <p className="text-xs text-center text-slate-400 px-8">
+              Al registrarte, aceptas nuestros Términos de Servicio y Política de Privacidad.
+            </p>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )
 }
+
