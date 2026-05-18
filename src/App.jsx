@@ -12,6 +12,7 @@ import ServiciosPanel from './components/admin/ServiciosPanel'
 import ReservasPanel from './components/reservas/ReservasPanel'
 import ConfigPanel from './components/admin/ConfigPanel'
 import NotificacionesPanel from './components/admin/NotificacionesPanel'
+import TimelinePanel from './components/admin/TimelinePanel'
 import authService from './services/authService'
 
 function ProtectedRoute({ children }) {
@@ -50,7 +51,7 @@ export default function App() {
           <Route path="servicios" element={<ServiciosPanel />} />
           <Route path="config" element={<ConfigPanel />} />
           <Route path="notificaciones" element={<NotificacionesPanel />} />
-          <Route path="historial" element={<div className="p-8 text-center text-slate-500">Historial — Próximamente</div>} />
+          <Route path="historial" element={<TimelinePanel />} />
         </Route>
 
         <Route path="/empresa/:empresaId" element={<PublicBookingPage />} />
