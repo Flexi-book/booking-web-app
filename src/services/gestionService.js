@@ -1,9 +1,5 @@
 import { bookingApi, catalogApi } from '../api/apiClients'
 
-<<<<<<< HEAD
-const GESTION_URL = 'http://localhost:8090/api/user'
-=======
->>>>>>> 2a370b3 (feat: integrate frontend with backend services (auth, catalog, booking))
 
 export const activosApi = {
   listar: () =>

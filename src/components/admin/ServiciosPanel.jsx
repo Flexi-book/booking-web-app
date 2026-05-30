@@ -1,74 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useCrudPanel } from '../../hooks/useCrudPanel'
 import { serviciosApi } from '../../services/gestionService'
+import ErrorBanner from '../common/ErrorBanner'
+import { serviceStatusColor } from '../../utils/statusColors'
 
 const emptyForm = { nombreServicio: '', descripcion: '', duracionMinutos: 30, precio: 0, estadoServicioId: 'activo' }
 
+const mapItemToForm = (s) => ({
+  nombreServicio: s.nombreServicio,
+  descripcion: s.descripcion || '',
+  duracionMinutos: s.duracionMinutos,
+  precio: s.precio,
+  estadoServicioId: s.estadoServicioId,
+})
+
 export default function ServiciosPanel() {
-  const [servicios, setServicios] = useState([])
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [showForm, setShowForm] = useState(false)
-
-  useEffect(() => { cargar() }, [])
-
-  async function cargar() {
-    setLoading(true)
-    try {
-      setServicios(await serviciosApi.listar())
-    } catch {
-      setError('Error al cargar servicios')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function iniciarEdicion(s) {
-    setForm({
-      nombreServicio: s.nombreServicio,
-      descripcion: s.descripcion || '',
-      duracionMinutos: s.duracionMinutos,
-      precio: s.precio,
-      estadoServicioId: s.estadoServicioId,
-    })
-    setEditingId(s.id)
-    setShowForm(true)
-    setError('')
-  }
-
-  function cancelar() {
-    setForm(emptyForm)
-    setEditingId(null)
-    setShowForm(false)
-    setError('')
-  }
-
-  async function guardar(e) {
-    e.preventDefault()
-    setError('')
-    try {
-      if (editingId) {
-        await serviciosApi.actualizar(editingId, form)
-      } else {
-        await serviciosApi.crear(form)
-      }
-      cancelar()
-      cargar()
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar servicio')
-    }
-  }
-
-  async function eliminar(id) {
-    if (!confirm('¿Eliminar este servicio?')) return
-    try {
-      await serviciosApi.eliminar(id)
-      cargar()
-    } catch {
-      setError('Error al eliminar servicio')
-    }
-  }
+  const { items: servicios, form, setForm, editingId, loading, error, showForm, setShowForm, iniciarEdicion, cancelar, guardar, eliminar } =
+    useCrudPanel(serviciosApi, emptyForm, mapItemToForm)
 
   return (
     <div className="space-y-6">
@@ -87,11 +34,7 @@ export default function ServiciosPanel() {
         )}
       </div>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-800">{error}</p>
-        </div>
-      )}
+      <ErrorBanner message={error} />
 
       {showForm && (
         <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
@@ -197,11 +140,7 @@ export default function ServiciosPanel() {
                   </td>
                   <td className="px-6 py-4 text-gray-600 font-semibold">€{Number(s.precio).toFixed(2)}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      s.estadoServicioId === 'activo' ? 'bg-green-100 text-green-700' :
-                      s.estadoServicioId === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${serviceStatusColor(s.estadoServicioId)}`}>
                       {s.estadoServicioId}
                     </span>
                   </td>
@@ -209,7 +148,7 @@ export default function ServiciosPanel() {
                     <button onClick={() => iniciarEdicion(s)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">
                       Editar
                     </button>
-                    <button onClick={() => eliminar(s.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
+                    <button onClick={() => eliminar(s.id, '¿Eliminar este servicio?')} className="text-red-600 hover:text-red-700 font-medium text-xs">
                       Eliminar
                     </button>
                   </td>

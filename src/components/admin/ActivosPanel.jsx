@@ -1,107 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useCrudPanel } from '../../hooks/useCrudPanel'
 import { activosApi } from '../../services/gestionService'
+import ErrorBanner from '../common/ErrorBanner'
+import { assetStatusColor, assetTypeIcon } from '../../utils/statusColors'
 
 const TIPOS = ['Espacio', 'Personal', 'Equipo']
 const ESTADOS = ['Disponible', 'No disponible', 'En mantenimiento']
-
 const emptyForm = { nombre: '', descripcion: '', tipoActivoId: 'Espacio', estadoDisponibilidadId: 'Disponible' }
 
+const mapItemToForm = (a) => ({
+  nombre: a.nombre,
+  descripcion: a.descripcion || '',
+  tipoActivoId: a.tipoActivoId,
+  estadoDisponibilidadId: a.estadoDisponibilidadId,
+})
+
 export default function ActivosPanel() {
-  const [activos, setActivos] = useState([])
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [showForm, setShowForm] = useState(false)
-
-  useEffect(() => { cargar() }, [])
-
-  async function cargar() {
-    setLoading(true)
-    try {
-      setActivos(await activosApi.listar())
-    } catch {
-      setError('Error al cargar activos')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function iniciarEdicion(activo) {
-    setForm({
-      nombre: activo.nombre,
-      descripcion: activo.descripcion || '',
-      tipoActivoId: activo.tipoActivoId,
-      estadoDisponibilidadId: activo.estadoDisponibilidadId,
-    })
-    setEditingId(activo.id)
-    setShowForm(true)
-    setError('')
-  }
-
-  function cancelar() {
-    setForm(emptyForm)
-    setEditingId(null)
-    setShowForm(false)
-    setError('')
-  }
-
-  async function guardar(e) {
-    e.preventDefault()
-    setError('')
-    try {
-      if (editingId) {
-        await activosApi.actualizar(editingId, form)
-      } else {
-        await activosApi.crear(form)
-      }
-      cancelar()
-      cargar()
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar activo')
-    }
-  }
-
-  async function eliminar(id) {
-    if (!confirm('¿Eliminar este activo?')) return
-    try {
-      await activosApi.eliminar(id)
-      cargar()
-    } catch {
-      setError('Error al eliminar activo')
-    }
-  }
-
-  const getStatusColor = (estado) => {
-    switch(estado) {
-      case 'Disponible':
-      case 'disponible':
-        return 'bg-green-100 text-green-700'
-      case 'No disponible':
-      case 'no_disponible':
-        return 'bg-red-100 text-red-700'
-      case 'En mantenimiento':
-      case 'inactivo':
-        return 'bg-orange-100 text-orange-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
-    }
-  }
-
-  const getTypeIcon = (tipo) => {
-    switch(tipo.toLowerCase()) {
-      case 'espacio':
-      case 'sala':
-        return '📍'
-      case 'personal':
-      case 'profesional':
-        return '👤'
-      case 'equipo':
-        return '⚙️'
-      default:
-        return '📦'
-    }
-  }
+  const { items: activos, form, setForm, editingId, loading, error, showForm, setShowForm, iniciarEdicion, cancelar, guardar, eliminar } =
+    useCrudPanel(activosApi, emptyForm, mapItemToForm)
 
   return (
     <div className="space-y-6">
@@ -120,11 +35,7 @@ export default function ActivosPanel() {
         )}
       </div>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-800">{error}</p>
-        </div>
-      )}
+      <ErrorBanner message={error} />
 
       {showForm && (
         <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
@@ -205,7 +116,7 @@ export default function ActivosPanel() {
                 <tr key={a.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{getTypeIcon(a.tipoActivoId)}</span>
+                      <span className="text-xl">{assetTypeIcon(a.tipoActivoId)}</span>
                       <div>
                         <p className="font-medium text-gray-900">{a.nombre}</p>
                         {a.descripcion && <p className="text-xs text-gray-500">{a.descripcion}</p>}
@@ -216,7 +127,7 @@ export default function ActivosPanel() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(a.estadoDisponibilidadId)}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${assetStatusColor(a.estadoDisponibilidadId)}`}>
                         {a.estadoDisponibilidadId}
                       </span>
                     </div>
@@ -225,7 +136,7 @@ export default function ActivosPanel() {
                     <button onClick={() => iniciarEdicion(a)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">
                       Editar
                     </button>
-                    <button onClick={() => eliminar(a.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
+                    <button onClick={() => eliminar(a.id, '¿Eliminar este activo?')} className="text-red-600 hover:text-red-700 font-medium text-xs">
                       Eliminar
                     </button>
                   </td>

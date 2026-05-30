@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
+import ErrorBanner from '../common/ErrorBanner'
+import { reservationStatusColor } from '../../utils/statusColors'
 
 const emptyForm = { serviceOfferingId: '', assetId: '', customerName: '', customerEmail: '', customerPhone: '', startTime: '', note: '' }
 
@@ -14,21 +16,26 @@ export default function ReservasPanel() {
   const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
-    cargar()
-    activosApi.listar().then(setActivos).catch(() => {})
-    serviciosApi.listar().then(setServicios).catch(() => {})
+    setLoading(true)
+    Promise.all([reservasApi.listar(), activosApi.listar(), serviciosApi.listar()])
+      .then(([reservasList, activosList, serviciosList]) => {
+        setReservas(reservasList)
+        setActivos(activosList)
+        setServicios(serviciosList)
+      })
+      .catch(() => setError('Error al cargar datos'))
+      .finally(() => setLoading(false))
   }, [])
 
-  async function cargar() {
-    setLoading(true)
-    try {
-      setReservas(await reservasApi.listar())
-    } catch {
-      setError('Error al cargar reservas')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const servicioById = useMemo(
+    () => Object.fromEntries(servicios.map(s => [s.id, s])),
+    [servicios]
+  )
+
+  const servicioSeleccionado = useMemo(
+    () => servicios.find(s => s.id === form.serviceOfferingId),
+    [servicios, form.serviceOfferingId]
+  )
 
   async function crearReserva(e) {
     e.preventDefault()
@@ -48,7 +55,7 @@ export default function ReservasPanel() {
       setSuccess('Reserva creada correctamente')
       setForm(emptyForm)
       setShowForm(false)
-      cargar()
+      reservasApi.listar().then(setReservas).catch(() => {})
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data || 'Error al crear reserva'
       setError(typeof msg === 'string' ? msg : 'Horario no disponible — el activo ya tiene una reserva en ese horario.')
@@ -60,26 +67,9 @@ export default function ReservasPanel() {
     setError('')
     try {
       await reservasApi.cancelar(id)
-      cargar()
+      reservasApi.listar().then(setReservas).catch(() => {})
     } catch {
       setError('Error al cancelar reserva')
-    }
-  }
-
-  const servicioSeleccionado = servicios.find(s => s.id === form.serviceOfferingId)
-
-  const getStatusColor = (estado) => {
-    switch(estado) {
-      case 'confirmada':
-        return 'bg-green-100 text-green-700'
-      case 'pendiente':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'cancelada':
-        return 'bg-red-100 text-red-700'
-      case 'completada':
-        return 'bg-blue-100 text-blue-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
     }
   }
 
@@ -100,11 +90,7 @@ export default function ReservasPanel() {
         )}
       </div>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-800">{error}</p>
-        </div>
-      )}
+      <ErrorBanner message={error} />
 
       {success && (
         <div className="rounded-lg bg-green-50 border border-green-200 p-4">
@@ -228,13 +214,13 @@ export default function ReservasPanel() {
                     <p className="text-xs text-gray-500">{r.clienteCorreo || ''}</p>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {servicios.find(s => s.id === r.servicioId)?.nombreServicio || '—'}
+                    {servicioById[r.servicioId]?.nombreServicio || '—'}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
                     {r.fechaInicio ? new Date(r.fechaInicio).toLocaleString('es-CL') : '—'}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(r.estado || 'pendiente')}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${reservationStatusColor(r.estado || 'pendiente')}`}>
                       {r.estado || 'Pendiente'}
                     </span>
                   </td>
