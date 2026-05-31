@@ -5,7 +5,19 @@ import { format, isSameDay, startOfMonth, endOfMonth } from 'date-fns'
 import { Clock, User, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { reservasApi, serviciosApi } from '../../services/gestionService'
 import PageHeader from '../ui/PageHeader'
-import Badge from '../ui/Badge'
+import { Badge } from '../ui/badge'
+
+const STATUS_VARIANT = {
+  confirmada: 'success',
+  pendiente:  'warning',
+  cancelada:  'destructive',
+  completada: 'secondary',
+}
+const StatusBadge = ({ status }) => (
+  <Badge variant={STATUS_VARIANT[status?.toLowerCase()] || 'outline'}>
+    {status || 'Pendiente'}
+  </Badge>
+)
 import ErrorBanner from '../common/ErrorBanner'
 
 // Clases Tailwind para DayPicker — sin CSS externo
@@ -250,7 +262,7 @@ export default function CalendarioPanel() {
                               <p className="text-xs text-gray-400 ml-5">{r.clienteCorreo}</p>
                             )}
                           </div>
-                          <Badge status={r.estado || 'pendiente'} label={r.estado || 'Pendiente'} />
+                          <StatusBadge status={r.estado} />
                         </div>
 
                         {svc && (

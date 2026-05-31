@@ -22,6 +22,7 @@ import {
   Plus, Trash2, Info
 } from "lucide-react"
 import { serviciosApi, activosApi } from '../../services/gestionService'
+import { extractApiError } from '../../utils/apiError'
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
@@ -90,14 +91,11 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
   const cargarActivos = async () => {
     setLoadingActivos(true)
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      const empresaId = user.empresaId || user.companyId
-      if (empresaId) {
-        const data = await activosApi.listar(empresaId)
-        setActivos(data)
-      }
+      // empresaId lo inyecta el interceptor automáticamente
+      const data = await activosApi.listar()
+      setActivos(Array.isArray(data) ? data : [])
     } catch (err) {
-      console.error("Error al cargar activos:", err)
+      console.warn('Error al cargar activos:', err.message)
     } finally {
       setLoadingActivos(false)
     }
@@ -165,32 +163,27 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
     }
 
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      const empresaId = user.empresaId || user.companyId
-
+      // empresaId lo inyecta el interceptor automáticamente en el body
       const finalDisponibilidades = []
       formData.disponibilidades.forEach(av => {
-        const dias = av.diasSeleccionados || []
-        dias.forEach(dia => {
+        ;(av.diasSeleccionados || []).forEach(dia => {
           finalDisponibilidades.push({
-            activoId: av.activoId,
-            diaSemana: dia,
+            activoId:   av.activoId,
+            diaSemana:  dia,
             horaInicio: av.horaInicio,
-            horaFin: av.horaFin
+            horaFin:    av.horaFin,
           })
         })
       })
 
       const payload = {
         ...formData,
-        empresaId,
-        disponibilidades: finalDisponibilidades,
-        precio: Number(formData.precio) || 0,
-        duracionMinutos: Number(formData.duracionMinutos) || 30,
-        estadoServicioId: formData.estado === 'activo'
-          ? '739a4304-18cf-4cef-a2e7-1c4914781b03'
-          : '64c7a71c-820c-4fa6-83ff-6d9476893a3b'
+        disponibilidades:  finalDisponibilidades,
+        precio:            Number(formData.precio) || 0,
+        duracionMinutos:   Number(formData.duracionMinutos) || 30,
+        estadoServicioId:  formData.estado === 'activo' ? 'activo' : 'inactivo',
       }
+      delete payload.estado // evitar duplicado
 
       if (service?.id) {
         await serviciosApi.actualizar(service.id, payload)
@@ -201,7 +194,7 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
       onSave()
       onOpenChange(false)
     } catch (err) {
-      setError(err.response?.data?.message || "Error al guardar el servicio")
+      setError(err.message || 'Error al guardar el servicio')
     } finally {
       setLoading(false)
     }
