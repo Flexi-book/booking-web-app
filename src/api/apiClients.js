@@ -1,27 +1,61 @@
 import axios from 'axios'
 
-const BFF_USER_URL = import.meta.env.VITE_BFF_USER_URL || 'http://localhost:8090'
-const CATALOG_URL = import.meta.env.VITE_CATALOG_URL || 'http://localhost:8084'
+const BFF_BACKOFFICE_URL = import.meta.env.VITE_BFF_BACKOFFICE_URL || 'http://localhost:8091'
+const BFF_USER_URL       = import.meta.env.VITE_BFF_USER_URL       || 'http://localhost:8090'
 
-export const authApi = axios.create({
-  baseURL: `${BFF_USER_URL}/api/user/auth`,
+// Auth — sin interceptors de tenant
+export const authClient = axios.create({
+  baseURL: `${BFF_BACKOFFICE_URL}/api/backoffice/auth`,
 })
 
-export const catalogApi = axios.create({
-  baseURL: `${CATALOG_URL}/api`,
+// Admin (backoffice) — X-Empresa-Id se agrega en tokenStore
+export const adminClient = axios.create({
+  baseURL: `${BFF_BACKOFFICE_URL}/api/backoffice`,
 })
 
-export const bookingApi = axios.create({
-  baseURL: `${BFF_USER_URL}/api/user/reservas`,
+// Público (cliente final, sin auth obligatoria)
+export const publicClient = axios.create({
+  baseURL: `${BFF_USER_URL}/api/user`,
 })
 
-const addAuthHeader = (config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
+// Módulo de token — AuthProvider lo actualiza al login/logout
+export const tokenStore = {
+  token:     null,
+  companyId: null,
+  set(token, companyId) {
+    this.token     = token
+    this.companyId = companyId
+  },
+  clear() {
+    this.token     = null
+    this.companyId = null
+  },
 }
 
-catalogApi.interceptors.request.use(addAuthHeader)
-bookingApi.interceptors.request.use(addAuthHeader)
+// Interceptor admin: Authorization + X-Empresa-Id
+adminClient.interceptors.request.use((config) => {
+  if (tokenStore.token)     config.headers.Authorization  = `Bearer ${tokenStore.token}`
+  if (tokenStore.companyId) config.headers['X-Empresa-Id'] = tokenStore.companyId
+  return config
+})
+
+// Interceptor público: empresaId como query param
+publicClient.interceptors.request.use((config) => {
+  if (tokenStore.token)     config.headers.Authorization = `Bearer ${tokenStore.token}`
+  if (tokenStore.companyId) config.params = { ...config.params, empresaId: tokenStore.companyId }
+  return config
+})
+
+// Interceptor de respuesta: 401 → limpiar sesión
+const handle401 = (error) => {
+  if (error.response?.status === 401) {
+    tokenStore.clear()
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
+  }
+  return Promise.reject(error)
+}
+
+adminClient.interceptors.response.use(null, handle401)
+publicClient.interceptors.response.use(null, handle401)

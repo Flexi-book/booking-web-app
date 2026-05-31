@@ -1,13 +1,14 @@
 import { GoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
-import authService from '../../services/authService'
+import { useAuth } from '../../auth/useAuth'
 
 export default function GoogleLoginButton({ isRegister = false }) {
   const navigate = useNavigate()
+  const { googleLogin } = useAuth()
 
-  const handleGoogleSuccess = async (credentialResponse) => {
+  const handleSuccess = async (credentialResponse) => {
     try {
-      await authService.googleLogin(credentialResponse.credential)
+      await googleLogin(credentialResponse.credential)
       navigate('/dashboard')
     } catch (error) {
       console.error('Error con Google:', error)
@@ -17,7 +18,7 @@ export default function GoogleLoginButton({ isRegister = false }) {
   return (
     <div className={`flex justify-center ${isRegister ? 'w-full' : ''}`}>
       <GoogleLogin
-        onSuccess={handleGoogleSuccess}
+        onSuccess={handleSuccess}
         onError={() => console.error('Error en login con Google')}
         size="large"
         text={isRegister ? 'signup_with' : 'signin_with'}

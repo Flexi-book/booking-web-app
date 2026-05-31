@@ -1,156 +1,128 @@
+import { useState } from 'react'
 import { useCrudPanel } from '../../hooks/useCrudPanel'
 import { serviciosApi } from '../../services/gestionService'
+import PageHeader from '../ui/PageHeader'
+import Button from '../ui/Button'
+import Badge from '../ui/Badge'
 import ErrorBanner from '../common/ErrorBanner'
-import { serviceStatusColor } from '../../utils/statusColors'
+import ConfirmDialog from '../ui/ConfirmDialog'
 
 const emptyForm = { nombreServicio: '', descripcion: '', duracionMinutos: 30, precio: 0, estadoServicioId: 'activo' }
 
 const mapItemToForm = (s) => ({
-  nombreServicio: s.nombreServicio,
-  descripcion: s.descripcion || '',
+  nombreServicio:  s.nombreServicio,
+  descripcion:     s.descripcion || '',
   duracionMinutos: s.duracionMinutos,
-  precio: s.precio,
+  precio:          s.precio,
   estadoServicioId: s.estadoServicioId,
 })
 
 export default function ServiciosPanel() {
-  const { items: servicios, form, setForm, editingId, loading, error, showForm, setShowForm, iniciarEdicion, cancelar, guardar, eliminar } =
+  const { items: servicios, form, setForm, editingId, loading, error, showForm, setShowForm, iniciarEdicion, cancelar, guardar } =
     useCrudPanel(serviciosApi, emptyForm, mapItemToForm)
+
+  const [confirmId, setConfirmId] = useState(null)
+
+  const handleEliminar = async () => {
+    await serviciosApi.eliminar(confirmId)
+    setConfirmId(null)
+    cancelar()
+    window.location.reload()
+  }
+
+  const inputCls = 'w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900">Catálogo de Servicios</h1>
-          <p className="text-gray-600 mt-2">Administra los servicios y precios disponibles.</p>
-        </div>
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
-          >
-            <span>+</span> Nuevo Servicio
-          </button>
+      <PageHeader
+        title="Catálogo de Servicios"
+        subtitle="Administra los servicios y precios disponibles."
+        action={!showForm && (
+          <Button onClick={() => setShowForm(true)}>
+            + Nuevo Servicio
+          </Button>
         )}
-      </div>
+      />
 
       <ErrorBanner message={error} />
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{editingId ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            {editingId ? 'Editar Servicio' : 'Nuevo Servicio'}
+          </h2>
           <form onSubmit={guardar} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                <input
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.nombreServicio}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                <input required className={inputCls} value={form.nombreServicio}
                   onChange={e => setForm(f => ({ ...f, nombreServicio: e.target.value }))}
-                  placeholder="Ej: Masaje Deportivo"
-                />
+                  placeholder="Ej: Masaje Deportivo" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Duración (minutos) *</label>
-                <input
-                  required
-                  type="number"
-                  min="5"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.duracionMinutos}
-                  onChange={e => setForm(f => ({ ...f, duracionMinutos: parseInt(e.target.value) }))}
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Duración (min) *</label>
+                <input required type="number" min="5" className={inputCls} value={form.duracionMinutos}
+                  onChange={e => setForm(f => ({ ...f, duracionMinutos: parseInt(e.target.value) }))} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Precio (€)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.precio}
-                  onChange={e => setForm(f => ({ ...f, precio: parseFloat(e.target.value) }))}
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+                <input type="number" min="0" step="0.01" className={inputCls} value={form.precio}
+                  onChange={e => setForm(f => ({ ...f, precio: parseFloat(e.target.value) }))} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.estadoServicioId}
-                  onChange={e => setForm(f => ({ ...f, estadoServicioId: e.target.value }))}
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select className={inputCls} value={form.estadoServicioId}
+                  onChange={e => setForm(f => ({ ...f, estadoServicioId: e.target.value }))}>
                   <option value="activo">Activo</option>
                   <option value="inactivo">Inactivo</option>
                   <option value="pausado">Pausado</option>
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                <textarea
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.descripcion}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea rows={3} className={inputCls} value={form.descripcion}
                   onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
-                  placeholder="Describe el servicio..."
-                />
+                  placeholder="Describe el servicio..." />
               </div>
             </div>
             <div className="flex gap-3 pt-2">
-              <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
-                {editingId ? 'Actualizar' : 'Crear'}
-              </button>
-              <button type="button" onClick={cancelar} className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-                Cancelar
-              </button>
+              <Button type="submit">{editingId ? 'Actualizar' : 'Crear'}</Button>
+              <Button variant="secondary" type="button" onClick={cancelar}>Cancelar</Button>
             </div>
           </form>
         </div>
       )}
 
       {loading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
+        <p className="text-sm text-gray-400">Cargando...</p>
       ) : servicios.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-500">No hay servicios registrados aún.</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <p className="text-gray-400">No hay servicios registrados aún.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">SERVICIO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">DURACIÓN</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">PRECIO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ESTADO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACCIONES</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide">Servicio</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide">Duración</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide">Precio</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide">Estado</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-600 text-xs uppercase tracking-wide">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-100">
               {servicios.map(s => (
-                <tr key={s.id} className="hover:bg-gray-50">
+                <tr key={s.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 font-medium text-gray-900">{s.nombreServicio}</td>
-                  <td className="px-6 py-4 text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00-.293.707l-1.414 1.414a1 1 0 101.414 1.414L9 10.586V6z" clipRule="evenodd"></path>
-                      </svg>
-                      {s.duracionMinutos} min
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 font-semibold">€{Number(s.precio).toFixed(2)}</td>
+                  <td className="px-6 py-4 text-gray-500">{s.duracionMinutos} min</td>
+                  <td className="px-6 py-4 text-gray-700 font-semibold">${Number(s.precio).toFixed(2)}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${serviceStatusColor(s.estadoServicioId)}`}>
-                      {s.estadoServicioId}
-                    </span>
+                    <Badge status={s.estadoServicioId} label={s.estadoServicioId} />
                   </td>
-                  <td className="px-6 py-4 flex gap-3">
-                    <button onClick={() => iniciarEdicion(s)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">
-                      Editar
-                    </button>
-                    <button onClick={() => eliminar(s.id, '¿Eliminar este servicio?')} className="text-red-600 hover:text-red-700 font-medium text-xs">
-                      Eliminar
-                    </button>
+                  <td className="px-6 py-4 flex gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => iniciarEdicion(s)}>Editar</Button>
+                    <Button size="sm" variant="danger" onClick={() => setConfirmId(s.id)}>Eliminar</Button>
                   </td>
                 </tr>
               ))}
@@ -158,6 +130,14 @@ export default function ServiciosPanel() {
           </table>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmId}
+        title="¿Eliminar servicio?"
+        message="Esta acción no se puede deshacer."
+        onConfirm={handleEliminar}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   )
 }

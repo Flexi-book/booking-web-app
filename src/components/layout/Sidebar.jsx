@@ -1,9 +1,10 @@
-import { Link, useLocation } from 'react-router-dom'
-import authService from '../../services/authService'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth/useAuth'
 
 export default function Sidebar() {
   const location = useLocation()
-  const user = authService.getUser()
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
 
   const isActive = (path) => location.pathname === path
 
@@ -77,6 +78,27 @@ export default function Sidebar() {
         />
 
         <NavItem
+          to="/dashboard/calendario"
+          icon={({ className }) => (
+            <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5H4v8a2 2 0 002 2h12a2 2 0 002-2V7h-2v1a1 1 0 11-2 0V7H9v1a1 1 0 11-2 0V7H6v1a1 1 0 11-2 0V7z" clipRule="evenodd"></path>
+            </svg>
+          )}
+          label="Calendario"
+        />
+
+        <NavItem
+          to="/dashboard/notificaciones"
+          icon={({ className }) => (
+            <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+            </svg>
+          )}
+          label="Notificaciones"
+        />
+
+        <NavItem
           to="/dashboard/historial"
           icon={({ className }) => (
             <svg className={className} fill="currentColor" viewBox="0 0 20 20">
@@ -107,10 +129,7 @@ export default function Sidebar() {
         </button>
 
         <button
-          onClick={() => {
-            authService.logout()
-            window.location.href = '/login'
-          }}
+          onClick={() => { logout(); navigate('/login') }}
           className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg text-sm transition"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

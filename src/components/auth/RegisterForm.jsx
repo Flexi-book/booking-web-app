@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import authService from '../../services/authService'
+import { useAuth } from '../../auth/useAuth'
 import GoogleLoginButton from './GoogleLoginButton'
 import AuthPageShell from '../common/AuthPageShell'
 import ErrorBanner from '../common/ErrorBanner'
 
 export default function RegisterForm() {
   const navigate = useNavigate()
+  const { register } = useAuth()
   const [formData, setFormData] = useState({
     nombreEmpresa: '',
     correoContacto: '',
@@ -40,13 +41,13 @@ export default function RegisterForm() {
     setLoading(true)
     try {
       const { confirmPassword, ...data } = formData
-      await authService.register({
-        companyName: data.nombreEmpresa,
+      await register({
+        companyName:  data.nombreEmpresa,
         contactEmail: data.correoContacto,
         businessType: data.tipoNegocio,
-        userName: data.nombreUsuario,
-        userEmail: data.correoUsuario,
-        password: data.password,
+        userName:     data.nombreUsuario,
+        userEmail:    data.correoUsuario,
+        password:     data.password,
       })
       navigate('/register-success', { state: { email: formData.correoUsuario } })
     } catch (err) {
@@ -60,10 +61,7 @@ export default function RegisterForm() {
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
       <input
-        id={id}
-        name={id}
-        type={type}
-        required
+        id={id} name={id} type={type} required
         placeholder={placeholder}
         value={formData[id]}
         onChange={handleChange}
@@ -90,19 +88,29 @@ export default function RegisterForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {field('nombreEmpresa', 'Nombre del Negocio', 'text', 'Ej. Mi Studio Fitness')}
-          {field('tipoNegocio', 'Tipo de Negocio', 'text', 'Ej. Fitness, Salón de belleza')}
-          {field('correoContacto', 'Email de Contacto', 'email', 'contacto@empresa.com')}
-          {field('nombreUsuario', 'Nombre de Usuario', 'text', 'Tu nombre')}
-          {field('correoUsuario', 'Email Corporativo', 'email', 'admin@empresa.com')}
+
+          <div>
+            <label htmlFor="tipoNegocio" className="block text-sm font-medium text-gray-700 mb-2">Tipo de Negocio</label>
+            <select
+              id="tipoNegocio" name="tipoNegocio" required
+              value={formData.tipoNegocio}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            >
+              <option value="">Selecciona un tipo</option>
+              {['Barbería','Peluquería','Centro Médico','Cancha Deportiva',
+                'Sala de Reuniones','Spa','Fitness','Salón de belleza','Otro'
+              ].map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          {field('correoContacto', 'Email de Contacto',   'email', 'contacto@empresa.com')}
+          {field('nombreUsuario',  'Nombre de Usuario',   'text',  'Tu nombre')}
+          {field('correoUsuario',  'Email Corporativo',   'email', 'admin@empresa.com')}
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
             <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength="8"
+              id="password" name="password" type="password" required minLength="8"
               placeholder="Mínimo 8 caracteres"
               value={formData.password}
               onChange={handleChange}
@@ -113,11 +121,7 @@ export default function RegisterForm() {
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
             <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              minLength="8"
+              id="confirmPassword" name="confirmPassword" type="password" required minLength="8"
               placeholder="Confirma tu contraseña"
               value={formData.confirmPassword}
               onChange={handleChange}

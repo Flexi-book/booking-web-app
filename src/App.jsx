@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './auth/useAuth'
 import LandingPage from './components/landing/LandingPage'
 import LoginForm from './components/auth/LoginForm'
 import RegisterForm from './components/auth/RegisterForm'
@@ -9,23 +10,21 @@ import Dashboard from './components/dashboard/Dashboard'
 import ActivosPanel from './components/admin/ActivosPanel'
 import ServiciosPanel from './components/admin/ServiciosPanel'
 import ReservasPanel from './components/reservas/ReservasPanel'
-import authService from './services/authService'
+import NotificacionesPanel from './components/admin/NotificacionesPanel'
+import CalendarioPanel from './components/admin/CalendarioPanel'
 
 function ProtectedRoute({ children }) {
-  return authService.isAuthenticated() ? children : <Navigate to="/login" />
+  const { isAuthenticated } = useAuth()
+  return isAuthenticated ? children : <Navigate to="/login" />
 }
 
 function DashboardLayout() {
-  const user = authService.getUser()
+  const { user } = useAuth()
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
       <Sidebar />
-
-      {/* Main Content */}
       <div className="flex-1 ml-64 flex flex-col">
-        {/* Header */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="px-8 py-4 flex items-center justify-between">
             <div className="flex-1 max-w-md">
@@ -41,20 +40,20 @@ function DashboardLayout() {
                   <path d="M10.5 1.5H9.5A1.5 1.5 0 008 3v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-4V3a1.5 1.5 0 00-1.5-1.5zM10 8a2 2 0 110-4 2 2 0 010 4z"></path>
                 </svg>
               </button>
-              <button className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 hover:bg-blue-200 relative">
-                {user?.nombre?.charAt(0) || 'A'}
+              <button className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 hover:bg-blue-200">
+                {user?.name?.charAt(0) || user?.nombre?.charAt(0) || 'A'}
               </button>
             </div>
           </div>
         </header>
-
-        {/* Page Content */}
         <main className="flex-1 p-8">
           <Routes>
             <Route index element={<Dashboard />} />
             <Route path="activos" element={<ActivosPanel />} />
             <Route path="servicios" element={<ServiciosPanel />} />
             <Route path="reservas" element={<ReservasPanel />} />
+            <Route path="calendario" element={<CalendarioPanel />} />
+            <Route path="notificaciones" element={<NotificacionesPanel />} />
             <Route path="historial" element={<div>Historial - Coming soon</div>} />
           </Routes>
         </main>

@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import authService from '../../services/authService'
+import { useAuth } from '../../auth/useAuth'
 import GoogleLoginButton from './GoogleLoginButton'
 import AuthPageShell from '../common/AuthPageShell'
 import ErrorBanner from '../common/ErrorBanner'
 
 export default function LoginForm() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -18,7 +19,7 @@ export default function LoginForm() {
     setError('')
     setLoading(true)
     try {
-      await authService.login(email, password)
+      await login(email, password)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data || 'Error al iniciar sesión')
