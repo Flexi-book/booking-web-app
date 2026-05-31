@@ -1,15 +1,14 @@
-import { authApi } from '../api/apiClients'
+import { authClient as authApi } from '../api/apiClients'
+
+function saveSession(data) {
+  localStorage.setItem('token', data.token)
+  localStorage.setItem('user', JSON.stringify(data))
+}
 
 const authService = {
   login: async (email, password) => {
-    const response = await authApi.post('/login', {
-      email,
-      password,
-    })
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data))
-    }
+    const response = await authApi.post('/login', { email, password })
+    if (response.data.token) saveSession(response.data)
     return response.data
   },
 
@@ -19,13 +18,8 @@ const authService = {
   },
 
   googleLogin: async (idToken) => {
-    const response = await authApi.post('/google', {
-      idToken,
-    })
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data))
-    }
+    const response = await authApi.post('/google', { idToken })
+    if (response.data.token) saveSession(response.data)
     return response.data
   },
 

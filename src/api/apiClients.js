@@ -1,38 +1,76 @@
-import axios from 'axios';
+import axios from 'axios'
 
-const USER_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api/user';
-const BACKOFFICE_API_URL = import.meta.env.VITE_BACKOFFICE_URL || 'http://localhost:8091/api/backoffice';
+const BFF_BACKOFFICE_URL = import.meta.env.VITE_BFF_BACKOFFICE_URL || 'http://localhost:8091'
+const BFF_USER_URL       = import.meta.env.VITE_BFF_USER_URL       || 'http://localhost:8090'
 
-const createClient = (baseURL) => {
-  const client = axios.create({
-    baseURL,
-  });
+// Auth — sin interceptors de tenant
+export const authClient = axios.create({
+  baseURL: `${BFF_BACKOFFICE_URL}/api/backoffice/auth`,
+})
 
-  client.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const empresaId = user.empresaId || user.companyId;
+// Admin (backoffice) — X-Empresa-Id se agrega en tokenStore
+export const adminClient = axios.create({
+  baseURL: `${BFF_BACKOFFICE_URL}/api/backoffice`,
+})
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Público (cliente final, sin auth obligatoria)
+export const publicClient = axios.create({
+  baseURL: `${BFF_USER_URL}/api/user`,
+})
+
+// Módulo de token — AuthProvider lo actualiza al login/logout
+export const tokenStore = {
+  token:     null,
+  companyId: null,
+  set(token, companyId) {
+    this.token     = token
+    this.companyId = companyId
+  },
+  clear() {
+    this.token     = null
+    this.companyId = null
+  },
+}
+
+// Interceptor admin: Authorization + X-Empresa-Id (header Y body para POST/PUT)
+adminClient.interceptors.request.use((config) => {
+  if (tokenStore.token)     config.headers.Authorization   = `Bearer ${tokenStore.token}`
+  if (tokenStore.companyId) config.headers['X-Empresa-Id'] = tokenStore.companyId
+
+  // bff-backoffice también espera empresaId en el body de POST/PUT
+  if (tokenStore.companyId && ['post', 'put', 'patch'].includes(config.method)) {
+    if (config.data && typeof config.data === 'object' && !Array.isArray(config.data)) {
+      config.data = { ...config.data, empresaId: tokenStore.companyId }
     }
-    if (empresaId) {
-      config.headers['X-Empresa-Id'] = empresaId;
-    }
-    return config;
-  });
+  }
+  // Y como query param para GET
+  if (tokenStore.companyId && config.method === 'get') {
+    config.params = { ...config.params, empresaId: tokenStore.companyId }
+  }
+  return config
+})
 
-  return client;
-};
+// Interceptor público: empresaId como query param
+publicClient.interceptors.request.use((config) => {
+  if (tokenStore.token)     config.headers.Authorization = `Bearer ${tokenStore.token}`
+  if (tokenStore.companyId) config.params = { ...config.params, empresaId: tokenStore.companyId }
+  return config
+})
 
-export const authApi = createClient(`${USER_API_URL}/auth`);
-export const catalogApi = createClient(USER_API_URL);
-export const bookingApi = createClient(`${USER_API_URL}/reservas`);
-export const backofficeApi = createClient(BACKOFFICE_API_URL);
+// Interceptor de respuesta: 401 → limpiar sesión
+const handle401 = (error) => {
+  if (error.response?.status === 401) {
+    tokenStore.clear()
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
+  }
+  return Promise.reject(error)
+}
 
-export default {
-  authApi,
-  catalogApi,
-  bookingApi,
-  backofficeApi,
-};
+adminClient.interceptors.response.use(null, handle401)
+publicClient.interceptors.response.use(null, handle401)
+
+// Aliases para compatibilidad con develop
+export const backofficeApi = adminClient
+export const authApi       = authClient

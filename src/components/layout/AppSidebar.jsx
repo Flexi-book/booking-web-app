@@ -41,15 +41,15 @@ export function AppSidebar({ ...props }) {
   const user = authService.getUser()
 
   const mainNavItems = [
-    { title: "Dashboard",  url: "/admin/dashboard", icon: LayoutGrid },
-    { title: "Reservas",   url: "/admin/reservas",  icon: Calendar },
-    { title: "Servicios",  url: "/admin/servicios", icon: Clock },
-    { title: "Activos",    url: "/admin/activos",    icon: Users },
-    { title: "Historial",  url: "/admin/historial", icon: History },
+    { title: "Dashboard",  url: "/dashboard", icon: LayoutGrid },
+    { title: "Reservas",   url: "/dashboard/reservas",  icon: Calendar },
+    { title: "Servicios",  url: "/dashboard/servicios", icon: Clock },
+    { title: "Activos",    url: "/dashboard/activos",    icon: Users },
+    { title: "Historial",  url: "/dashboard/historial", icon: History },
   ]
 
   const secondaryNavItems = [
-    { title: "Notificaciones", url: "/admin/notificaciones", icon: Bell },
+    { title: "Notificaciones", url: "/dashboard/notificaciones", icon: Bell },
     { title: "Configuración",  url: "/admin/config",        icon: Settings },
   ]
 
@@ -65,7 +65,7 @@ export function AppSidebar({ ...props }) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/admin/dashboard">
+              <Link to="/dashboard">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shrink-0 overflow-hidden">
                   <img 
                     src="/flexibook-logo.svg" 

@@ -21,7 +21,7 @@ export default function LoginForm() {
 
     try {
       await authService.login(email, password)
-      navigate('/admin/dashboard')
+      navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data || 'Credenciales incorrectas. Intenta nuevamente.')
     } finally {

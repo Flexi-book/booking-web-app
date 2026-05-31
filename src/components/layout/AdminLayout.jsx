@@ -27,20 +27,20 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
 const routeLabels = {
-  "/admin/dashboard":       "Dashboard",
-  "/admin/reservas":        "Reservas",
-  "/admin/servicios":       "Servicios",
-  "/admin/activos":         "Activos",
-  "/admin/historial":       "Historial",
+  "/dashboard":       "Dashboard",
+  "/dashboard/reservas":        "Reservas",
+  "/dashboard/servicios":       "Servicios",
+  "/dashboard/activos":         "Activos",
+  "/dashboard/historial":       "Historial",
   "/admin/config":          "Configuración",
-  "/admin/notificaciones":  "Notificaciones",
+  "/dashboard/notificaciones":  "Notificaciones",
 }
 
 export default function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const currentLabel = routeLabels[location.pathname] ?? "Panel"
-  const isHome = location.pathname === "/admin/dashboard"
+  const isHome = location.pathname === "/dashboard"
 
   return (
     <SidebarProvider>
@@ -56,7 +56,7 @@ export default function AdminLayout() {
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink
-                    href="/admin/dashboard"
+                    href="/dashboard"
                     className="text-slate-400 hover:text-blue-600 text-xs font-medium transition-colors"
                   >
                     Inicio

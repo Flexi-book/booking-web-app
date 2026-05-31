@@ -21,6 +21,7 @@ import {
   Loader2, Settings, Layout, Info 
 } from "lucide-react"
 import { activosApi } from '../../services/gestionService'
+import { extractApiError } from '../../utils/apiError'
 
 const TIPOS = [
   { id: 'barbero', nombre: 'Barbero' },
@@ -80,13 +81,8 @@ export default function AssetDialog({ open, onOpenChange, asset, onSave }) {
     setError('')
 
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      const empresaId = user.empresaId || user.companyId
-
-      const payload = { 
-        ...formData, 
-        empresaId 
-      }
+      // empresaId lo inyecta automáticamente el interceptor de adminClient
+      const payload = { ...formData }
 
       if (asset?.id) {
         await activosApi.actualizar(asset.id, payload)
@@ -97,7 +93,7 @@ export default function AssetDialog({ open, onOpenChange, asset, onSave }) {
       onSave()
       onOpenChange(false)
     } catch (err) {
-      setError(err.response?.data?.message || "Error al guardar el activo")
+      setError(err.message || extractApiError(err))
     } finally {
       setLoading(false)
     }

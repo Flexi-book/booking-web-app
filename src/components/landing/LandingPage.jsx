@@ -1,14 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Search, Clock } from 'lucide-react'
 import { publicBookingApi } from '../../services/publicBookingService'
-
-function BuildingIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 12h.01M9 15h.01M12 9h.01M12 12h.01M12 15h.01M15 9h.01M15 12h.01M15 15h.01" />
-    </svg>
-  )
-}
+import { getEmpresaIcono } from '../admin/PerfilPanel'
 
 export default function LandingPage() {
   const [empresas, setEmpresas] = useState([])
@@ -60,16 +54,14 @@ export default function LandingPage() {
           <p className="text-lg text-gray-600 mb-8">
             Elige una empresa, selecciona servicio y profesional, y agenda en minutos.
           </p>
-          <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm px-4 py-3 flex items-center gap-3">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+          <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-md px-4 py-3 flex items-center gap-3">
+            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <input
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar barbería, peluquería, spa..."
-              className="w-full bg-transparent outline-none text-sm"
+              className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
             />
           </div>
         </div>
@@ -88,15 +80,45 @@ export default function LandingPage() {
               <Link
                 key={empresa.empresaId}
                 to={`/empresa/${empresa.empresaId}`}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 transition p-5"
+                className="group bg-white rounded-2xl border border-gray-100 shadow-sm
+                           hover:shadow-lg hover:border-blue-100 transition-all duration-200 overflow-hidden"
               >
-                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-                  <BuildingIcon />
+                {/* Banner con icono elegido */}
+                <div className="w-full h-32 bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100
+                                flex items-center justify-center text-6xl select-none">
+                  {getEmpresaIcono(empresa.empresaId, empresa.tipoNegocio)}
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">{empresa.tipoNegocio || 'Empresa'}</p>
-                <h3 className="text-xl font-bold text-gray-900 mt-1">{empresa.nombre}</h3>
-                <p className="text-sm text-gray-500 mt-2">{empresa.correoContacto}</p>
-                <p className="mt-4 text-sm font-semibold text-blue-600">Reservar hora →</p>
+
+                <div className="p-5">
+                  {/* Tipo badge */}
+                  {empresa.tipoNegocio && (
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                     bg-blue-50 text-blue-600 border border-blue-100 mb-3">
+                      {empresa.tipoNegocio}
+                    </span>
+                  )}
+
+                  {/* Nombre */}
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+                    {empresa.nombre}
+                  </h3>
+
+                  {/* Descripción o fallback */}
+                  <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 min-h-[40px]">
+                    {empresa.descripcion || 'Reserva tu hora de forma rápida y sencilla.'}
+                  </p>
+
+                  {/* CTA */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-blue-600 group-hover:underline">
+                      Reservar hora →
+                    </span>
+                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <Clock className="w-3.5 h-3.5" />
+                      Disponible
+                    </div>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>

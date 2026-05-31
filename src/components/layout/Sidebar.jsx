@@ -1,107 +1,125 @@
-import { Link, useLocation } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  CalendarDays, 
-  Clock, 
-  Users, 
-  History, 
-  Settings, 
-  LogOut,
-  ChevronRight
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import {
+  LayoutDashboard, CalendarCheck, Scissors,
+  Boxes, CalendarDays, Bell, History,
+  Settings2, LogOut, ChevronRight, Building2,
 } from 'lucide-react'
-import authService from '../../services/authService'
+import { useAuth } from '../../auth/useAuth'
+import { cn } from '@/lib/utils'
 
-export default function Sidebar() {
+const NAV_ITEMS = [
+  { to: '/dashboard',                icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/dashboard/reservas',       icon: CalendarCheck,   label: 'Reservas' },
+  { to: '/dashboard/servicios',      icon: Scissors,        label: 'Servicios' },
+  { to: '/dashboard/activos',        icon: Boxes,           label: 'Activos' },
+  { to: '/dashboard/calendario',     icon: CalendarDays,    label: 'Calendario' },
+  { to: '/dashboard/notificaciones', icon: Bell,            label: 'Notificaciones' },
+  { to: '/dashboard/historial',      icon: History,         label: 'Historial' },
+  { to: '/dashboard/perfil',         icon: Building2,       label: 'Mi Empresa' },
+]
+
+function NavItem({ to, icon: Icon, label, exact = false }) {
   const location = useLocation()
-  const user = authService.getUser()
-
-  const isActive = (path) => location.pathname === path
-
-  const NavItem = ({ to, icon: Icon, label }) => (
-    <Link
-      to={to}
-      className={`group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 ${
-        isActive(to)
-          ? 'bg-slate-900 text-white shadow-md'
-          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <Icon className={`w-4 h-4 transition-colors ${isActive(to) ? 'text-white' : 'group-hover:text-slate-900'}`} />
-        <span className="text-sm font-medium">{label}</span>
-      </div>
-      {isActive(to) && <ChevronRight className="w-3 h-3 text-white/50" />}
-    </Link>
-  )
+  const active = exact
+    ? location.pathname === to
+    : location.pathname === to || location.pathname.startsWith(to + '/')
 
   return (
-    <div className="w-64 bg-white border-r border-slate-200 fixed h-screen overflow-y-auto flex flex-col z-40">
-      {/* Brand Logo */}
-      <div className="px-6 py-8">
-        <Link to="/dashboard" className="flex items-center gap-3">
-          <div className="h-10 w-10 shrink-0">
-            <img 
-              src="/flexibook-logo.svg" 
-              alt="Flexibook" 
-              className="h-full w-full object-contain filter drop-shadow-sm" 
-            />
+    <Link
+      to={to}
+      className={cn(
+        'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
+        active
+          ? 'bg-blue-50 text-blue-700'
+          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+      )}
+    >
+      <Icon className={cn(
+        'w-5 h-5 flex-shrink-0 transition-colors',
+        active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
+      )} />
+      <span className="flex-1">{label}</span>
+      {active && <ChevronRight className="w-3.5 h-3.5 text-blue-400" />}
+    </Link>
+  )
+}
+
+export default function Sidebar() {
+  const navigate = useNavigate()
+  const { user, companyName, logout } = useAuth()
+
+  const initials = (user?.name || user?.nombre || 'A')
+    .split(' ')
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+  return (
+    <aside className="w-64 bg-white border-r border-slate-200 fixed h-screen overflow-y-auto flex flex-col">
+
+      {/* Logo */}
+      <div className="px-5 py-5 border-b border-slate-100">
+        <Link to="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+            <CalendarCheck className="w-5 h-5 text-white" />
           </div>
-          <div className="flex flex-col min-w-0">
-            <h1 className="font-semibold text-slate-900 leading-none tracking-tight truncate">
-              {user?.companyName || user?.nombreEmpresa || 'Mi Negocio'}
-            </h1>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1.5">Panel de Gestión</p>
+          <div>
+            <p className="font-bold text-slate-900 text-sm leading-tight">Flexibook</p>
+            <p className="text-xs text-slate-400 leading-tight">Panel Admin</p>
           </div>
         </Link>
       </div>
 
-      {/* Main Navigation */}
-      <nav className="flex-1 px-4 space-y-1">
-        <p className="px-3 mb-3 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">General</p>
-        <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
-        <NavItem to="/dashboard/reservas" icon={CalendarDays} label="Reservas" />
-        <NavItem to="/dashboard/servicios" icon={Clock} label="Servicios" />
-        <NavItem to="/dashboard/activos" icon={Users} label="Recursos" />
-        <NavItem to="/dashboard/historial" icon={History} label="Historial" />
+      {/* Empresa */}
+      {companyName && (
+        <div className="px-5 py-3 border-b border-slate-100">
+          <p className="text-xs text-slate-400 uppercase tracking-wider font-medium mb-0.5">Empresa</p>
+          <p className="text-sm font-semibold text-slate-700 truncate">{companyName}</p>
+        </div>
+      )}
+
+      {/* Navegación */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" exact />
+        {NAV_ITEMS.slice(1).map(item => (
+          <NavItem key={item.to} {...item} />
+        ))}
       </nav>
 
-      {/* User & Settings Section */}
-      <div className="p-4 mt-auto border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-3 px-3 py-4 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-semibold text-slate-900 shadow-sm shrink-0">
-            {user?.nombre?.charAt(0) || user?.name?.charAt(0) || 'A'}
+      {/* Footer */}
+      <div className="border-t border-slate-100 p-3 space-y-1">
+        {/* Avatar del usuario */}
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700
+                          flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            {initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-slate-900 text-sm truncate">{user?.nombre || user?.name || 'Administrador'}</p>
-            <p className="text-[11px] font-medium text-slate-400 lowercase truncate leading-tight">{user?.email || 'admin@flexibook.app'}</p>
+            <p className="text-sm font-medium text-slate-800 truncate">
+              {user?.name || user?.nombre || 'Admin'}
+            </p>
+            <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
           </div>
         </div>
 
-        <div className="space-y-1">
-          <Link
-            to="/dashboard/configuracion"
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-              isActive('/dashboard/configuracion') 
-              ? 'bg-slate-900 text-white' 
-              : 'text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            Configuración
-          </Link>
-          
-          <button
-            onClick={() => {
-              authService.logout()
-              window.location.href = '/login'
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg text-sm font-medium transition-all group"
-          >
-            <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            Cerrar Sesión
-          </button>
-        </div>
+        {/* Configuración */}
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                           font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <Settings2 className="w-5 h-5 text-slate-400 flex-shrink-0" />
+          Configuración
+        </button>
+
+        {/* Logout */}
+        <button
+          onClick={() => { logout(); navigate('/login') }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                     font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors group"
+        >
+          <LogOut className="w-5 h-5 text-slate-400 group-hover:text-red-500 flex-shrink-0" />
+          Cerrar Sesión
+        </button>
       </div>
-    </div>
+    </aside>
   )
 }

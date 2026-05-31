@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Bell, Mail, RefreshCw, CheckCircle, XCircle, Clock, Plus } from 'lucide-react'
-import { notificacionesApi } from '../../services/notificacionesService'
+import { notificacionesApi } from '../../services/gestionService'
 import { Button } from '../ui/button'
 
 const emptyForm = {
