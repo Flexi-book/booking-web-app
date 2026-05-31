@@ -7,19 +7,19 @@ const isDev = import.meta.env.DEV
 // catalog-service — listado público de empresas
 const catalogBase = isDev
   ? '/proxy/catalog'
-  : `${import.meta.env.VITE_CATALOG_URL || 'http://localhost:8084'}/api`
+  : import.meta.env.VITE_CATALOG_API_URL
 const catalogPublic = axios.create({ baseURL: catalogBase })
 
 // bff-backoffice — servicios y activos por empresaId (UUID)
 const backofficeBase = isDev
   ? '/proxy/backoffice'
-  : `${import.meta.env.VITE_BFF_BACKOFFICE_URL || 'http://localhost:8091'}/api/backoffice`
+  : import.meta.env.VITE_BACKOFFICE_URL
 const backofficePublic = axios.create({ baseURL: backofficeBase })
 
 // bff-user — crear reserva
 const userBase = isDev
   ? '/proxy/bff-user'
-  : `${import.meta.env.VITE_BFF_USER_URL || 'http://localhost:8090'}/api/user`
+  : import.meta.env.VITE_BOOKING_API_URL
 const userPublic = axios.create({ baseURL: userBase })
 
 export const publicBookingApi = {
