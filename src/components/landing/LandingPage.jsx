@@ -1,186 +1,140 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-
-const categorias = ['Peluquería', 'Gimnasio', 'Fisioterapia', 'Yoga', 'Odontología', 'Masajes']
-
-const negocios = [
-  { nombre: 'Studio Zen Spa', categoria: 'Masajes', rating: 4.9, reviews: 128, img: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&q=80' },
-  { nombre: 'FitLife Gym', categoria: 'Gimnasio', rating: 4.7, reviews: 94, img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80' },
-  { nombre: 'Sonrisa Dental', categoria: 'Odontología', rating: 5.0, reviews: 61, img: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=400&q=80' },
-  { nombre: 'Corte & Style', categoria: 'Peluquería', rating: 4.8, reviews: 210, img: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=80' },
-]
-
-function StarIcon() {
-  return (
-    <svg className="w-3.5 h-3.5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-    </svg>
-  )
-}
+import { Search, Clock } from 'lucide-react'
+import { publicBookingApi } from '../../services/publicBookingService'
+import { getEmpresaIcono } from '../admin/PerfilPanel'
 
 export default function LandingPage() {
+  const [empresas, setEmpresas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [busqueda, setBusqueda] = useState('')
-  const [ciudad, setCiudad] = useState('')
+
+  useEffect(() => {
+    async function cargar() {
+      try {
+        setEmpresas(await publicBookingApi.listarEmpresas())
+      } catch {
+        setError('No se pudieron cargar las empresas.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    cargar()
+  }, [])
+
+  const empresasFiltradas = useMemo(() => {
+    const q = busqueda.trim().toLowerCase()
+    if (!q) return empresas
+    return empresas.filter((e) =>
+      `${e.nombre} ${e.tipoNegocio || ''}`.toLowerCase().includes(q),
+    )
+  }, [empresas, busqueda])
 
   return (
-    <div className="min-h-screen flex flex-col bg-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-
-      {/* NAVBAR */}
+    <div className="min-h-screen flex flex-col bg-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
-
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <img src="/flexibook-logo.svg" alt="Flexibook" className="w-8 h-8 object-contain" />
-            <span className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Manrope, sans-serif' }}>
-              Flexibook
-            </span>
+            <span className="text-lg font-bold text-gray-900">Flexibook</span>
           </Link>
 
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-gray-600">
-            <a href="#" className="text-blue-600 border-b-2 border-blue-600 pb-0.5">Explorar</a>
-            <a href="#" className="hover:text-gray-900 transition">Precios</a>
-            <a href="#" className="hover:text-gray-900 transition">Empresas</a>
-            <a href="#" className="hover:text-gray-900 transition">Ayuda</a>
-          </nav>
-
-          {/* CTA */}
-          <Link
-            to="/login"
-            className="shrink-0 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition"
-          >
+          <Link to="/login" className="shrink-0 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition">
             Ingreso empresa
           </Link>
         </div>
       </header>
 
-      {/* HERO */}
-      <section
-        className="relative overflow-hidden py-20 px-6"
-        style={{
-          background: 'radial-gradient(ellipse 90% 80% at 85% 50%, #fde8e0 0%, #fdf0ec 25%, #f5f0ff 55%, #eef3ff 75%, #ffffff 100%)',
-        }}
-      >
-        <div className="max-w-3xl mx-auto text-center">
-
-          <h1
-            className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-5"
-            style={{ fontFamily: 'Manrope, sans-serif' }}
-          >
-            Encuentra y reserva los mejores servicios de tu ciudad
+      <section className="py-16 px-6 bg-gradient-to-br from-slate-50 via-blue-50 to-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4">
+            Reserva tu hora sin crear cuenta
           </h1>
-
-          <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-            Descubre{' '}
-            <span className="text-blue-600 font-medium">peluquerías</span>,{' '}
-            <span className="text-green-600 font-medium">gimnasios</span>,{' '}
-            <span className="text-purple-600 font-medium">centros de salud</span>{' '}
-            y mucho más en un solo clic.
+          <p className="text-lg text-gray-600 mb-8">
+            Elige una empresa, selecciona servicio y profesional, y agenda en minutos.
           </p>
-
-          {/* Barra de búsqueda */}
-          <div className="flex flex-col sm:flex-row bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-w-2xl mx-auto mb-5">
-            <div className="flex items-center gap-3 px-4 py-3.5 flex-1 border-b sm:border-b-0 sm:border-r border-gray-200">
-              <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="¿Qué estás buscando?"
-                value={busqueda}
-                onChange={e => setBusqueda(e.target.value)}
-                className="w-full text-sm text-gray-700 placeholder-gray-400 outline-none bg-transparent"
-              />
-            </div>
-            <div className="flex items-center gap-3 px-4 py-3.5 flex-1">
-              <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Ciudad o código postal"
-                value={ciudad}
-                onChange={e => setCiudad(e.target.value)}
-                className="w-full text-sm text-gray-700 placeholder-gray-400 outline-none bg-transparent"
-              />
-            </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-7 py-3.5 transition shrink-0 m-0">
-              Buscar
-            </button>
-          </div>
-
-          {/* Categorías rápidas */}
-          <div className="flex flex-wrap justify-center gap-2">
-            {categorias.map(cat => (
-              <button
-                key={cat}
-                className="text-xs font-medium text-gray-600 bg-white border border-gray-200 px-4 py-1.5 rounded-full hover:border-blue-400 hover:text-blue-600 transition shadow-sm"
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-md px-4 py-3 flex items-center gap-3">
+            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <input
+              type="text"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar barbería, peluquería, spa..."
+              className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+            />
           </div>
         </div>
       </section>
 
-      {/* NEGOCIOS DESTACADOS */}
-      <section className="py-12 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2
-              className="text-xl font-bold text-gray-900"
-              style={{ fontFamily: 'Manrope, sans-serif' }}
-            >
-              Negocios destacados
-            </h2>
-            <button className="text-gray-400 hover:text-gray-600 transition">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-              </svg>
-            </button>
-          </div>
+      <main className="max-w-7xl mx-auto w-full px-6 py-10">
+        {error && <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm font-medium text-red-800">{error}</div>}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {negocios.map((n, i) => (
-              <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer group">
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={n.img}
-                    alt={n.nombre}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                    <StarIcon />
-                    {n.rating}
+        {loading ? (
+          <p className="text-sm text-gray-500">Cargando empresas...</p>
+        ) : empresasFiltradas.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center text-gray-500">No hay empresas para mostrar.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {empresasFiltradas.map((empresa) => (
+              <Link
+                key={empresa.empresaId}
+                to={`/empresa/${empresa.empresaId}`}
+                className="group bg-white rounded-2xl border border-gray-100 shadow-sm
+                           hover:shadow-lg hover:border-blue-100 transition-all duration-200 overflow-hidden"
+              >
+                {/* Banner con icono elegido */}
+                <div className="w-full h-32 bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100
+                                flex items-center justify-center text-6xl select-none">
+                  {getEmpresaIcono(empresa.empresaId, empresa.tipoNegocio)}
+                </div>
+
+                <div className="p-5">
+                  {/* Tipo badge */}
+                  {empresa.tipoNegocio && (
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                     bg-blue-50 text-blue-600 border border-blue-100 mb-3">
+                      {empresa.tipoNegocio}
+                    </span>
+                  )}
+
+                  {/* Nombre */}
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+                    {empresa.nombre}
+                  </h3>
+
+                  {/* Descripción o fallback */}
+                  <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 min-h-[40px]">
+                    {empresa.descripcion || 'Reserva tu hora de forma rápida y sencilla.'}
+                  </p>
+
+                  {/* CTA */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-blue-600 group-hover:underline">
+                      Reservar hora →
+                    </span>
+                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <Clock className="w-3.5 h-3.5" />
+                      Disponible
+                    </div>
                   </div>
                 </div>
-                <div className="p-4">
-                  <p className="text-xs text-blue-600 font-medium mb-1">{n.categoria}</p>
-                  <h3 className="font-semibold text-gray-900 text-sm mb-1">{n.nombre}</h3>
-                  <p className="text-xs text-gray-400">{n.reviews} reseñas</p>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
-        </div>
-      </section>
+        )}
+      </main>
 
-      {/* FOOTER */}
       <footer className="mt-auto bg-gray-900 text-gray-400 py-7">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <div className="flex items-center gap-2">
             <img src="/flexibook-logo.svg" alt="Flexibook" className="w-7 h-7 object-contain" />
             <span className="text-white font-semibold">Flexibook</span>
           </div>
-          <p>© 2024 Flexibook. Todos los derechos reservados.</p>
-          <Link to="/login" className="text-blue-400 hover:text-blue-300 transition font-medium">
-            Acceso administrador →
-          </Link>
+          <p>© 2026 Flexibook. Todos los derechos reservados.</p>
+          <Link to="/login" className="text-blue-400 hover:text-blue-300 transition font-medium">Acceso administrador →</Link>
         </div>
       </footer>
-
     </div>
   )
 }

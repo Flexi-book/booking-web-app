@@ -1,224 +1,205 @@
 import { useState, useEffect } from 'react'
+import { 
+  Plus, Search, MoreHorizontal, Pencil, Trash2, 
+  Clock, LayoutGrid, Info
+} from "lucide-react"
+import { 
+  Card, CardContent, CardHeader, CardTitle, CardDescription 
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { serviciosApi } from '../../services/gestionService'
-
-const emptyForm = { nombreServicio: '', descripcion: '', duracionMinutos: 30, precio: 0, estadoServicioId: 'activo' }
+import { TableLoader } from "@/components/ui/table-loader"
+import ServiceDialog from './ServiceDialog'
+import { Badge } from "@/components/ui/badge"
 
 export default function ServiciosPanel() {
   const [servicios, setServicios] = useState([])
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [showForm, setShowForm] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedService, setSelectedService] = useState(null)
 
-  useEffect(() => { cargar() }, [])
+  useEffect(() => {
+    cargarServicios()
+  }, [])
 
-  async function cargar() {
+  const cargarServicios = async () => {
     setLoading(true)
     try {
-      setServicios(await serviciosApi.listar())
-    } catch {
-      setError('Error al cargar servicios')
+      const data = await serviciosApi.listar()
+      setServicios(data || [])
+    } catch (err) {
+      console.error("Error al cargar servicios:", err)
     } finally {
       setLoading(false)
     }
   }
 
-  function iniciarEdicion(s) {
-    setForm({
-      nombreServicio: s.nombreServicio,
-      descripcion: s.descripcion || '',
-      duracionMinutos: s.duracionMinutos,
-      precio: s.precio,
-      estadoServicioId: s.estadoServicioId,
-    })
-    setEditingId(s.id)
-    setShowForm(true)
-    setError('')
+  const handleEdit = (service) => {
+    setSelectedService(service)
+    setDialogOpen(true)
   }
 
-  function cancelar() {
-    setForm(emptyForm)
-    setEditingId(null)
-    setShowForm(false)
-    setError('')
-  }
-
-  async function guardar(e) {
-    e.preventDefault()
-    setError('')
-    try {
-      if (editingId) {
-        await serviciosApi.actualizar(editingId, form)
-      } else {
-        await serviciosApi.crear(form)
+  const handleDelete = async (id) => {
+    if (window.confirm("¿Estás seguro de eliminar este servicio?")) {
+      try {
+        await serviciosApi.eliminar(id)
+        cargarServicios()
+      } catch (err) {
+        alert("Error al eliminar el servicio")
       }
-      cancelar()
-      cargar()
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar servicio')
     }
   }
 
-  async function eliminar(id) {
-    if (!confirm('¿Eliminar este servicio?')) return
-    try {
-      await serviciosApi.eliminar(id)
-      cargar()
-    } catch {
-      setError('Error al eliminar servicio')
-    }
+  const filteredServicios = servicios.filter(s => 
+    (s.nombreServicio || '').toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(val)
+  }
+
+  const getStatusBadge = (estado) => {
+    const isActive = estado === 'activo'
+    return (
+      <Badge variant="outline" className={isActive ? "bg-emerald-50/50 text-emerald-600 border-emerald-100 font-medium" : "bg-slate-50 text-slate-400 border-slate-200 font-medium"}>
+        {isActive ? 'Activo' : 'Inactivo'}
+      </Badge>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900">Catálogo de Servicios</h1>
-          <p className="text-gray-600 mt-2">Administra los servicios y precios disponibles.</p>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Servicios</h1>
+          <p className="text-sm text-muted-foreground font-medium">Administra tu catálogo de prestaciones y tarifas.</p>
         </div>
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
-          >
-            <span>+</span> Nuevo Servicio
-          </button>
-        )}
+        <Button 
+          onClick={() => { setSelectedService(null); setDialogOpen(true) }}
+          className="bg-slate-900 hover:bg-slate-800 text-white shadow-sm px-4 h-9 rounded-md text-sm font-medium gap-2 transition-all active:scale-95"
+        >
+          <Plus className="w-4 h-4" /> Nuevo Servicio
+        </Button>
       </div>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-800">{error}</p>
-        </div>
-      )}
-
-      {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{editingId ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
-          <form onSubmit={guardar} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                <input
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.nombreServicio}
-                  onChange={e => setForm(f => ({ ...f, nombreServicio: e.target.value }))}
-                  placeholder="Ej: Masaje Deportivo"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Duración (minutos) *</label>
-                <input
-                  required
-                  type="number"
-                  min="5"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.duracionMinutos}
-                  onChange={e => setForm(f => ({ ...f, duracionMinutos: parseInt(e.target.value) }))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Precio (€)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.precio}
-                  onChange={e => setForm(f => ({ ...f, precio: parseFloat(e.target.value) }))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.estadoServicioId}
-                  onChange={e => setForm(f => ({ ...f, estadoServicioId: e.target.value }))}
-                >
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
-                  <option value="pausado">Pausado</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                <textarea
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={form.descripcion}
-                  onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
-                  placeholder="Describe el servicio..."
-                />
-              </div>
+      {/* MAIN TABLE CARD */}
+      <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
+        <CardHeader className="bg-slate-50/30 border-b border-slate-100 py-4 px-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <CardTitle className="text-sm font-semibold text-slate-900">Catálogo de Servicios</CardTitle>
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input 
+                placeholder="Buscar por servicio..." 
+                className="pl-8 h-8 text-xs border-slate-200 bg-white rounded-md focus:ring-slate-400"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <div className="flex gap-3 pt-2">
-              <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
-                {editingId ? 'Actualizar' : 'Crear'}
-              </button>
-              <button type="button" onClick={cancelar} className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-                Cancelar
-              </button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-12">
+              <TableLoader columns={5} rows={4} />
             </div>
-          </form>
-        </div>
-      )}
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-slate-50/50 border-b border-slate-200">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-[300px] font-semibold text-slate-900 py-3 px-6 text-xs uppercase tracking-wider">Servicio</TableHead>
+                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Duración</TableHead>
+                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Tarifa</TableHead>
+                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Estado</TableHead>
+                    <TableHead className="text-right font-semibold text-slate-900 px-6 text-xs uppercase tracking-wider">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredServicios.length > 0 ? (
+                    filteredServicios.map((s) => (
+                      <TableRow key={s.id} className="hover:bg-slate-50/30 transition-colors border-slate-100">
+                        <TableCell className="py-4 px-6">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-slate-950 text-sm leading-none">{s.nombreServicio}</span>
+                            <span className="text-[11px] text-muted-foreground mt-1.5 truncate max-w-[250px]">
+                              {s.descripcion || "Sin descripción registrada"}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-slate-600 font-medium bg-slate-100/50 w-fit px-2 py-0.5 rounded-md text-[10px] border border-slate-200/50">
+                            <Clock className="mr-1.5 h-3 w-3 text-slate-400" />
+                            {s.duracionMinutos} min
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm font-semibold text-slate-900">
+                            {formatCurrency(s.precio)}
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(s.estado)}</TableCell>
+                        <TableCell className="text-right px-6">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all">
+                                <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 shadow-lg border-slate-200 rounded-lg p-1">
+                              <DropdownMenuLabel className="text-[10px] font-semibold text-slate-400 uppercase px-2 py-1.5 tracking-tight">Opciones</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleEdit(s)} className="cursor-pointer text-xs font-medium gap-2.5 py-2">
+                                <Pencil className="h-3.5 w-3.5 text-slate-500" /> Editar servicio
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDelete(s.id)} className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2">
+                                <Trash2 className="h-3.5 w-3.5" /> Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center">
+                        <p className="text-sm text-muted-foreground">No se encontraron servicios en el catálogo.</p>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {loading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
-      ) : servicios.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-500">No hay servicios registrados aún.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">SERVICIO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">DURACIÓN</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">PRECIO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ESTADO</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {servicios.map(s => (
-                <tr key={s.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{s.nombreServicio}</td>
-                  <td className="px-6 py-4 text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00-.293.707l-1.414 1.414a1 1 0 101.414 1.414L9 10.586V6z" clipRule="evenodd"></path>
-                      </svg>
-                      {s.duracionMinutos} min
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 font-semibold">€{Number(s.precio).toFixed(2)}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      s.estadoServicioId === 'activo' ? 'bg-green-100 text-green-700' :
-                      s.estadoServicioId === 'pausado' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {s.estadoServicioId}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 flex gap-3">
-                    <button onClick={() => iniciarEdicion(s)} className="text-blue-600 hover:text-blue-700 font-medium text-xs">
-                      Editar
-                    </button>
-                    <button onClick={() => eliminar(s.id)} className="text-red-600 hover:text-red-700 font-medium text-xs">
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <ServiceDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+        service={selectedService}
+        onSave={cargarServicios}
+      />
     </div>
   )
 }

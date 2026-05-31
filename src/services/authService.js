@@ -1,21 +1,14 @@
-<<<<<<< HEAD
-import axios from 'axios'
+import { authClient as authApi } from '../api/apiClients'
 
-const API_URL = 'http://localhost:8090/api/user/auth'
-=======
-import { authApi } from '../api/apiClients'
->>>>>>> 2a370b3 (feat: integrate frontend with backend services (auth, catalog, booking))
+function saveSession(data) {
+  localStorage.setItem('token', data.token)
+  localStorage.setItem('user', JSON.stringify(data))
+}
 
 const authService = {
   login: async (email, password) => {
-    const response = await authApi.post('/login', {
-      email,
-      password,
-    })
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data))
-    }
+    const response = await authApi.post('/login', { email, password })
+    if (response.data.token) saveSession(response.data)
     return response.data
   },
 
@@ -25,13 +18,8 @@ const authService = {
   },
 
   googleLogin: async (idToken) => {
-    const response = await authApi.post('/google', {
-      idToken,
-    })
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data))
-    }
+    const response = await authApi.post('/google', { idToken })
+    if (response.data.token) saveSession(response.data)
     return response.data
   },
 
