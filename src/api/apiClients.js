@@ -1,40 +1,42 @@
 import axios from 'axios'
 
-const BFF_BACKOFFICE_URL = import.meta.env.VITE_BFF_BACKOFFICE_URL || 'http://localhost:8091'
-const BFF_USER_URL       = import.meta.env.VITE_BFF_USER_URL       || 'http://localhost:8090'
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || `${API_BASE_URL}/auth`
+const BACKOFFICE_API_URL = import.meta.env.VITE_BACKOFFICE_URL || `${API_BASE_URL}/backoffice`
+const USER_API_URL = import.meta.env.VITE_USER_API_URL || `${API_BASE_URL}/user`
 
 // Auth — sin interceptors de tenant
 export const authClient = axios.create({
-  baseURL: `${BFF_BACKOFFICE_URL}/api/backoffice/auth`,
+  baseURL: AUTH_API_URL,
 })
 
 // Admin (backoffice) — X-Empresa-Id se agrega en tokenStore
 export const adminClient = axios.create({
-  baseURL: `${BFF_BACKOFFICE_URL}/api/backoffice`,
+  baseURL: BACKOFFICE_API_URL,
 })
 
 // Público (cliente final, sin auth obligatoria)
 export const publicClient = axios.create({
-  baseURL: `${BFF_USER_URL}/api/user`,
+  baseURL: USER_API_URL,
 })
 
 // Módulo de token — AuthProvider lo actualiza al login/logout
 export const tokenStore = {
-  token:     null,
+  token: null,
   companyId: null,
   set(token, companyId) {
-    this.token     = token
+    this.token = token
     this.companyId = companyId
   },
   clear() {
-    this.token     = null
+    this.token = null
     this.companyId = null
   },
 }
 
 // Interceptor admin: Authorization + X-Empresa-Id (header Y body para POST/PUT)
 adminClient.interceptors.request.use((config) => {
-  if (tokenStore.token)     config.headers.Authorization   = `Bearer ${tokenStore.token}`
+  if (tokenStore.token) config.headers.Authorization = `Bearer ${tokenStore.token}`
   if (tokenStore.companyId) config.headers['X-Empresa-Id'] = tokenStore.companyId
 
   // bff-backoffice también espera empresaId en el body de POST/PUT
@@ -52,7 +54,7 @@ adminClient.interceptors.request.use((config) => {
 
 // Interceptor público: empresaId como query param
 publicClient.interceptors.request.use((config) => {
-  if (tokenStore.token)     config.headers.Authorization = `Bearer ${tokenStore.token}`
+  if (tokenStore.token) config.headers.Authorization = `Bearer ${tokenStore.token}`
   if (tokenStore.companyId) config.params = { ...config.params, empresaId: tokenStore.companyId }
   return config
 })
@@ -73,4 +75,4 @@ publicClient.interceptors.response.use(null, handle401)
 
 // Aliases para compatibilidad con develop
 export const backofficeApi = adminClient
-export const authApi       = authClient
+export const authApi = authClient
