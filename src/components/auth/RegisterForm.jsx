@@ -1,13 +1,27 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../../auth/useAuth'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { LoadingScreen } from "@/components/ui/loading-screen"
+import { Loader2, UserPlus, Building2 } from "lucide-react"
+import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
-import AuthPageShell from '../common/AuthPageShell'
-import ErrorBanner from '../common/ErrorBanner'
+
+const BUSINESS_TYPES = [
+  'Barbería',
+  'Peluquería',
+  'Centro Médico',
+  'Cancha Deportiva',
+  'Sala de Reuniones',
+  'Spa',
+  'Otro',
+]
 
 export default function RegisterForm() {
   const navigate = useNavigate()
-  const { register } = useAuth()
   const [formData, setFormData] = useState({
     nombreEmpresa: '',
     correoContacto: '',
@@ -22,7 +36,10 @@ export default function RegisterForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const handleSubmit = async (e) => {
@@ -33,118 +50,118 @@ export default function RegisterForm() {
       setError('La contraseña debe tener al menos 8 caracteres')
       return
     }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden')
       return
     }
 
     setLoading(true)
+
     try {
       const { confirmPassword, ...data } = formData
-      await register({
-        companyName:  data.nombreEmpresa,
+      const dataToSend = {
+        companyName: data.nombreEmpresa,
         contactEmail: data.correoContacto,
         businessType: data.tipoNegocio,
-        userName:     data.nombreUsuario,
-        userEmail:    data.correoUsuario,
-        password:     data.password,
+        userName: data.nombreUsuario,
+        userEmail: data.correoUsuario,
+        password: data.password,
+      }
+      
+      await authService.register(dataToSend)
+      
+      navigate('/register-success', { 
+        state: { email: formData.correoUsuario },
+        replace: true 
       })
-      navigate('/register-success', { state: { email: formData.correoUsuario } })
     } catch (err) {
-      setError(err.response?.data || 'Error al registrarse')
+      const errorMessage = typeof err.response?.data === 'string' 
+        ? err.response.data 
+        : err.response?.data?.message || 'Error al conectar con el servidor'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
   }
 
-  const field = (id, label, type = 'text', placeholder = '') => (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-      <input
-        id={id} name={id} type={type} required
-        placeholder={placeholder}
-        value={formData[id]}
-        onChange={handleChange}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-      />
-    </div>
-  )
-
   return (
-    <AuthPageShell subtitle="Crea tu cuenta de administrador">
-      <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
-        <ErrorBanner message={error} />
-
-        <GoogleLoginButton isRegister />
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-3 bg-white text-gray-500 font-medium">O completa el formulario</span>
-          </div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <LoadingScreen
+        visible={loading}
+        title="Creando tu cuenta..."
+        description="Estamos registrando tu empresa en Flexibook. Solo tomará un momento."
+      />
+      <div className="w-full max-w-lg">
+        <div className="flex justify-center mb-8">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-14 h-14 object-contain" />
+            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
+              Flexibook
+            </span>
+          </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {field('nombreEmpresa', 'Nombre del Negocio', 'text', 'Ej. Mi Studio Fitness')}
+        <Card className="border-none shadow-xl shadow-slate-200/60 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold">Crea tu cuenta</CardTitle>
+            <CardDescription>
+              Comienza a gestionar tu negocio hoy mismo
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {error && (
+              <Alert variant="destructive" className="bg-red-50 border-red-100">
+                <AlertDescription className="text-red-800 font-medium">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <div>
-            <label htmlFor="tipoNegocio" className="block text-sm font-medium text-gray-700 mb-2">Tipo de Negocio</label>
-            <select
-              id="tipoNegocio" name="tipoNegocio" required
-              value={formData.tipoNegocio}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-            >
-              <option value="">Selecciona un tipo</option>
-              {['Barbería','Peluquería','Centro Médico','Cancha Deportiva',
-                'Sala de Reuniones','Spa','Fitness','Salón de belleza','Otro'
-              ].map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          {field('correoContacto', 'Email de Contacto',   'email', 'contacto@empresa.com')}
-          {field('nombreUsuario',  'Nombre de Usuario',   'text',  'Tu nombre')}
-          {field('correoUsuario',  'Email Corporativo',   'email', 'admin@empresa.com')}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4 col-span-1 md:col-span-2">
+                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm border-b pb-2">
+                    <Building2 className="w-4 h-4" />
+                    Información del Negocio
+                  </div>
+                </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-            <input
-              id="password" name="password" type="password" required minLength="8"
-              placeholder="Mínimo 8 caracteres"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-            />
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nombreEmpresa">Nombre del Negocio</Label>
+                  <Input id="nombreEmpresa" name="nombreEmpresa" placeholder="Mi Local" required value={formData.nombreEmpresa} onChange={handleChange} />
+                </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
-            <input
-              id="confirmPassword" name="confirmPassword" type="password" required minLength="8"
-              placeholder="Confirma tu contraseña"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-            />
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tipoNegocio">Rubro / Tipo</Label>
+                  <Input id="tipoNegocio" name="tipoNegocio" placeholder="Barbería, Gym, etc." required value={formData.tipoNegocio} onChange={handleChange} />
+                </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-          >
-            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-          </button>
-        </form>
+                <div className="space-y-2 col-span-1 md:col-span-2">
+                  <Label htmlFor="correoContacto">Email de la Empresa</Label>
+                  <Input id="correoContacto" name="correoContacto" type="email" placeholder="contacto@miempresa.com" required value={formData.correoContacto} onChange={handleChange} />
+                </div>
+              </div>
 
-        <p className="text-center text-gray-600 text-sm">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700 transition">
-            Inicia sesión
-          </Link>
-        </p>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6" disabled={loading}>
+                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando...</> : <><UserPlus className="mr-2 h-4 w-4" /> Crear Cuenta</>}
+              </Button>
+            </form>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-muted-foreground">O continúa con</span></div>
+            </div>
+
+            <GoogleLoginButton isRegister={true} setLoading={setLoading} />
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="text-sm text-center text-slate-600">
+              ¿Ya tienes cuenta? <Link to="/login" className="text-blue-600 font-semibold hover:underline">Inicia sesión</Link>
+            </div>
+          </CardFooter>
+        </Card>
       </div>
-    </AuthPageShell>
+    </div>
   )
 }

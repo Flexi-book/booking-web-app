@@ -1,4 +1,4 @@
-import { authApi } from '../api/apiClients'
+import { authClient as authApi } from '../api/apiClients'
 
 function saveSession(data) {
   localStorage.setItem('token', data.token)

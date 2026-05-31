@@ -32,10 +32,21 @@ export const tokenStore = {
   },
 }
 
-// Interceptor admin: Authorization + X-Empresa-Id
+// Interceptor admin: Authorization + X-Empresa-Id (header Y body para POST/PUT)
 adminClient.interceptors.request.use((config) => {
-  if (tokenStore.token)     config.headers.Authorization  = `Bearer ${tokenStore.token}`
+  if (tokenStore.token)     config.headers.Authorization   = `Bearer ${tokenStore.token}`
   if (tokenStore.companyId) config.headers['X-Empresa-Id'] = tokenStore.companyId
+
+  // bff-backoffice también espera empresaId en el body de POST/PUT
+  if (tokenStore.companyId && ['post', 'put', 'patch'].includes(config.method)) {
+    if (config.data && typeof config.data === 'object' && !Array.isArray(config.data)) {
+      config.data = { ...config.data, empresaId: tokenStore.companyId }
+    }
+  }
+  // Y como query param para GET
+  if (tokenStore.companyId && config.method === 'get') {
+    config.params = { ...config.params, empresaId: tokenStore.companyId }
+  }
   return config
 })
 
@@ -59,3 +70,7 @@ const handle401 = (error) => {
 
 adminClient.interceptors.response.use(null, handle401)
 publicClient.interceptors.response.use(null, handle401)
+
+// Aliases para compatibilidad con develop
+export const backofficeApi = adminClient
+export const authApi       = authClient
