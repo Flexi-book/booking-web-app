@@ -1,9 +1,9 @@
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
-const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || `${API_BASE_URL}/auth`
-const BACKOFFICE_API_URL = import.meta.env.VITE_BACKOFFICE_URL || `${API_BASE_URL}/backoffice`
-const USER_API_URL = import.meta.env.VITE_USER_API_URL || `${API_BASE_URL}/user`
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || `${API_BASE_URL}/proxy/auth`
+const BACKOFFICE_API_URL = import.meta.env.VITE_BACKOFFICE_URL || `${API_BASE_URL}/proxy/backoffice`
+const USER_API_URL = import.meta.env.VITE_USER_API_URL || `${API_BASE_URL}/proxy/bff-user`
 
 // Auth — sin interceptors de tenant
 export const authClient = axios.create({

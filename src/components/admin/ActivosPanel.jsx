@@ -157,7 +157,7 @@ export default function ActivosPanel() {
                             {a.capacidad || 1}
                           </div>
                         </TableCell>
-                        <TableCell>{getStatusBadge(a.estado)}</TableCell>
+                        <TableCell>{getStatusBadge(a.estadoDisponibilidad)}</TableCell>
                         <TableCell className="text-right px-6">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

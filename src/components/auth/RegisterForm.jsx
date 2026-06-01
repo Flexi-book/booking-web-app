@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingScreen } from "@/components/ui/loading-screen"
-import { Loader2, UserPlus, Building2, UserRound } from "lucide-react"
+import { Loader2, UserPlus, Building2, Check, Eye, EyeOff } from "lucide-react"
 import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
 
@@ -33,6 +33,8 @@ export default function RegisterForm() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -45,6 +47,12 @@ export default function RegisterForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.correoContacto) || !emailRegex.test(formData.correoUsuario)) {
+      setError('Por favor ingresa un correo electrónico válido en ambos campos')
+      return
+    }
 
     if (formData.password.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres')
@@ -141,37 +149,21 @@ export default function RegisterForm() {
                   <Label htmlFor="correoContacto">Email de la Empresa</Label>
                   <Input id="correoContacto" name="correoContacto" type="email" placeholder="contacto@miempresa.com" required value={formData.correoContacto} onChange={handleChange} />
                 </div>
-
-                <div className="space-y-4 col-span-1 md:col-span-2 mt-2">
+                <div className="space-y-4 col-span-1 md:col-span-2 mt-4">
                   <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm border-b pb-2">
-                    <UserRound className="w-4 h-4" />
-                    Información del Administrador
+                    <UserPlus className="w-4 h-4" />
+                    Información de Usuario Administrador
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nombreUsuario">Nombre del Usuario</Label>
-                  <Input
-                    id="nombreUsuario"
-                    name="nombreUsuario"
-                    placeholder="Administrador"
-                    required
-                    value={formData.nombreUsuario}
-                    onChange={handleChange}
-                  />
+                  <Label htmlFor="nombreUsuario">Tu Nombre</Label>
+                  <Input id="nombreUsuario" name="nombreUsuario" placeholder="Juan Pérez" required value={formData.nombreUsuario} onChange={handleChange} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="correoUsuario">Email Corporativo</Label>
-                  <Input
-                    id="correoUsuario"
-                    name="correoUsuario"
-                    type="email"
-                    placeholder="admin@miempresa.com"
-                    required
-                    value={formData.correoUsuario}
-                    onChange={handleChange}
-                  />
+                  <Label htmlFor="correoUsuario">Tu Email</Label>
+                  <Input id="correoUsuario" name="correoUsuario" type="email" placeholder="juan@correo.com" required value={formData.correoUsuario} onChange={handleChange} />
                 </div>
 
                 <div className="space-y-2">
@@ -201,7 +193,8 @@ export default function RegisterForm() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6" disabled={loading}>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6" 
+                      disabled={loading || formData.password.length < 8 || formData.password !== formData.confirmPassword}>
                 {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando...</> : <><UserPlus className="mr-2 h-4 w-4" /> Crear Cuenta</>}
               </Button>
             </form>

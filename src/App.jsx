@@ -1,6 +1,6 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { Search, Bell } from 'lucide-react'
+import { Search, Bell, Menu } from 'lucide-react'
 import { useAuth } from './auth/useAuth'
 import Sidebar from './components/layout/Sidebar'
 
@@ -10,6 +10,7 @@ const LoginForm           = lazy(() => import('./components/auth/LoginForm'))
 const RegisterForm        = lazy(() => import('./components/auth/RegisterForm'))
 const RegisterSuccessForm = lazy(() => import('./components/auth/RegisterSuccessForm'))
 const ForgotPasswordForm  = lazy(() => import('./components/auth/ForgotPasswordForm'))
+const ResetPasswordForm   = lazy(() => import('./components/auth/ResetPasswordForm'))
 const Dashboard           = lazy(() => import('./components/dashboard/Dashboard'))
 const ActivosPanel        = lazy(() => import('./components/admin/ActivosPanel'))
 const ServiciosPanel      = lazy(() => import('./components/admin/ServiciosPanel'))
@@ -18,6 +19,7 @@ const CalendarioPanel     = lazy(() => import('./components/admin/CalendarioPane
 const NotificacionesPanel = lazy(() => import('./components/admin/NotificacionesPanel'))
 const PerfilPanel         = lazy(() => import('./components/admin/PerfilPanel'))
 const EmpresaPage         = lazy(() => import('./components/booking/EmpresaPage'))
+const EmpresaDetailPage   = lazy(() => import('./components/booking/EmpresaDetailPage'))
 
 function PageLoader() {
   return (
@@ -37,18 +39,27 @@ function ProtectedRoute({ children }) {
 
 function DashboardLayout() {
   const { user } = useAuth()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const initials = (user?.name || user?.nombre || 'A')
     .split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen w-full min-w-0">
         {/* Header */}
         <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-          <div className="px-6 py-3.5 flex items-center justify-between gap-4">
+          <div className="px-4 lg:px-6 py-3.5 flex items-center justify-between gap-4">
+            {/* Menu Mobile */}
+            <button 
+              className="lg:hidden p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+
             {/* Search */}
             <div className="flex-1 max-w-sm relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -107,8 +118,10 @@ export default function App() {
           <Route path="/register"         element={<RegisterForm />} />
           <Route path="/register-success" element={<RegisterSuccessForm />} />
           <Route path="/forgot-password"  element={<ForgotPasswordForm />} />
+          <Route path="/reset-password"   element={<ResetPasswordForm />} />
           <Route path="/"                 element={<LandingPage />} />
-          <Route path="/empresa/:id"     element={<EmpresaPage />} />
+          <Route path="/empresa/:id"          element={<EmpresaDetailPage />} />
+          <Route path="/empresa/:id/reservar" element={<EmpresaPage />} />
           <Route
             path="/dashboard/*"
             element={

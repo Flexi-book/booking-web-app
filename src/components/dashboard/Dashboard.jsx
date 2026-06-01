@@ -45,20 +45,28 @@ import {
 import { TableLoader } from "@/components/ui/table-loader"
 import authService from '../../services/authService'
 import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
+import OnboardingWizard, { useOnboarding } from '../admin/OnboardingWizard'
 
 export default function Dashboard() {
-  const [user, setUser] = useState(authService.getUser())
+  const [user, setUser]           = useState(authService.getUser())
   const [showWelcome, setShowWelcome] = useState(false)
-  const [reservas, setReservas] = useState([])
-  const [activos, setActivos] = useState([])
+  const [reservas, setReservas]   = useState([])
+  const [activos, setActivos]     = useState([])
   const [servicios, setServicios] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading]     = useState(true)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  const { isDone } = useOnboarding()
 
   useEffect(() => {
     if (user?.isNewUser) {
       setShowWelcome(true)
       const updatedUser = { ...user, isNewUser: false }
       localStorage.setItem('user', JSON.stringify(updatedUser))
+    }
+    // Mostrar onboarding si es la primera vez
+    if (!isDone()) {
+      setTimeout(() => setShowOnboarding(true), 600)
     }
     cargarDatos()
   }, [])
@@ -161,7 +169,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
+
+      {/* Onboarding wizard */}
+      {showOnboarding && (
+        <OnboardingWizard onClose={() => setShowOnboarding(false)} />
+      )}
+
       {/* Welcome Banner */}
       {showWelcome && (
         <Card className="relative overflow-hidden border-none bg-slate-900 text-white shadow-2xl">
