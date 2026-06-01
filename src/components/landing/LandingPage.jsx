@@ -179,10 +179,19 @@ export default function LandingPage() {
   }, [emblaApi, onSelect])
 
   useEffect(() => {
+    const cached = publicBookingApi.getCachedEmpresas?.()
+    if (Array.isArray(cached) && cached.length > 0) {
+      setEmpresas(cached)
+      setLoading(false)
+    }
+
     publicBookingApi.listarEmpresas()
       .then(d => setEmpresas(Array.isArray(d) ? d : []))
       .catch(() => setError('No se pudieron cargar las empresas.'))
-      .finally(() => setLoading(false))
+      .finally(() => {
+        // Evita mostrar skeleton si ya renderizamos desde caché.
+        setLoading(false)
+      })
   }, [])
 
   const carrusel = useMemo(() => empresas.slice(0, 6), [empresas])
