@@ -133,7 +133,15 @@ export default function EmpresaPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{icono}</span>
+            {empresa?.logoUrl ? (
+              <img
+                src={empresa.logoUrl}
+                alt={`Logo de ${empresa?.nombre || 'empresa'}`}
+                className="w-10 h-10 rounded-lg object-cover border border-slate-200"
+              />
+            ) : (
+              <span className="text-2xl">{icono}</span>
+            )}
             <div>
               <p className="font-bold text-slate-900 text-sm">{empresa?.nombre}</p>
               {empresa?.tipoNegocio && (
