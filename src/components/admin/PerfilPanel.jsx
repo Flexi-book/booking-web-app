@@ -162,6 +162,9 @@ export default function PerfilPanel() {
           const currentLogo = data?.logoUrl || ''
           setLogoUrl(currentLogo)
           setLogoPreview(currentLogo)
+          if (currentLogo && companyId) {
+            localStorage.setItem(getLogoKey(companyId), currentLogo)
+          }
         })
         .catch(() => {
           if (!active) return
