@@ -20,9 +20,18 @@ export const companyProfileApi = {
   actualizarLogo: (logoUrl) =>
     authClient.put(
       '/companies/me/logo',
-      { logoUrl },
+      { logoUrl, logo_url: logoUrl },
       { headers: authHeaders() },
     ).then((r) => {
+      clearCacheKeys([PROFILE_CACHE_KEY])
+      return r.data
+    }).catch(async () => {
+      // Fallback de compatibilidad entre versiones de backend
+      const r = await authClient.put(
+        '/../companies/me/logo',
+        { logoUrl, logo_url: logoUrl },
+        { headers: authHeaders() },
+      )
       clearCacheKeys([PROFILE_CACHE_KEY])
       return r.data
     }),

@@ -13,6 +13,10 @@ import { Calendar } from '../ui/calendar'
 
 const BUFFER_MIN = 10  // debe coincidir con ReservationService.BUFFER_MINUTES
 
+function getLogoUrl(empresa) {
+  return empresa?.logoUrl || empresa?.logo_url || ''
+}
+
 // JS getDay(): 0=Dom,1=Lun,...,6=Sab → schema: 1=Lun,...,7=Dom
 const jsToSchema = d => d === 0 ? 7 : d
 
@@ -496,9 +500,9 @@ export default function EmpresaPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            {empresa?.logoUrl ? (
+            {getLogoUrl(empresa) ? (
               <img
-                src={empresa.logoUrl}
+                src={getLogoUrl(empresa)}
                 alt={`Logo de ${empresa?.nombre || 'empresa'}`}
                 className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0"
               />
