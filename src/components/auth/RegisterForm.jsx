@@ -168,34 +168,28 @@ export default function RegisterForm() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Contraseña</Label>
-                  <div className="relative">
-                    <Input id="password" name="password" type={showPassword ? "text" : "password"} required value={formData.password} onChange={handleChange} className="pr-10" />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {formData.password && formData.password.length < 8 && (
-                    <p className="text-xs text-amber-600 font-medium">Debe tener al menos 8 caracteres</p>
-                  )}
-                  {formData.password && formData.password.length >= 8 && (
-                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3"/> Longitud válida</p>
-                  )}
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Mínimo 8 caracteres"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-                  <div className="relative">
-                    <Input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} required value={formData.confirmPassword} onChange={handleChange} className="pr-10" />
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <p className="text-xs text-red-500 font-medium">Las contraseñas no coinciden</p>
-                  )}
-                  {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3"/> Las contraseñas coinciden</p>
-                  )}
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Repite tu contraseña"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
