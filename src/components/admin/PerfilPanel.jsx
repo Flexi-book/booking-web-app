@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../auth/useAuth'
 import PageHeader from '../ui/PageHeader'
 import { Button } from '../ui/button'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Upload, Image as ImageIcon } from 'lucide-react'
+import { companyProfileApi } from '../../services/companyProfileService'
 
 const ICONOS = [
   { emoji: '✂️', label: 'Barbería' },
@@ -52,6 +53,37 @@ export default function PerfilPanel() {
     () => localStorage.getItem(getStorageKey(companyId)) ?? '🏢'
   )
   const [guardado, setGuardado] = useState(false)
+  const [logoUrl, setLogoUrl] = useState('')
+  const [logoPreview, setLogoPreview] = useState('')
+  const [subiendoLogo, setSubiendoLogo] = useState(false)
+  const [logoError, setLogoError] = useState('')
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+  const logoBucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'company-logos'
+
+  useEffect(() => {
+    let active = true
+    companyProfileApi.obtenerMiEmpresa()
+      .then((data) => {
+        if (!active) return
+        const currentLogo = data?.logoUrl || ''
+        setLogoUrl(currentLogo)
+        setLogoPreview(currentLogo)
+      })
+      .catch(() => {
+        if (!active) return
+        setLogoError('No se pudo cargar el logo actual.')
+      })
+    return () => { active = false }
+  }, [])
+
+  const previewNode = useMemo(() => {
+    if (logoPreview) {
+      return <img src={logoPreview} alt="Logo empresa" className="w-full h-full object-cover" />
+    }
+    return <span className="text-3xl">{iconoActual}</span>
+  }, [logoPreview, iconoActual])
 
   function seleccionarIcono(emoji) {
     setIconoActual(emoji)
@@ -66,6 +98,62 @@ export default function PerfilPanel() {
     setTimeout(() => setGuardado(false), 3000)
   }
 
+  async function handleUploadLogo(event) {
+    const file = event.target.files?.[0]
+    if (!file || !companyId) return
+
+    setLogoError('')
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setLogoError('Faltan variables VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY en Render.')
+      return
+    }
+
+    const maxSize = 2 * 1024 * 1024
+    if (file.size > maxSize) {
+      setLogoError('La imagen supera 2MB.')
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      setLogoError('Debes subir un archivo de imagen.')
+      return
+    }
+
+    setSubiendoLogo(true)
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      const objectPath = `empresas/${companyId}/${Date.now()}-${safeName}`
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/${logoBucket}/${objectPath}`
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          'Content-Type': file.type,
+          'x-upsert': 'true',
+        },
+        body: file,
+      })
+
+      if (!uploadRes.ok) {
+        const body = await uploadRes.text()
+        throw new Error(body || 'Error subiendo imagen')
+      }
+
+      const publicUrl = `${supabaseUrl}/storage/v1/object/public/${logoBucket}/${objectPath}`
+      const updated = await companyProfileApi.actualizarLogo(publicUrl)
+      setLogoUrl(updated.logoUrl || publicUrl)
+      setLogoPreview(updated.logoUrl || publicUrl)
+      setGuardado(true)
+      setTimeout(() => setGuardado(false), 3000)
+    } catch (err) {
+      setLogoError(`No se pudo subir el logo: ${err.message}`)
+    } finally {
+      setSubiendoLogo(false)
+      event.target.value = ''
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <PageHeader
@@ -77,9 +165,9 @@ export default function PerfilPanel() {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <p className="text-sm font-medium text-gray-500 mb-4">Vista previa de tu tarjeta</p>
         <div className="border border-gray-100 rounded-xl p-5 bg-gray-50/50 flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden
                           flex items-center justify-center text-3xl flex-shrink-0 border border-blue-100">
-            {iconoActual}
+            {previewNode}
           </div>
           <div>
             <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Empresa</span>
@@ -88,6 +176,38 @@ export default function PerfilPanel() {
             <p className="text-sm font-semibold text-blue-600 mt-3">Reservar hora →</p>
           </div>
         </div>
+      </div>
+
+      {/* Carga de imagen/logo */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <p className="text-sm font-medium text-gray-700 mb-1">Logo o imagen de empresa</p>
+        <p className="text-xs text-gray-400 mb-4">
+          Esta imagen se mostrará en la vista pública para que tus clientes identifiquen tu marca.
+        </p>
+
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center">
+            {logoPreview ? (
+              <img src={logoPreview} alt="Logo actual" className="w-full h-full object-cover" />
+            ) : (
+              <ImageIcon className="w-6 h-6 text-gray-400" />
+            )}
+          </div>
+          <label className="inline-flex">
+            <input type="file" accept="image/*" className="hidden" onChange={handleUploadLogo} />
+            <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+              <Upload className="w-4 h-4" />
+              {subiendoLogo ? 'Subiendo...' : 'Subir imagen'}
+            </span>
+          </label>
+        </div>
+
+        {logoUrl && (
+          <p className="mt-3 text-xs text-gray-500 break-all">{logoUrl}</p>
+        )}
+        {logoError && (
+          <p className="mt-3 text-sm text-red-600">{logoError}</p>
+        )}
       </div>
 
       {/* Selector de icono */}

@@ -180,6 +180,16 @@ export default function PublicBookingPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
+
+    if (!form.serviceOfferingId || !form.assetId) {
+      setError('Debes seleccionar servicio y profesional.')
+      return
+    }
+    if (!form.startTime) {
+      setError('Debes seleccionar un día y un horario disponible desde la tarjeta del servicio.')
+      return
+    }
+
     setSending(true)
     try {
       await publicBookingApi.crearReserva({
@@ -298,9 +308,20 @@ export default function PublicBookingPage() {
 
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
         <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <p className="text-xs uppercase tracking-wide text-blue-600 font-bold mb-2">Empresa</p>
-          <h1 className="text-2xl font-bold text-gray-900">{catalogo?.empresa?.nombre}</h1>
-          <p className="text-gray-600 mt-1">{catalogo?.empresa?.tipoNegocio || 'Negocio'}</p>
+          <div className="flex items-center gap-4">
+            {catalogo?.empresa?.logoUrl && (
+              <img
+                src={catalogo.empresa.logoUrl}
+                alt={`Logo de ${catalogo?.empresa?.nombre || 'empresa'}`}
+                className="w-14 h-14 rounded-xl object-cover border border-gray-200"
+              />
+            )}
+            <div>
+              <p className="text-xs uppercase tracking-wide text-blue-600 font-bold mb-2">Empresa</p>
+              <h1 className="text-2xl font-bold text-gray-900">{catalogo?.empresa?.nombre}</h1>
+              <p className="text-gray-600 mt-1">{catalogo?.empresa?.tipoNegocio || 'Negocio'}</p>
+            </div>
+          </div>
           <div className="mt-5 space-y-2 text-sm text-gray-600">
             <p><span className="font-semibold">Contacto:</span> {catalogo?.empresa?.correoContacto}</p>
             {catalogo?.empresa?.telefono && <p><span className="font-semibold">Teléfono:</span> {catalogo.empresa.telefono}</p>}
@@ -463,7 +484,15 @@ export default function PublicBookingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Servicio</label>
-                <select required className="w-full h-12 border border-gray-300 rounded-lg px-4 bg-white" value={form.serviceOfferingId} onChange={(e) => setForm((f) => ({ ...f, serviceOfferingId: e.target.value }))}>
+                <select
+                  required
+                  className="w-full h-12 border border-gray-300 rounded-lg px-4 bg-white"
+                  value={form.serviceOfferingId}
+                  onChange={(e) => {
+                    const serviceId = e.target.value
+                    setForm((f) => ({ ...f, serviceOfferingId: serviceId, assetId: '', startTime: '' }))
+                  }}
+                >
                   <option value="">Selecciona un servicio</option>
                   {(catalogo?.servicios || []).map((s) => (
                     <option key={s.servicioId} value={s.servicioId}>{s.nombreServicio} ({s.duracionMinutos} min)</option>
@@ -472,7 +501,12 @@ export default function PublicBookingPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Profesional / Puesto</label>
-                <select required className="w-full h-12 border border-gray-300 rounded-lg px-4 bg-white" value={form.assetId} onChange={(e) => setForm((f) => ({ ...f, assetId: e.target.value }))}>
+                <select
+                  required
+                  className="w-full h-12 border border-gray-300 rounded-lg px-4 bg-white"
+                  value={form.assetId}
+                  onChange={(e) => setForm((f) => ({ ...f, assetId: e.target.value, startTime: '' }))}
+                >
                   <option value="">Selecciona un profesional</option>
                   {profesionalesDelServicio.map((a) => (
                     <option key={a.activoId} value={a.activoId}>{a.nombre} ({a.tipoActivo})</option>
