@@ -10,25 +10,15 @@ import { empresaApi } from '../../services/gestionService'
 import { getEmpresaIcono } from '../admin/PerfilPanel'
 import { cn } from '@/lib/utils'
 import Footer from '../layout/Footer'
-import { MapContainer, TileLayer, Marker } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+import MapEmbed from '../ui/MapEmbed'
+import { serializarHorario, parsearHorario } from '../ui/HorarioPicker'
 
-// Fix Leaflet default icon path issues
-import icon from 'leaflet/dist/images/marker-icon.png'
-import iconShadow from 'leaflet/dist/images/marker-shadow.png'
 
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
 function Skeleton() {
   return (
     <div className="animate-pulse">
       <div className="h-56 bg-gray-200" />
-      <div className="max-w-6xl mx-auto px-5 py-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-8 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] gap-5 lg:gap-8">
         <div className="space-y-4">
           {[1,2,3].map(i => <div key={i} className="h-28 bg-gray-100 rounded-2xl" />)}
         </div>
@@ -111,7 +101,9 @@ export default function EmpresaDetailPage() {
 
   const descripcionFinal = empresa?.descripcion || null
   const direccionFinal   = empresa?.direccion || null
-  const horarioFinal     = empresa?.horario || null
+  const horarioFinal     = empresa?.horario
+    ? serializarHorario(parsearHorario(empresa.horario))
+    : null
   const amenidadesFinal  = []
   try {
     if (empresa?.amenidades) {
@@ -159,8 +151,8 @@ export default function EmpresaDetailPage() {
       {/* ── HERO ───────────────────────────────────────────────────── */}
       <div className="relative h-56 bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-500 overflow-hidden">
         {/* Fondo decorativo */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <span className="text-[180px] select-none">{icono}</span>
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 overflow-hidden">
+          <span className="text-[100px] sm:text-[180px] select-none">{icono}</span>
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
@@ -189,7 +181,7 @@ export default function EmpresaDetailPage() {
       </div>
 
       {/* ── BODY: 2 columnas ───────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-5 py-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-8 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] gap-5 lg:gap-8">
 
         {/* ── SIDEBAR ────────────────────────────────────────────── */}
         <aside className="space-y-5">
@@ -229,40 +221,16 @@ export default function EmpresaDetailPage() {
             </div>
           </div>
 
-          {/* Mapa placeholder / real */}
-          {empresa.latitud && empresa.longitud ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-48 z-0">
-               <MapContainer 
-                  center={[empresa.latitud, empresa.longitud]} 
-                  zoom={15} 
-                  style={{ height: '100%', width: '100%' }}
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution="&copy; OpenStreetMap contributors"
-                  />
-                  <Marker position={[empresa.latitud, empresa.longitud]} />
-                </MapContainer>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="h-36 bg-gradient-to-br from-green-50 to-teal-50 flex items-center justify-center relative">
-                <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 opacity-10">
-                  {Array.from({length:24}).map((_,i) => (
-                    <div key={i} className="border border-gray-400" />
-                  ))}
-                </div>
-                <div className="relative flex flex-col items-center gap-1.5">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
-                    <MapPin className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded-full shadow-sm">
-                    Sin ubicación exacta
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Mapa OpenStreetMap — sin librería React */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
+            <MapEmbed
+              direccion={direccionFinal}
+              position={empresa.latitud && empresa.longitud
+                ? { lat: empresa.latitud, lng: empresa.longitud }
+                : null}
+              readOnly
+            />
+          </div>
 
           {/* Amenidades configuradas */}
           {amenidadesFinal.length > 0 && (
@@ -312,7 +280,7 @@ export default function EmpresaDetailPage() {
                   placeholder="Buscar servicio..."
                   className="pl-8 pr-3 py-2 text-xs border border-gray-200 rounded-xl
                              bg-white focus:outline-none focus:border-blue-400 focus:ring-2
-                             focus:ring-blue-500/10 w-40 transition-all"
+                             focus:ring-blue-500/10 w-32 sm:w-44 transition-all"
                 />
               </div>
               <button className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">

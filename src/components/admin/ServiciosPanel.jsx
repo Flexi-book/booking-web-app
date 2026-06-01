@@ -128,26 +128,28 @@ export default function ServiciosPanel() {
               <Table>
                 <TableHeader className="bg-slate-50/50 border-b border-slate-200">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[300px] font-semibold text-slate-900 py-3 px-6 text-xs uppercase tracking-wider">Servicio</TableHead>
-                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Duración</TableHead>
+                    <TableHead className="font-semibold text-slate-900 py-3 px-4 sm:px-6 text-xs uppercase tracking-wider">Servicio</TableHead>
+                    <TableHead className="hidden sm:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider">Duración</TableHead>
                     <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Tarifa</TableHead>
-                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Estado</TableHead>
-                    <TableHead className="text-right font-semibold text-slate-900 px-6 text-xs uppercase tracking-wider">Acciones</TableHead>
+                    <TableHead className="hidden xs:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider">Estado</TableHead>
+                    <TableHead className="text-right font-semibold text-slate-900 px-4 sm:px-6 text-xs uppercase tracking-wider">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredServicios.length > 0 ? (
                     filteredServicios.map((s) => (
                       <TableRow key={s.id} className="hover:bg-slate-50/30 transition-colors border-slate-100">
-                        <TableCell className="py-4 px-6">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-slate-950 text-sm leading-none">{s.nombreServicio}</span>
-                            <span className="text-[11px] text-muted-foreground mt-1.5 truncate max-w-[250px]">
+                        <TableCell className="py-4 px-4 sm:px-6">
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-medium text-slate-950 text-sm leading-none truncate">{s.nombreServicio}</span>
+                            <span className="text-[11px] text-muted-foreground mt-1.5 truncate">
                               {s.descripcion || "Sin descripción registrada"}
                             </span>
+                            {/* Duración visible solo en mobile (la columna se oculta) */}
+                            <span className="sm:hidden text-[10px] text-slate-400 mt-1">{s.duracionMinutos} min</span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <div className="flex items-center text-slate-600 font-medium bg-slate-100/50 w-fit px-2 py-0.5 rounded-md text-[10px] border border-slate-200/50">
                             <Clock className="mr-1.5 h-3 w-3 text-slate-400" />
                             {s.duracionMinutos} min
@@ -158,8 +160,8 @@ export default function ServiciosPanel() {
                             {formatCurrency(s.precio)}
                           </div>
                         </TableCell>
-                        <TableCell>{getStatusBadge(s.estado)}</TableCell>
-                        <TableCell className="text-right px-6">
+                        <TableCell className="hidden xs:table-cell">{getStatusBadge(s.estado)}</TableCell>
+                        <TableCell className="text-right px-4 sm:px-6">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all">

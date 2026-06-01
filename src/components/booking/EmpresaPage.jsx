@@ -846,7 +846,7 @@ export default function EmpresaPage() {
           )}
           </div>
 
-          {/* ── Columna derecha: resumen (solo en wizard, no en confirmado) ── */}
+          {/* ── Columna derecha: resumen desktop ── */}
           {!confirmado && (
             <div className="hidden lg:block">
               <div className="sticky top-20">
@@ -856,6 +856,39 @@ export default function EmpresaPage() {
           )}
 
         </div>{/* fin grid */}
+
+        {/* ── Resumen mobile: barra fija en la parte inferior ── */}
+        {!confirmado && (sel.servicio || sel.recurso || sel.fecha) && (
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg px-4 py-3">
+            <div className="flex items-center justify-between gap-3 max-w-xl mx-auto">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-lg flex-shrink-0">{icono}</span>
+                <div className="min-w-0">
+                  {sel.servicio && (
+                    <p className="text-sm font-semibold text-gray-900 truncate">{sel.servicio.nombreServicio}</p>
+                  )}
+                  <p className="text-xs text-gray-400">
+                    {sel.fecha
+                      ? `${sel.fecha} ${sel.hora ?? ''}`
+                      : sel.recurso
+                        ? sel.recurso.nombreActivo ?? sel.recurso.nombre
+                        : 'Completa los pasos'}
+                  </p>
+                </div>
+              </div>
+              {sel.servicio?.precio > 0 && (
+                <span className="flex-shrink-0 text-sm font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg">
+                  {Number(sel.servicio.precio).toLocaleString('es-CL')}€
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Padding para que el contenido no quede tapado por la barra fija */}
+        {!confirmado && (sel.servicio || sel.recurso || sel.fecha) && (
+          <div className="lg:hidden h-20" />
+        )}
+
       </main>
     </div>
   )
