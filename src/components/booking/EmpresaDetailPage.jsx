@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Clock, ChevronRight, MapPin,
   Phone, CalendarCheck, Star, Search,
-  SlidersHorizontal, Wifi, Car, Coffee
+  SlidersHorizontal, Wifi, Car, Coffee, Share2, Heart, Building2, Mail, Globe
 } from 'lucide-react'
 import { publicBookingApi } from '../../services/publicBookingService'
 import { empresaApi } from '../../services/gestionService'
 import { getEmpresaIcono } from '../admin/PerfilPanel'
 import { cn } from '@/lib/utils'
+import Footer from '../layout/Footer'
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -287,15 +288,7 @@ export default function EmpresaDetailPage() {
             </div>
           )}
 
-          {/* CTA móvil */}
-          {servicios.length > 0 && (
-            <Link to={`/empresa/${id}/reservar`}
-              className="lg:hidden block text-center bg-blue-600 hover:bg-blue-700 text-white
-                         font-semibold py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all">
-              <CalendarCheck className="inline w-5 h-5 mr-2 -mt-0.5" />
-              Reservar ahora
-            </Link>
-          )}
+          {/* CTA móvil eliminado por petición del usuario */}
         </aside>
 
         {/* ── CATÁLOGO ───────────────────────────────────────────── */}
@@ -357,35 +350,12 @@ export default function EmpresaDetailPage() {
             </div>
           )}
 
-          {/* CTA desktop */}
-          {servicios.length > 0 && (
-            <div className="hidden lg:block mt-6">
-              <Link to={`/empresa/${id}/reservar`}
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white
-                           font-semibold px-8 py-4 rounded-2xl shadow-lg shadow-blue-200
-                           hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200">
-                <CalendarCheck className="w-5 h-5" />
-                Reservar ahora
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-          )}
+          {/* CTA desktop eliminado por petición del usuario */}
         </section>
       </div>
 
       {/* ── FOOTER ─────────────────────────────────────────────────── */}
-      <footer className="border-t border-gray-100 bg-white mt-8 py-8">
-        <div className="max-w-6xl mx-auto px-5 text-center space-y-1">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <img src="/flexibook-logo.svg" alt="" className="w-5 h-5 object-contain" />
-            <span className="font-bold text-gray-800">Flexibook</span>
-          </div>
-          <p className="text-xs text-gray-400">
-            La plataforma líder para gestionar tus citas de manera flexible y profesional en España.
-          </p>
-          <p className="text-xs text-gray-300">© 2026 Flexibook. Todos los derechos reservados.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

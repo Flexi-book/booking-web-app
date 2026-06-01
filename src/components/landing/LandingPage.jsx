@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, ChevronRight, ArrowRight, SlidersHorizontal, X, Star, MapPin, Clock } from 'lucide-react'
+import { Search, ChevronRight, ArrowRight, SlidersHorizontal, X, Star, MapPin, Clock, Building2 } from 'lucide-react'
 import Autoplay from 'embla-carousel-autoplay'
 import useEmblaCarousel from 'embla-carousel-react'
 import { cn } from '@/lib/utils'
 import { publicBookingApi } from '../../services/publicBookingService'
 import { getEmpresaIcono } from '../admin/PerfilPanel'
+import Footer from '../layout/Footer'
 
 const TIPOS_FILTRO = [
   'Todos', 'Barbería', 'Peluquería', 'Spa', 'Fitness',
@@ -459,18 +460,7 @@ export default function LandingPage() {
       </main>
 
       {/* ── FOOTER ─────────────────────────────────────────────────── */}
-      <footer className="bg-gray-900 text-gray-400 py-8">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-7 h-7 object-contain" />
-            <span className="text-white font-semibold">Flexibook</span>
-          </div>
-          <p>© 2026 Flexibook. Todos los derechos reservados.</p>
-          <Link to="/login" className="text-blue-400 hover:text-blue-300 transition font-medium">
-            Acceso administrador →
-          </Link>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

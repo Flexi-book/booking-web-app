@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
-  ArrowLeft, Clock, User, Mail, Phone,
-  CalendarDays, CheckCircle2, ChevronRight,
-  Tag, Building2, AlertCircle, Sparkles, ArrowRight, Receipt
+  Check, CalendarDays, ArrowRight, User, AlertCircle, Phone, ArrowLeft, Heart, Search, MapPin, Star, Building2, Tag, Calendar as CalendarIcon, Hash,
+  Clock, Mail, CheckCircle2, ChevronRight, Sparkles, Receipt
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { publicBookingApi } from '../../services/publicBookingService'
@@ -357,19 +356,6 @@ function ResumenPanel({ sel, empresa, icono, paso }) {
         </CardContent>
       </Card>
 
-      {/* Calendario visual — solo lectura, muestra la fecha elegida */}
-      <Card className="border-slate-100 shadow-sm">
-        <CardContent className="p-2">
-          <Calendar
-            mode="single"
-            selected={fechaObj ?? undefined}
-            month={fechaObj ?? new Date()}
-            disabled={{ before: new Date() }}
-            className="w-full"
-          />
-        </CardContent>
-      </Card>
-
       {/* Total / CTA si todo está completo */}
       {sel.servicio && sel.activo && sel.fecha && sel.hora && (
         <Card className="border-blue-200 bg-blue-50 shadow-sm animate-in fade-in duration-400">
@@ -526,11 +512,6 @@ export default function EmpresaPage() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50
-                          border border-emerald-100 px-3 py-1.5 rounded-full font-bold flex-shrink-0">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            Disponible
-          </div>
         </div>
       </header>
 
@@ -640,17 +621,26 @@ export default function EmpresaPage() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Selector de fecha */}
+                  {/* Selector de fecha Shadcn */}
                   <Field icon={CalendarDays} label="Fecha de la cita" required>
-                    <input
-                      type="date"
-                      min={minFecha}
-                      value={sel.fecha}
-                      onChange={e => setSel(p => ({ ...p, fecha: e.target.value, hora: '' }))}
-                      className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-800
-                                 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                                 focus:border-blue-400 transition cursor-pointer hover:border-slate-300"
-                    />
+                    <div className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
+                      <Calendar
+                        mode="single"
+                        selected={sel.fecha ? new Date(sel.fecha + 'T12:00:00') : undefined}
+                        onSelect={date => {
+                          if (!date) return
+                          const yyyy = date.getFullYear()
+                          const mm = String(date.getMonth() + 1).padStart(2, '0')
+                          const dd = String(date.getDate()).padStart(2, '0')
+                          setSel(p => ({ ...p, fecha: `${yyyy}-${mm}-${dd}`, hora: '' }))
+                        }}
+                        disabled={(date) => {
+                          const today = new Date()
+                          today.setHours(0, 0, 0, 0)
+                          return date < today
+                        }}
+                      />
+                    </div>
                   </Field>
 
                   {/* Slots de hora — basados en disponibilidad real */}
