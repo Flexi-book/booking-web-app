@@ -106,6 +106,19 @@ function Field({ label, children }) {
 const inputCls = `w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm
   focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition`
 
+function normalizeSupabaseBaseUrl(rawUrl) {
+  if (!rawUrl) return ''
+  try {
+    const parsed = new URL(rawUrl)
+    return parsed.origin
+  } catch {
+    return rawUrl
+      .replace(/\/rest\/v1\/?$/i, '')
+      .replace(/\/storage\/v1\/?$/i, '')
+      .replace(/\/+$/, '')
+  }
+}
+
 function LocationMarker({ position, setPosition }) {
   useMapEvents({
     click(e) {
@@ -137,7 +150,7 @@ export default function PerfilPanel() {
   const [subiendoLogo, setSubiendoLogo] = useState(false)
   const [logoError, setLogoError] = useState('')
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+  const supabaseUrl = normalizeSupabaseBaseUrl(import.meta.env.VITE_SUPABASE_URL || '')
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
   const logoBucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'company-logos'
 
