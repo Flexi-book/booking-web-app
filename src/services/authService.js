@@ -23,6 +23,16 @@ const authService = {
     return response.data
   },
 
+  requestPasswordReset: async (email) => {
+    const response = await authApi.post('/password-reset/request', { email })
+    return response.data
+  },
+
+  confirmPasswordReset: async (token, newPassword) => {
+    const response = await authApi.post('/password-reset/confirm', { token, newPassword })
+    return response.data
+  },
+
   logout: () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')

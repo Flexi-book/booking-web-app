@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingScreen } from "@/components/ui/loading-screen"
-import { Loader2, UserPlus, Building2 } from "lucide-react"
+import { Loader2, UserPlus, Building2, Check, Eye, EyeOff } from "lucide-react"
 import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
 
@@ -33,6 +33,8 @@ export default function RegisterForm() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -45,6 +47,12 @@ export default function RegisterForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.correoContacto) || !emailRegex.test(formData.correoUsuario)) {
+      setError('Por favor ingresa un correo electrónico válido en ambos campos')
+      return
+    }
 
     if (formData.password.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres')
@@ -141,9 +149,58 @@ export default function RegisterForm() {
                   <Label htmlFor="correoContacto">Email de la Empresa</Label>
                   <Input id="correoContacto" name="correoContacto" type="email" placeholder="contacto@miempresa.com" required value={formData.correoContacto} onChange={handleChange} />
                 </div>
+                <div className="space-y-4 col-span-1 md:col-span-2 mt-4">
+                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm border-b pb-2">
+                    <UserPlus className="w-4 h-4" />
+                    Información de Usuario Administrador
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nombreUsuario">Tu Nombre</Label>
+                  <Input id="nombreUsuario" name="nombreUsuario" placeholder="Juan Pérez" required value={formData.nombreUsuario} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="correoUsuario">Tu Email</Label>
+                  <Input id="correoUsuario" name="correoUsuario" type="email" placeholder="juan@correo.com" required value={formData.correoUsuario} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <div className="relative">
+                    <Input id="password" name="password" type={showPassword ? "text" : "password"} required value={formData.password} onChange={handleChange} className="pr-10" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {formData.password && formData.password.length < 8 && (
+                    <p className="text-xs text-amber-600 font-medium">Debe tener al menos 8 caracteres</p>
+                  )}
+                  {formData.password && formData.password.length >= 8 && (
+                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3"/> Longitud válida</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                  <div className="relative">
+                    <Input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} required value={formData.confirmPassword} onChange={handleChange} className="pr-10" />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-xs text-red-500 font-medium">Las contraseñas no coinciden</p>
+                  )}
+                  {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3"/> Las contraseñas coinciden</p>
+                  )}
+                </div>
               </div>
 
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6" disabled={loading}>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6" 
+                      disabled={loading || formData.password.length < 8 || formData.password !== formData.confirmPassword}>
                 {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando...</> : <><UserPlus className="mr-2 h-4 w-4" /> Crear Cuenta</>}
               </Button>
             </form>
