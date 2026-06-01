@@ -55,6 +55,10 @@ function getKey(companyId, campo) {
   return `flexibook_${campo}_${companyId}`
 }
 
+function getLogoKey(companyId) {
+  return `flexibook_logo_url_${companyId}`
+}
+
 export function getEmpresaIcono(companyId, tipoNegocio) {
   if (companyId) {
     const stored = localStorage.getItem(getKey(companyId, 'icono'))
@@ -224,8 +228,10 @@ export default function PerfilPanel() {
 
       const publicUrl = `${supabaseUrl}/storage/v1/object/public/${logoBucket}/${objectPath}`
       const updated = await companyProfileApi.actualizarLogo(publicUrl)
-      setLogoUrl(updated.logoUrl || publicUrl)
-      setLogoPreview(updated.logoUrl || publicUrl)
+      const finalLogoUrl = updated.logoUrl || publicUrl
+      setLogoUrl(finalLogoUrl)
+      setLogoPreview(finalLogoUrl)
+      localStorage.setItem(getLogoKey(companyId), finalLogoUrl)
       setGuardado(true)
       setTimeout(() => setGuardado(false), 3000)
     } catch (err) {
