@@ -107,4 +107,12 @@ export const publicBookingApi = {
   // Crear reserva — bff-user (reservations endpoint)
   crearReserva: (payload) =>
     userPublic.post('/reservations', payload).then(r => r.data),
+
+  listarResenasEmpresa: (empresaId) =>
+    catalogPublic.get(`/public/empresas/${empresaId}/resenas`).then((r) =>
+      normalizeArrayPayload(r.data)
+    ),
+
+  crearResenaEmpresa: (empresaId, payload) =>
+    catalogPublic.post(`/public/empresas/${empresaId}/resenas`, payload).then((r) => r.data),
 }
