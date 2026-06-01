@@ -18,6 +18,7 @@ const CalendarioPanel     = lazy(() => import('./components/admin/CalendarioPane
 const NotificacionesPanel = lazy(() => import('./components/admin/NotificacionesPanel'))
 const PerfilPanel         = lazy(() => import('./components/admin/PerfilPanel'))
 const EmpresaPage         = lazy(() => import('./components/booking/EmpresaPage'))
+const EmpresaDetailPage   = lazy(() => import('./components/booking/EmpresaDetailPage'))
 
 function PageLoader() {
   return (
@@ -108,7 +109,8 @@ export default function App() {
           <Route path="/register-success" element={<RegisterSuccessForm />} />
           <Route path="/forgot-password"  element={<ForgotPasswordForm />} />
           <Route path="/"                 element={<LandingPage />} />
-          <Route path="/empresa/:id"     element={<EmpresaPage />} />
+          <Route path="/empresa/:id"          element={<EmpresaDetailPage />} />
+          <Route path="/empresa/:id/reservar" element={<EmpresaPage />} />
           <Route
             path="/dashboard/*"
             element={

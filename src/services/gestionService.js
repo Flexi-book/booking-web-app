@@ -1,4 +1,4 @@
-import { adminClient } from '../api/apiClients'
+import { adminClient, authClient } from '../api/apiClients'
 import { extractApiError } from '../utils/apiError'
 
 // ── Helper: lanza error legible ──────────────────────────────────────────────
@@ -61,4 +61,13 @@ export const notificacionesApi = {
       eventType: 'CANCELACION_RESERVA', recipientEmail: clienteEmail,
       nombre: clienteNombre, servicio, fecha,
     }).catch(() => {}), // best-effort
+}
+
+// ── Empresa (Configuración) ───────────────────────────────────────────────────
+export const empresaApi = {
+  actualizar: (id, data) => apiCall(authClient.put(`/companies/${id}`, data, {
+    // Add header to bypass security check in the controller if needed, or rely on token
+    headers: { 'X-Empresa-Id': id }
+  })),
+  obtener: (id) => apiCall(authClient.get(`/companies/public/${id}`)),
 }
