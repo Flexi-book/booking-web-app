@@ -250,40 +250,44 @@ export default function ReservasPanel() {
                   <Table>
                     <TableHeader className="bg-slate-50/50 border-b border-slate-200">
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="w-[280px] font-semibold text-slate-900 py-3 px-6">Cliente</TableHead>
-                        <TableHead className="font-semibold text-slate-900">Servicio</TableHead>
-                        <TableHead className="font-semibold text-slate-900">Recurso</TableHead>
-                        <TableHead className="font-semibold text-slate-900">Programación</TableHead>
+                        <TableHead className="font-semibold text-slate-900 py-3 px-4 sm:px-6">Cliente</TableHead>
+                        <TableHead className="hidden sm:table-cell font-semibold text-slate-900">Servicio</TableHead>
+                        <TableHead className="hidden lg:table-cell font-semibold text-slate-900">Recurso</TableHead>
+                        <TableHead className="font-semibold text-slate-900">Fecha</TableHead>
                         <TableHead className="font-semibold text-slate-900">Estado</TableHead>
-                        <TableHead className="text-right font-semibold text-slate-900 px-6">Acciones</TableHead>
+                        <TableHead className="text-right font-semibold text-slate-900 px-4 sm:px-6">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredReservas.length > 0 ? (
                         filteredReservas.map((r) => (
                           <TableRow key={r.id} className="hover:bg-slate-50/30 transition-colors border-slate-100">
-                            <TableCell className="py-4 px-6">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-semibold text-xs border border-slate-200">
+                            <TableCell className="py-4 px-4 sm:px-6">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-semibold text-xs border border-slate-200">
                                   {(r.customerName || 'A').charAt(0)}
                                 </div>
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-slate-950 text-sm leading-none">{r.customerName || 'Cliente Anónimo'}</span>
-                                  <span className="text-[11px] text-muted-foreground mt-1">{r.customerEmail || 'Sin correo electrónico'}</span>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-medium text-slate-950 text-sm leading-none truncate">{r.customerName || 'Cliente Anónimo'}</span>
+                                  <span className="text-[11px] text-muted-foreground mt-1 truncate hidden sm:block">{r.customerEmail || 'Sin correo'}</span>
+                                  {/* En mobile mostramos el servicio bajo el nombre */}
+                                  <span className="sm:hidden text-[11px] text-slate-500 mt-0.5 truncate">
+                                    {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio}
+                                  </span>
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-sm font-medium text-slate-700">
+                            <TableCell className="hidden sm:table-cell text-sm font-medium text-slate-700 max-w-[160px] truncate">
                               {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio}
                             </TableCell>
-                            <TableCell>
-                              <span className="text-xs font-medium text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50">
+                            <TableCell className="hidden lg:table-cell">
+                              <span className="text-xs font-medium text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 truncate max-w-[120px] block">
                                 {activos.find(a => a.id === r.assetId)?.nombreActivo}
                               </span>
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="text-sm font-medium text-slate-900">
+                                <span className="text-sm font-medium text-slate-900 whitespace-nowrap">
                                   {new Date(r.startTime).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
                                 </span>
                                 <span className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -293,7 +297,7 @@ export default function ReservasPanel() {
                               </div>
                             </TableCell>
                             <TableCell>{getStatusBadge(r.estado)}</TableCell>
-                            <TableCell className="text-right px-6">
+                            <TableCell className="text-right px-4 sm:px-6">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all">
@@ -331,53 +335,122 @@ export default function ReservasPanel() {
 
         <TabsContent value="calendar" className="mt-0 focus-visible:outline-none animate-in fade-in duration-300">
           <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/30 flex flex-row items-center justify-between py-3 px-6">
-              <CardTitle className="text-sm font-semibold text-slate-900 capitalize">
-                {currentDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}
-              </CardTitle>
+            {/* ── Cabecera del calendario ── */}
+            <CardHeader className="border-b border-slate-100 bg-slate-50/30 flex flex-row items-center justify-between py-3 px-5">
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 capitalize">
+                  {currentDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}
+                </CardTitle>
+                {/* Leyenda de estados */}
+                <div className="hidden sm:flex items-center gap-3 ml-2">
+                  {[
+                    { color: 'bg-blue-500',   label: 'Confirmada' },
+                    { color: 'bg-amber-400',  label: 'Pendiente'  },
+                    { color: 'bg-red-400',    label: 'Cancelada'  },
+                  ].map(l => (
+                    <span key={l.label} className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                      <span className={`w-2 h-2 rounded-full ${l.color}`} />
+                      {l.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
               <div className="flex items-center gap-1.5">
-                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200" onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
+                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200"
+                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </Button>
-                <Button variant="outline" size="sm" className="h-7 px-2 text-[10px] font-semibold uppercase tracking-wider border-slate-200" onClick={() => setCurrentDate(new Date())}>
+                <Button variant="outline" size="sm" className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider border-slate-200"
+                  onClick={() => setCurrentDate(new Date())}>
                   Hoy
                 </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200" onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
+                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200"
+                  onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Button>
               </div>
             </CardHeader>
+
             <CardContent className="p-0">
+              {/* ── Nombres de los días ── */}
               <div className="grid grid-cols-7 border-b border-slate-100">
                 {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
-                  <div key={d} className="py-2.5 text-center text-[10px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50/20 border-r border-slate-100 last:border-r-0">
+                  <div key={d} className="py-2.5 text-center text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-r-0">
                     {d}
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 h-[560px]">
+
+              {/* ── Grid de días — altura dinámica, min-h para que haya espacio ── */}
+              <div className="grid grid-cols-7">
                 {calendarDays.map((dayObj, i) => {
-                  const dayReservas = getReservasForDate(dayObj.date)
+                  const dayReservas   = getReservasForDate(dayObj.date)
+                  const total         = dayReservas.length
+                  const isToday       = dayObj.date.toDateString() === new Date().toDateString()
+                  const MAX_VISIBLE   = 3
+
                   return (
-                    <div key={i} onClick={() => dayReservas.length > 0 && verDetalles(dayReservas[0])} className={cn(
-                      "p-1.5 border-r border-b border-slate-100 relative group transition-all overflow-y-auto last:border-r-0 cursor-pointer min-h-[80px]",
-                      !dayObj.currentMonth ? "bg-slate-50/50" : "bg-white hover:bg-slate-50/20"
-                    )}>
-                      <span className={cn("text-[10px] font-semibold mb-1 block", dayObj.currentMonth ? "text-slate-600" : "text-slate-300")}>
-                        {dayObj.day}
-                      </span>
-                      <div className="space-y-1">
-                        {dayReservas.map(r => (
-                          <div key={r.id} className={cn(
-                            "text-[9px] px-1.5 py-0.5 rounded border transition-all truncate font-medium",
-                            r.estado === 'cancelada' 
-                              ? "bg-slate-50 border-slate-200 text-slate-400 line-through opacity-60" 
-                              : "bg-white border-slate-200 text-slate-900 shadow-sm hover:border-slate-400"
-                          )}>
-                            <span className="font-semibold mr-1">{new Date(r.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            {r.customerName}
-                          </div>
-                        ))}
+                    <div
+                      key={i}
+                      className={cn(
+                        'border-r border-b border-slate-100 last:border-r-0 min-h-[90px] sm:min-h-[110px] lg:min-h-[130px]',
+                        'p-1.5 sm:p-2 flex flex-col transition-colors',
+                        !dayObj.currentMonth && 'bg-slate-50/60',
+                        dayObj.currentMonth && total > 0 && 'hover:bg-blue-50/30 cursor-pointer',
+                        dayObj.currentMonth && total === 0 && 'hover:bg-slate-50/40',
+                      )}
+                      onClick={() => total > 0 && verDetalles(dayReservas[0])}
+                    >
+                      {/* Número del día */}
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={cn(
+                          'text-xs sm:text-sm font-semibold w-6 h-6 flex items-center justify-center rounded-full transition-colors',
+                          isToday
+                            ? 'bg-blue-600 text-white'
+                            : dayObj.currentMonth
+                              ? 'text-slate-700'
+                              : 'text-slate-300'
+                        )}>
+                          {dayObj.day}
+                        </span>
+                        {total > 0 && (
+                          <span className="text-[9px] sm:text-[10px] font-bold text-blue-600 bg-blue-50 rounded-full px-1.5 py-0.5 leading-none">
+                            {total}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Eventos */}
+                      <div className="space-y-0.5 flex-1 overflow-hidden">
+                        {dayReservas.slice(0, MAX_VISIBLE).map(r => {
+                          const hora = new Date(r.startTime).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
+                          const color = r.estado === 'cancelada'
+                            ? 'bg-slate-100 text-slate-400 border-slate-200 line-through'
+                            : r.estado === 'pendiente'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : 'bg-blue-50 text-blue-800 border-blue-200'
+                          const dot = r.estado === 'cancelada'
+                            ? 'bg-red-400'
+                            : r.estado === 'pendiente'
+                              ? 'bg-amber-400'
+                              : 'bg-blue-500'
+
+                          return (
+                            <div key={r.id} className={cn(
+                              'flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded border truncate font-medium',
+                              color
+                            )}>
+                              <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', dot)} />
+                              <span className="font-bold flex-shrink-0 hidden sm:inline">{hora}</span>
+                              <span className="truncate">{r.customerName}</span>
+                            </div>
+                          )
+                        })}
+                        {total > MAX_VISIBLE && (
+                          <p className="text-[9px] text-slate-400 font-medium pl-1">
+                            +{total - MAX_VISIBLE} más
+                          </p>
+                        )}
                       </div>
                     </div>
                   )
