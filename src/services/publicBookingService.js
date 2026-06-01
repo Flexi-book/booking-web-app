@@ -22,10 +22,44 @@ const userBase = isDev
   : import.meta.env.VITE_BOOKING_API_URL
 const userPublic = axios.create({ baseURL: userBase })
 
+const EMPRESAS_CACHE_KEY = 'public_empresas_cache_v1'
+const EMPRESAS_CACHE_TTL_MS = 5 * 60 * 1000
+
+function readEmpresasCache() {
+  try {
+    const raw = localStorage.getItem(EMPRESAS_CACHE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed?.data)) return null
+    if (typeof parsed?.expiresAt !== 'number') return null
+    if (Date.now() > parsed.expiresAt) return null
+    return parsed.data
+  } catch {
+    return null
+  }
+}
+
+function writeEmpresasCache(data) {
+  try {
+    localStorage.setItem(EMPRESAS_CACHE_KEY, JSON.stringify({
+      data,
+      expiresAt: Date.now() + EMPRESAS_CACHE_TTL_MS,
+    }))
+  } catch {
+    // Ignore storage quota/runtime errors.
+  }
+}
+
 export const publicBookingApi = {
+  getCachedEmpresas: () => readEmpresasCache(),
+
   // Listado de empresas — catalog-service
   listarEmpresas: () =>
-    catalogPublic.get('/public/empresas').then(r => r.data),
+    catalogPublic.get('/public/empresas').then(r => {
+      const data = Array.isArray(r.data) ? r.data : []
+      writeEmpresasCache(data)
+      return data
+    }),
 
   // Servicios activos de una empresa — bff-backoffice acepta UUID
   listarServiciosPublic: (empresaId) =>
