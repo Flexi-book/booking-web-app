@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, ChevronRight, ArrowRight, SlidersHorizontal, X, Star, MapPin } from 'lucide-react'
+import { Search, ChevronRight, ArrowRight, SlidersHorizontal, X, Star, MapPin, Clock } from 'lucide-react'
 import Autoplay from 'embla-carousel-autoplay'
 import useEmblaCarousel from 'embla-carousel-react'
 import { cn } from '@/lib/utils'
