@@ -2,10 +2,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, CalendarCheck, Scissors,
   Boxes, CalendarDays, Bell, History,
-  Settings2, LogOut, ChevronRight, Building2,
+  Settings2, LogOut, ChevronRight, Building2, HelpCircle,
 } from 'lucide-react'
 import { useAuth } from '../../auth/useAuth'
 import { cn } from '@/lib/utils'
+import { useState } from 'react'
+import OnboardingWizard from '../admin/OnboardingWizard'
 
 const NAV_ITEMS = [
   { to: '/dashboard',                icon: LayoutDashboard, label: 'Dashboard' },
@@ -47,6 +49,7 @@ function NavItem({ to, icon: Icon, label, exact = false }) {
 export default function Sidebar() {
   const navigate = useNavigate()
   const { user, companyName, logout } = useAuth()
+  const [showTour, setShowTour] = useState(false)
 
   const initials = (user?.name || user?.nombre || 'A')
     .split(' ')
@@ -56,6 +59,7 @@ export default function Sidebar() {
     .toUpperCase()
 
   return (
+  <>
     <aside className="w-64 bg-white border-r border-slate-200 fixed h-screen overflow-y-auto flex flex-col">
 
       {/* Logo */}
@@ -103,6 +107,15 @@ export default function Sidebar() {
           </div>
         </div>
 
+        {/* Tour / Ayuda */}
+        <button
+          onClick={() => setShowTour(true)}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                     font-medium text-blue-600 hover:bg-blue-50 transition-colors group">
+          <HelpCircle className="w-5 h-5 text-blue-400 group-hover:text-blue-600 flex-shrink-0" />
+          Ver tutorial
+        </button>
+
         {/* Configuración */}
         <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
                            font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
@@ -121,5 +134,11 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+
+    {/* Tour relanzable desde sidebar */}
+    {showTour && (
+      <OnboardingWizard onClose={() => setShowTour(false)} />
+    )}
+  </>
   )
 }
