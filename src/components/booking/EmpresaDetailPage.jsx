@@ -85,6 +85,9 @@ export default function EmpresaDetailPage() {
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
   const [busqueda, setBusqueda]   = useState('')
+  const [resenas, setResenas] = useState([])
+  const [nuevaResena, setNuevaResena] = useState({ nombreCliente: '', comentario: '', puntuacion: 5 })
+  const [enviandoResena, setEnviandoResena] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -94,10 +97,13 @@ export default function EmpresaDetailPage() {
         return publicBookingApi.listarEmpresas().then(emps => emps.find(e => String(e.empresaId) === id) ?? null)
       }),
       publicBookingApi.listarServiciosPublic(id),
-    ]).then(([emp, svcs]) => {
+      publicBookingApi.listarResenasEmpresa(id).catch(() => []),
+    ]).then(([emp, svcs, reviews]) => {
       setEmpresa(emp)
       setServicios(svcs)
-    }).catch(() => setError('No pudimos cargar esta empresa.'))
+      setResenas(Array.isArray(reviews) ? reviews : [])
+    })
+    .catch(() => setError('No pudimos cargar esta empresa.'))
     .finally(() => setLoading(false))
   }, [id])
 
@@ -129,6 +135,34 @@ export default function EmpresaDetailPage() {
   const serviciosFiltrados = busqueda.trim()
     ? servicios.filter(s => s.nombreServicio.toLowerCase().includes(busqueda.toLowerCase()))
     : servicios
+
+  const ratingPromedio = Number(empresa?.ratingPromedio || 0)
+  const totalResenas = Number(empresa?.totalResenas || resenas.length || 0)
+
+  async function enviarResena(e) {
+    e.preventDefault()
+    if (!nuevaResena.nombreCliente.trim() || !nuevaResena.comentario.trim()) return
+    setEnviandoResena(true)
+    try {
+      await publicBookingApi.crearResenaEmpresa(id, {
+        nombreCliente: nuevaResena.nombreCliente.trim(),
+        comentario: nuevaResena.comentario.trim(),
+        puntuacion: Number(nuevaResena.puntuacion),
+      })
+      const updated = await publicBookingApi.listarResenasEmpresa(id)
+      setResenas(updated)
+      setNuevaResena({ nombreCliente: '', comentario: '', puntuacion: 5 })
+      const empresas = await publicBookingApi.listarEmpresas().catch(() => null)
+      if (Array.isArray(empresas)) {
+        const refreshed = empresas.find((e2) => String(e2.empresaId) === id)
+        if (refreshed) setEmpresa((prev) => ({ ...prev, ...refreshed }))
+      }
+    } catch {
+      setError('No se pudo enviar la reseña. Intenta nuevamente.')
+    } finally {
+      setEnviandoResena(false)
+    }
+  }
 
   if (loading) return <Skeleton />
 
@@ -181,10 +215,12 @@ export default function EmpresaDetailPage() {
               <div className="flex items-center gap-2 mt-1.5">
                 <div className="flex items-center gap-1">
                   {[1,2,3,4,5].map(i => (
-                    <Star key={i} className={cn('w-3.5 h-3.5', i <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-white/40')} />
+                    <Star key={i} className={cn('w-3.5 h-3.5', i <= Math.round(ratingPromedio) ? 'text-yellow-400 fill-yellow-400' : 'text-white/40')} />
                   ))}
                 </div>
-                <span className="text-white/70 text-xs">4.8 (104 reseñas)</span>
+                <span className="text-white/70 text-xs">
+                  {totalResenas > 0 ? `${ratingPromedio.toFixed(1)} (${totalResenas} reseñas)` : 'Sin reseñas aún'}
+                </span>
               </div>
             </div>
             <div className="flex-shrink-0 text-2xl">{icono}</div>
@@ -331,6 +367,56 @@ export default function EmpresaDetailPage() {
           )}
 
           {/* CTA desktop eliminado por petición del usuario */}
+          <div className="mt-8 bg-white rounded-2xl border border-gray-100 p-5">
+            <h3 className="text-base font-semibold text-gray-900 mb-3">Reseñas</h3>
+            <form onSubmit={enviarResena} className="space-y-3 mb-5">
+              <input
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                placeholder="Tu nombre"
+                value={nuevaResena.nombreCliente}
+                onChange={(e) => setNuevaResena((p) => ({ ...p, nombreCliente: e.target.value }))}
+                required
+              />
+              <textarea
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm min-h-[90px]"
+                placeholder="Escribe tu reseña"
+                value={nuevaResena.comentario}
+                onChange={(e) => setNuevaResena((p) => ({ ...p, comentario: e.target.value }))}
+                required
+              />
+              <div className="flex items-center gap-3">
+                <select
+                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  value={nuevaResena.puntuacion}
+                  onChange={(e) => setNuevaResena((p) => ({ ...p, puntuacion: Number(e.target.value) }))}
+                >
+                  {[5,4,3,2,1].map((v) => <option key={v} value={v}>{v} estrellas</option>)}
+                </select>
+                <button
+                  type="submit"
+                  disabled={enviandoResena}
+                  className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl disabled:opacity-60"
+                >
+                  {enviandoResena ? 'Enviando...' : 'Enviar reseña'}
+                </button>
+              </div>
+            </form>
+            <div className="space-y-3">
+              {resenas.length === 0 ? (
+                <p className="text-sm text-gray-400">Todavía no hay reseñas.</p>
+              ) : (
+                resenas.slice(0, 20).map((r) => (
+                  <div key={r.resenaId} className="border border-gray-100 rounded-xl p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-800">{r.nombreCliente}</p>
+                      <p className="text-xs text-yellow-600 font-semibold">{'★'.repeat(r.puntuacion)}</p>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{r.comentario}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </section>
       </div>
 
