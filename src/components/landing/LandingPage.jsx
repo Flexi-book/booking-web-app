@@ -13,6 +13,19 @@ const TIPOS_FILTRO = [
   'Centro Médico', 'Salón de belleza', 'Petshop', 'Otro'
 ]
 
+function normalizeText(value = '') {
+  return value
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase()
+}
+
+function getLogoUrl(empresa) {
+  return empresa?.logoUrl || empresa?.logo_url || ''
+}
+
 /* ── Skeleton ────────────────────────────────────────────────────────── */
 function SkeletonCard() {
   return (
@@ -32,6 +45,7 @@ function SkeletonCard() {
 function HeroCard({ empresa }) {
   const icono = getEmpresaIcono(empresa.empresaId, empresa.tipoNegocio)
   const descripcion = empresa.descripcion || null
+  const logoUrl = getLogoUrl(empresa)
 
   return (
     <Link to={`/empresa/${empresa.empresaId}`}
@@ -39,9 +53,17 @@ function HeroCard({ empresa }) {
                  transition-all duration-300 hover:-translate-y-1 border border-gray-100">
       <div className="h-44 bg-gradient-to-br from-blue-50 to-indigo-50/60
                       flex items-center justify-center overflow-hidden relative">
-        <span className="text-7xl select-none group-hover:scale-105 transition-transform duration-300 drop-shadow-sm">
-          {icono}
-        </span>
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`Logo de ${empresa.nombre}`}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <span className="text-7xl select-none group-hover:scale-105 transition-transform duration-300 drop-shadow-sm">
+            {icono}
+          </span>
+        )}
         {empresa.tipoNegocio && (
           <span className="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full
                            bg-white/90 text-blue-700 border border-blue-100 shadow-sm">
@@ -68,6 +90,7 @@ function HeroCard({ empresa }) {
 /* ── Card estilo foto para grid ──────────────────────────────────────── */
 function GridCard({ empresa, index }) {
   const icono = getEmpresaIcono(empresa.empresaId, empresa.tipoNegocio)
+  const logoUrl = getLogoUrl(empresa)
   // Rating simulado entre 4.5 y 5.0
   const rating = (4.5 + ((parseInt(empresa.empresaId?.slice(-2), 16) || 0) % 6) * 0.1).toFixed(1)
 
@@ -80,9 +103,17 @@ function GridCard({ empresa, index }) {
       {/* Foto / Imagen de la empresa */}
       <div className="relative h-44 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100
                       flex items-center justify-center overflow-hidden">
-        <span className="text-7xl select-none group-hover:scale-110 transition-transform duration-500 drop-shadow-md">
-          {icono}
-        </span>
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`Logo de ${empresa.nombre}`}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+        ) : (
+          <span className="text-7xl select-none group-hover:scale-110 transition-transform duration-500 drop-shadow-md">
+            {icono}
+          </span>
+        )}
 
         {/* Rating badge */}
         <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/95 backdrop-blur-sm
@@ -165,7 +196,8 @@ export default function LandingPage() {
       )
     }
     if (tipoFiltro !== 'Todos') {
-      lista = lista.filter(e => e.tipoNegocio === tipoFiltro)
+      const selected = normalizeText(tipoFiltro)
+      lista = lista.filter((e) => normalizeText(e.tipoNegocio) === selected)
     }
     return lista.sort((a, b) =>
       orden === 'az'
