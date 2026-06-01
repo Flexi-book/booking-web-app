@@ -99,8 +99,8 @@ function HeroCard({ empresa }) {
 function GridCard({ empresa, index }) {
   const icono = getEmpresaIcono(empresa.empresaId, empresa.tipoNegocio)
   const logoUrl = getLogoUrl(empresa)
-  // Rating simulado entre 4.5 y 5.0
-  const rating = (4.5 + ((parseInt(empresa.empresaId?.slice(-2), 16) || 0) % 6) * 0.1).toFixed(1)
+  const rating = Number(empresa?.ratingPromedio || 0).toFixed(1)
+  const totalResenas = Number(empresa?.totalResenas || 0)
 
   return (
     <div
@@ -124,11 +124,13 @@ function GridCard({ empresa, index }) {
         )}
 
         {/* Rating badge */}
-        <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/95 backdrop-blur-sm
-                        px-2 py-1 rounded-full shadow-sm text-xs font-bold text-gray-800">
-          <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-          {rating}
-        </div>
+        {totalResenas > 0 && (
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/95 backdrop-blur-sm
+                          px-2 py-1 rounded-full shadow-sm text-xs font-bold text-gray-800">
+            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+            {rating}
+          </div>
+        )}
       </div>
 
       {/* Info */}
