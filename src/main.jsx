@@ -5,12 +5,18 @@ import { AuthProvider } from './auth/AuthProvider'
 import App from './App'
 import './index.css'
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+const app = (
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+)
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    {googleClientId
+      ? <GoogleOAuthProvider clientId={googleClientId}>{app}</GoogleOAuthProvider>
+      : app}
   </React.StrictMode>,
 )
