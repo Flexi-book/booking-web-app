@@ -14,7 +14,7 @@ export default defineConfig({
     proxy: {
       // Evita CORS en dev — Vite reenvía la petición al backend
       '/proxy/catalog': {
-        target: 'http://localhost:8084',
+        target: 'http://localhost:8082',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/proxy\/catalog/, '/api'),
         headers: { 'Accept-Charset': 'UTF-8' },
