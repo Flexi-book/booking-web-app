@@ -1,23 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import MapEmbed from '../ui/MapEmbed'
+import HorarioPicker from '../ui/HorarioPicker'
 import { useAuth } from '../../auth/useAuth'
 import PageHeader from '../ui/PageHeader'
 import { CheckCircle2, MapPin, Clock, Wifi, Car, Wind, Coffee, Dumbbell, ParkingCircle, X, Navigation, Upload, Image as ImageIcon } from 'lucide-react'
 import { empresaApi } from '../../services/gestionService'
 import { companyProfileApi } from '../../services/companyProfileService'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-
-// Fix Leaflet default icon path issues
-import icon from 'leaflet/dist/images/marker-icon.png'
-import iconShadow from 'leaflet/dist/images/marker-shadow.png'
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
 
 /* ──────────────────────────────────────────────────────────────────────
    ICONOS DISPONIBLES
@@ -106,14 +94,6 @@ function Field({ label, children }) {
 const inputCls = `w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm
   focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition`
 
-function LocationMarker({ position, setPosition }) {
-  useMapEvents({
-    click(e) {
-      setPosition(e.latlng)
-    },
-  })
-  return position ? <Marker position={position} /> : null
-}
 
 /* ──────────────────────────────────────────────────────────────────────
    MAIN
@@ -280,26 +260,16 @@ export default function PerfilPanel() {
   const defaultCenter = { lat: 40.416775, lng: -3.703790 } // Default to Madrid if no position
 
   return (
-    <div className="space-y-6 max-w-2xl pb-12">
+    <div className="max-w-5xl mx-auto pb-12">
       <PageHeader
         title="Mi Empresa"
         subtitle="Personaliza cómo aparece tu negocio en el directorio público."
       />
 
-      {/* Vista previa */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Vista previa</p>
-        <div className="border border-gray-100 rounded-xl overflow-hidden bg-gray-50">
-          <div className="h-28 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center relative">
-            {previewNode}
-          </div>
-          <div className="p-4">
-            <p className="font-bold text-gray-900">{companyName ?? 'Mi Empresa'}</p>
-            {descripcion && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{descripcion}</p>}
-            {direccion && <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{direccion}</p>}
-          </div>
-        </div>
-      </div>
+      <div className="mt-6 grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-6 items-start">
+
+        {/* ── Columna izquierda: formulario ──────────────────────────── */}
+        <div className="space-y-6 min-w-0">
 
       {/* Carga de imagen/logo */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -375,57 +345,25 @@ export default function PerfilPanel() {
           />
         </Field>
 
-        <Field label={<span className="flex items-center gap-1.5"><Navigation className="w-3.5 h-3.5 text-blue-500" />Ubicación en el Mapa</span>}>
-          <div className="flex items-center justify-between mb-2">
-            {position ? (
-              <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg font-medium">
-                  <MapPin className="w-3 h-3" />
-                  {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPosition(null)}
-                  className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-100 px-2.5 py-1 rounded-lg transition-colors font-medium"
-                  title="Quitar ubicación"
-                >
-                  <X className="w-3 h-3" /> Limpiar
-                </button>
-              </div>
-            ) : (
-              <p className="text-xs text-gray-400 italic">Sin ubicación establecida — haz clic en el mapa para marcarla</p>
-            )}
-          </div>
-          <div className="h-64 rounded-xl overflow-hidden border border-gray-200 z-0">
-            <MapContainer 
-              center={position || defaultCenter} 
-              zoom={position ? 15 : 5} 
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; OpenStreetMap contributors"
-              />
-              <LocationMarker position={position} setPosition={setPosition} />
-            </MapContainer>
-          </div>
-          {!position && (
-            <p className="text-xs text-blue-500 mt-1.5 flex items-center gap-1">
-              <MapPin className="w-3 h-3" /> Haz clic en cualquier punto del mapa para fijar la ubicación
-            </p>
-          )}
+        <Field label={<span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-blue-500" />Ubicación en el mapa</span>}>
+          <p className="text-xs text-gray-400 mb-2">
+            Escribe tu dirección arriba y pulsa "Localizar" para mostrarla en el mapa.
+          </p>
+          <MapEmbed
+            direccion={direccion}
+            position={position}
+            onPositionChange={setPosition}
+          />
+        </Field>
+
+        <Field label={<span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-blue-500" />Horario de atención</span>}>
+          <HorarioPicker
+            value={horario}
+            onChange={(json, texto) => setHorario(json)}
+          />
         </Field>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label={<span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-blue-500" />Horario de atención</span>}>
-            <input
-              className={inputCls}
-              placeholder="Ej: L-V: 09:00 - 20:00"
-              value={horario}
-              onChange={e => setHorario(e.target.value)}
-            />
-          </Field>
-          
           <Field label="Tipo de Atención">
             <select
               className={inputCls}
@@ -461,38 +399,67 @@ export default function PerfilPanel() {
             )
           })}
         </div>
-      </div>
+      </div>{/* fin amenidades */}
 
-      {/* Datos de la cuenta */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-3">Datos de la cuenta</p>
-        <div className="space-y-2 text-sm">
-          {[
-            { l: 'Nombre',  v: user?.name || user?.nombre },
-            { l: 'Email',   v: user?.email },
-            { l: 'Empresa', v: companyName },
-          ].map(({ l, v }) => (
-            <div key={l} className="flex justify-between py-1.5 border-b border-gray-50 last:border-0">
-              <span className="text-gray-400">{l}</span>
-              <span className="font-medium text-gray-700">{v || '—'}</span>
-            </div>
-          ))}
+        {/* Botón guardar */}
+        <div className="flex items-center gap-4">
+          <button onClick={guardar}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3
+                       rounded-xl transition-all shadow-sm hover:shadow-md text-sm">
+            Guardar cambios
+          </button>
+          {guardado && (
+            <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4" /> Guardado correctamente
+            </span>
+          )}
         </div>
-      </div>
+        </div>{/* fin columna izquierda */}
 
-      {/* Botón guardar */}
-      <div className="flex items-center gap-4">
-        <button onClick={guardar}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3
-                     rounded-xl transition-all shadow-sm hover:shadow-md text-sm">
-          Guardar cambios
-        </button>
-        {guardado && (
-          <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium animate-in fade-in">
-            <CheckCircle2 className="w-4 h-4" /> Guardado correctamente
-          </span>
-        )}
-      </div>
+        {/* ── Columna derecha: sticky ────────────────────────────────── */}
+        <div className="space-y-4 xl:sticky xl:top-6">
+
+          {/* Vista previa */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Vista previa</p>
+            <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <div className="h-24 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                {previewNode}
+              </div>
+              <div className="p-3 bg-white">
+                <p className="font-bold text-gray-900 text-sm">{companyName ?? 'Mi Empresa'}</p>
+                {descripcion && (
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">{descripcion}</p>
+                )}
+                {direccion && (
+                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 flex-shrink-0" />{direccion}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Datos de la cuenta */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Datos de la cuenta</p>
+            <div className="space-y-2 text-sm">
+              {[
+                { l: 'Nombre',  v: user?.name || user?.nombre },
+                { l: 'Email',   v: user?.email },
+                { l: 'Empresa', v: companyName },
+              ].map(({ l, v }) => (
+                <div key={l} className="flex flex-col gap-0.5 py-1.5 border-b border-gray-50 last:border-0">
+                  <span className="text-xs text-gray-400">{l}</span>
+                  <span className="font-medium text-gray-700 text-sm truncate">{v || '—'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>{/* fin columna derecha */}
+
+      </div>{/* fin grid */}
     </div>
   )
 }

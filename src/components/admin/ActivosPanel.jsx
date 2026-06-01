@@ -126,39 +126,39 @@ export default function ActivosPanel() {
               <Table>
                 <TableHeader className="bg-slate-50/50 border-b border-slate-200">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[300px] font-semibold text-slate-900 py-3 px-6 text-xs uppercase tracking-wider">Recurso</TableHead>
-                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Tipo</TableHead>
-                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Capacidad</TableHead>
+                    <TableHead className="font-semibold text-slate-900 py-3 px-4 sm:px-6 text-xs uppercase tracking-wider">Recurso</TableHead>
+                    <TableHead className="hidden sm:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider">Tipo</TableHead>
+                    <TableHead className="hidden md:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider">Capacidad</TableHead>
                     <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Estado</TableHead>
-                    <TableHead className="text-right font-semibold text-slate-900 px-6 text-xs uppercase tracking-wider">Acciones</TableHead>
+                    <TableHead className="text-right font-semibold text-slate-900 px-4 sm:px-6 text-xs uppercase tracking-wider">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredActivos.length > 0 ? (
                     filteredActivos.map((a) => (
                       <TableRow key={a.id} className="hover:bg-slate-50/30 transition-colors border-slate-100">
-                        <TableCell className="py-4 px-6">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-slate-950 text-sm leading-none">{a.nombreActivo || a.nombre}</span>
-                            <span className="text-[11px] text-muted-foreground mt-1.5 truncate max-w-[250px]">
+                        <TableCell className="py-4 px-4 sm:px-6">
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-medium text-slate-950 text-sm leading-none truncate">{a.nombreActivo || a.nombre}</span>
+                            <span className="text-[11px] text-muted-foreground mt-1.5 truncate">
                               {a.descripcion || "Sin descripción registrada"}
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <div className="flex items-center text-slate-600 font-medium bg-slate-100/50 w-fit px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider border border-slate-200/50">
                             <Tag className="mr-1.5 h-3 w-3 text-slate-400" />
                             {a.tipoActivoNombre || a.tipoActivo || "General"}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <div className="flex items-center text-sm font-medium text-slate-700">
                             <Users className="mr-2 h-3.5 w-3.5 text-slate-400" />
                             {a.capacidad || 1}
                           </div>
                         </TableCell>
                         <TableCell>{getStatusBadge(a.estadoDisponibilidad)}</TableCell>
-                        <TableCell className="text-right px-6">
+                        <TableCell className="text-right px-4 sm:px-6">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all">
