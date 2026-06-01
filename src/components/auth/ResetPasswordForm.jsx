@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import authService from '../../services/authService'
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, KeyRound } from "lucide-react"
+import { CheckCircle2, Eye, EyeOff, KeyRound } from "lucide-react"
 
 export default function ResetPassword() {
   const navigate = useNavigate()
@@ -122,12 +122,9 @@ export default function ResetPassword() {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3.5 text-gray-500 hover:text-gray-700 transition"
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                       >
-                        {showPassword ? (
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"></path></svg>
-                        ) : (
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-14-14zM10 18a8 8 0 001.447-.052l4.449 4.449a1 1 0 001.414-1.414L2.586 2.586A8 8 0 0010 18zm0-16C4.477 2 1 5.477 1 10s3.477 8 9 8 9-3.477 9-9-3.477-9-9-9z" clipRule="evenodd"></path></svg>
-                        )}
+                        {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                       </button>
                     </div>
                   </div>
