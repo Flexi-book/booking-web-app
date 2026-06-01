@@ -31,6 +31,7 @@ export default function RegisterForm() {
     password: '',
     confirmPassword: '',
   })
+  const [customBusinessType, setCustomBusinessType] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -54,6 +55,16 @@ export default function RegisterForm() {
       return
     }
 
+    if (!formData.tipoNegocio) {
+      setError('Selecciona un rubro/tipo de negocio')
+      return
+    }
+
+    if (formData.tipoNegocio === 'Otro' && !customBusinessType.trim()) {
+      setError('Si eliges "Otro", debes indicar el rubro')
+      return
+    }
+
     if (formData.password.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres')
       return
@@ -68,10 +79,14 @@ export default function RegisterForm() {
 
     try {
       const { confirmPassword, ...data } = formData
+      const businessTypeToSend = data.tipoNegocio === 'Otro'
+        ? customBusinessType.trim()
+        : data.tipoNegocio.trim()
+
       const dataToSend = {
         companyName: data.nombreEmpresa,
         contactEmail: data.correoContacto,
-        businessType: data.tipoNegocio,
+        businessType: businessTypeToSend,
         userName: data.nombreUsuario,
         userEmail: data.correoUsuario,
         password: data.password,
@@ -142,8 +157,34 @@ export default function RegisterForm() {
 
                 <div className="space-y-2">
                   <Label htmlFor="tipoNegocio">Rubro / Tipo</Label>
-                  <Input id="tipoNegocio" name="tipoNegocio" placeholder="Barbería, Gym, etc." required value={formData.tipoNegocio} onChange={handleChange} />
+                  <select
+                    id="tipoNegocio"
+                    name="tipoNegocio"
+                    required
+                    value={formData.tipoNegocio}
+                    onChange={handleChange}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="" disabled>Selecciona un rubro</option>
+                    {BUSINESS_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
                 </div>
+
+                {formData.tipoNegocio === 'Otro' && (
+                  <div className="space-y-2 col-span-1 md:col-span-2">
+                    <Label htmlFor="customBusinessType">Especifica tu rubro</Label>
+                    <Input
+                      id="customBusinessType"
+                      name="customBusinessType"
+                      placeholder="Ej: Estudio de tatuajes"
+                      required
+                      value={customBusinessType}
+                      onChange={(e) => setCustomBusinessType(e.target.value)}
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2 col-span-1 md:col-span-2">
                   <Label htmlFor="correoContacto">Email de la Empresa</Label>
@@ -179,7 +220,7 @@ export default function RegisterForm() {
                     <p className="text-xs text-amber-600 font-medium">Debe tener al menos 8 caracteres</p>
                   )}
                   {formData.password && formData.password.length >= 8 && (
-                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3"/> Longitud válida</p>
+                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3" /> Longitud válida</p>
                   )}
                 </div>
 
@@ -195,13 +236,16 @@ export default function RegisterForm() {
                     <p className="text-xs text-red-500 font-medium">Las contraseñas no coinciden</p>
                   )}
                   {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3"/> Las contraseñas coinciden</p>
+                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3" /> Las contraseñas coinciden</p>
                   )}
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6"
-                      disabled={loading || formData.password.length < 8 || formData.password !== formData.confirmPassword}>
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 mt-6"
+                disabled={loading || formData.password.length < 8 || formData.password !== formData.confirmPassword}
+              >
                 {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando...</> : <><UserPlus className="mr-2 h-4 w-4" /> Crear Cuenta</>}
               </Button>
             </form>
