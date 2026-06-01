@@ -154,12 +154,20 @@ export default function PerfilPanel() {
         if (data.latitud && data.longitud) {
           setPosition({ lat: data.latitud, lng: data.longitud })
         }
+
+        // Fallback para logo desde endpoint público de empresa.
+        const publicLogo = data?.logoUrl || data?.logo_url || ''
+        if (publicLogo) {
+          setLogoUrl(publicLogo)
+          setLogoPreview(publicLogo)
+          localStorage.setItem(getLogoKey(companyId), publicLogo)
+        }
       }).finally(() => { if (active) setLoading(false) })
 
       companyProfileApi.obtenerMiEmpresa()
         .then((data) => {
           if (!active) return
-          const currentLogo = data?.logoUrl || ''
+          const currentLogo = data?.logoUrl || data?.logo_url || ''
           setLogoUrl(currentLogo)
           setLogoPreview(currentLogo)
           if (currentLogo && companyId) {
@@ -168,7 +176,14 @@ export default function PerfilPanel() {
         })
         .catch(() => {
           if (!active) return
-          setLogoError('No se pudo cargar el logo actual.')
+          // Si falla /companies/me, intentamos al menos mostrar lo último persistido.
+          const cachedLogo = localStorage.getItem(getLogoKey(companyId)) || ''
+          if (cachedLogo) {
+            setLogoUrl(cachedLogo)
+            setLogoPreview(cachedLogo)
+          } else {
+            setLogoError('No se pudo cargar el logo actual.')
+          }
         })
     }
     return () => { active = false }
@@ -231,7 +246,12 @@ export default function PerfilPanel() {
 
       const publicUrl = `${supabaseUrl}/storage/v1/object/public/${logoBucket}/${objectPath}`
       const updated = await companyProfileApi.actualizarLogo(publicUrl)
-      const finalLogoUrl = updated.logoUrl || publicUrl
+
+      // Persistencia redundante: además del endpoint de logo, guardamos también en perfil de empresa.
+      // Evita que el logo "desaparezca" cuando un endpoint no refleja el valor.
+      await empresaApi.actualizar(companyId, { logoUrl: publicUrl, logo_url: publicUrl })
+
+      const finalLogoUrl = updated?.logoUrl || updated?.logo_url || publicUrl
       setLogoUrl(finalLogoUrl)
       setLogoPreview(finalLogoUrl)
       localStorage.setItem(getLogoKey(companyId), finalLogoUrl)

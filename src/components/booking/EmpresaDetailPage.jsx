@@ -13,6 +13,10 @@ import Footer from '../layout/Footer'
 import MapEmbed from '../ui/MapEmbed'
 import { serializarHorario, parsearHorario } from '../ui/HorarioPicker'
 
+function getLogoUrl(empresa) {
+  return empresa?.logoUrl || empresa?.logo_url || ''
+}
+
 
 function Skeleton() {
   return (
@@ -98,6 +102,7 @@ export default function EmpresaDetailPage() {
   }, [id])
 
   const icono  = getEmpresaIcono(id, empresa?.tipoNegocio)
+  const logoUrl = getLogoUrl(empresa)
 
   const descripcionFinal = empresa?.descripcion || null
   const direccionFinal   = empresa?.direccion || null
@@ -150,6 +155,13 @@ export default function EmpresaDetailPage() {
 
       {/* ── HERO ───────────────────────────────────────────────────── */}
       <div className="relative h-56 bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-500 overflow-hidden">
+        {logoUrl && (
+          <img
+            src={logoUrl}
+            alt={`Logo de ${empresa.nombre}`}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
         {/* Fondo decorativo */}
         <div className="absolute inset-0 flex items-center justify-center opacity-10 overflow-hidden">
           <span className="text-[100px] sm:text-[180px] select-none">{icono}</span>

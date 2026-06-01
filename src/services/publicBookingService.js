@@ -25,6 +25,23 @@ const userPublic = axios.create({ baseURL: userBase })
 const EMPRESAS_CACHE_KEY = 'public_empresas_cache_v1'
 const EMPRESAS_CACHE_TTL_MS = 5 * 60 * 1000
 
+function normalizeEmpresa(raw = {}) {
+  return {
+    ...raw,
+    empresaId: raw.empresaId ?? raw.empresa_id ?? raw.id ?? '',
+    logoUrl: raw.logoUrl ?? raw.logo_url ?? '',
+    tipoNegocio: raw.tipoNegocio ?? raw.tipo_negocio ?? raw.rubro ?? '',
+    correoContacto: raw.correoContacto ?? raw.correo_contacto ?? '',
+  }
+}
+
+function normalizeArrayPayload(payload) {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.data)) return payload.data
+  if (Array.isArray(payload?.content)) return payload.content
+  return []
+}
+
 function readEmpresasCache({ allowStale = false } = {}) {
   try {
     const raw = localStorage.getItem(EMPRESAS_CACHE_KEY)
@@ -58,7 +75,7 @@ export const publicBookingApi = {
   listarEmpresas: () =>
     catalogPublic.get('/public/empresas')
       .then(r => {
-        const data = Array.isArray(r.data) ? r.data : []
+        const data = normalizeArrayPayload(r.data).map(normalizeEmpresa)
         writeEmpresasCache(data)
         return data
       })
@@ -74,12 +91,16 @@ export const publicBookingApi = {
   // Servicios activos de una empresa — bff-backoffice acepta UUID
   listarServiciosPublic: (empresaId) =>
     backofficePublic.get('/servicios', { params: { empresaId } })
-      .then(r => (r.data || []).filter(s => s.estadoServicioId === 'activo' || s.estado === 'activo')),
+      .then(r =>
+        normalizeArrayPayload(r.data).filter(
+          (s) => s.estadoServicioId === 'activo' || s.estado === 'activo'
+        )
+      ),
 
   // Activos disponibles de una empresa — bff-backoffice acepta UUID
   listarActivosPublic: (empresaId) =>
     backofficePublic.get('/activos', { params: { empresaId } })
-      .then(r => (r.data || []).filter(a =>
+      .then(r => normalizeArrayPayload(r.data).filter(a =>
         ['disponible', 'Disponible'].includes(a.estadoDisponibilidad ?? a.estadoDisponibilidadId)
       )),
 
