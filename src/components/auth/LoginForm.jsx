@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import authService from '../../services/authService'
+import { useAuth } from '../../auth/useAuth'
 import GoogleLoginButton from './GoogleLoginButton'
 import { Button } from "@/components/ui/button"
 import { LoadingScreen } from "@/components/ui/loading-screen"
@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react"
 
 export default function LoginForm() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -20,7 +21,7 @@ export default function LoginForm() {
     setLoading(true)
 
     try {
-      await authService.login(email, password)
+      await login(email, password)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data || 'Credenciales incorrectas. Intenta nuevamente.')
