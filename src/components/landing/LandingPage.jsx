@@ -238,6 +238,7 @@ export default function LandingPage() {
             {busqueda.trim() && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl
                               shadow-2xl border border-gray-100 overflow-hidden z-50
+                              max-h-[60vh] overflow-y-auto
                               animate-in fade-in slide-in-from-top-2 duration-200">
                 {filtradas.length === 0 ? (
                   <div className="px-5 py-6 text-center text-gray-400 text-sm">
