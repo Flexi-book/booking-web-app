@@ -23,7 +23,11 @@ function normalizeText(value = '') {
 }
 
 function getLogoUrl(empresa) {
-  return empresa?.logoUrl || empresa?.logo_url || ''
+  const remoteLogo = empresa?.logoUrl || empresa?.logo_url || ''
+  if (remoteLogo) return remoteLogo
+  const id = empresa?.empresaId
+  if (!id) return ''
+  return localStorage.getItem(`flexibook_logo_url_${id}`) || ''
 }
 
 /* ── Skeleton ────────────────────────────────────────────────────────── */
