@@ -27,7 +27,11 @@ function getLogoUrl(empresa) {
   if (remoteLogo) return remoteLogo
   const id = empresa?.empresaId
   if (!id) return ''
-  return localStorage.getItem(`flexibook_logo_url_${id}`) || ''
+  try {
+    return localStorage.getItem(`flexibook_logo_url_${id}`) || ''
+  } catch {
+    return ''
+  }
 }
 
 /* ── Skeleton ────────────────────────────────────────────────────────── */
