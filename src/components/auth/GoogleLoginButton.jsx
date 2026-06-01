@@ -1,12 +1,13 @@
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import authService from '../../services/authService'
+import { useAuth } from '../../auth/useAuth'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 
 export default function GoogleLoginButton({ isRegister = false, setLoading: setParentLoading }) {
   const navigate = useNavigate()
+  const { googleLogin } = useAuth()
   const [internalLoading, setInternalLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -19,7 +20,7 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
     setError('')
     setLoading(true)
     try {
-      const response = await authService.googleLogin(credentialResponse.credential)
+      const response = await googleLogin(credentialResponse.credential)
       
       if (isRegister) {
         navigate('/register-success', { 
