@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingScreen } from "@/components/ui/loading-screen"
-import { Loader2, UserPlus, Building2 } from "lucide-react"
+import { Loader2, UserPlus, Building2, UserRound } from "lucide-react"
 import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
 
@@ -140,6 +140,64 @@ export default function RegisterForm() {
                 <div className="space-y-2 col-span-1 md:col-span-2">
                   <Label htmlFor="correoContacto">Email de la Empresa</Label>
                   <Input id="correoContacto" name="correoContacto" type="email" placeholder="contacto@miempresa.com" required value={formData.correoContacto} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-4 col-span-1 md:col-span-2 mt-2">
+                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm border-b pb-2">
+                    <UserRound className="w-4 h-4" />
+                    Información del Administrador
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nombreUsuario">Nombre del Usuario</Label>
+                  <Input
+                    id="nombreUsuario"
+                    name="nombreUsuario"
+                    placeholder="Administrador"
+                    required
+                    value={formData.nombreUsuario}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="correoUsuario">Email Corporativo</Label>
+                  <Input
+                    id="correoUsuario"
+                    name="correoUsuario"
+                    type="email"
+                    placeholder="admin@miempresa.com"
+                    required
+                    value={formData.correoUsuario}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Mínimo 8 caracteres"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Repite tu contraseña"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
