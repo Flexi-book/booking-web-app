@@ -25,14 +25,14 @@ const userPublic = axios.create({ baseURL: userBase })
 const EMPRESAS_CACHE_KEY = 'public_empresas_cache_v1'
 const EMPRESAS_CACHE_TTL_MS = 5 * 60 * 1000
 
-function readEmpresasCache() {
+function readEmpresasCache({ allowStale = false } = {}) {
   try {
     const raw = localStorage.getItem(EMPRESAS_CACHE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed?.data)) return null
     if (typeof parsed?.expiresAt !== 'number') return null
-    if (Date.now() > parsed.expiresAt) return null
+    if (!allowStale && Date.now() > parsed.expiresAt) return null
     return parsed.data
   } catch {
     return null
@@ -51,15 +51,25 @@ function writeEmpresasCache(data) {
 }
 
 export const publicBookingApi = {
-  getCachedEmpresas: () => readEmpresasCache(),
+  getCachedEmpresas: () => readEmpresasCache({ allowStale: false }),
+  getCachedEmpresasStale: () => readEmpresasCache({ allowStale: true }),
 
   // Listado de empresas — catalog-service
   listarEmpresas: () =>
-    catalogPublic.get('/public/empresas').then(r => {
-      const data = Array.isArray(r.data) ? r.data : []
-      writeEmpresasCache(data)
-      return data
-    }),
+    catalogPublic.get('/public/empresas')
+      .then(r => {
+        const data = Array.isArray(r.data) ? r.data : []
+        writeEmpresasCache(data)
+        return data
+      })
+      .catch((err) => {
+        // Fallback a cache stale para no bloquear Home cuando el backend está frío.
+        const stale = readEmpresasCache({ allowStale: true })
+        if (Array.isArray(stale) && stale.length > 0) {
+          return stale
+        }
+        throw err
+      }),
 
   // Servicios activos de una empresa — bff-backoffice acepta UUID
   listarServiciosPublic: (empresaId) =>

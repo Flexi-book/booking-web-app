@@ -179,9 +179,14 @@ export default function LandingPage() {
   }, [emblaApi, onSelect])
 
   useEffect(() => {
-    const cached = publicBookingApi.getCachedEmpresas?.()
-    if (Array.isArray(cached) && cached.length > 0) {
-      setEmpresas(cached)
+    const freshCache = publicBookingApi.getCachedEmpresas?.()
+    const staleCache = publicBookingApi.getCachedEmpresasStale?.()
+    const instantData = (Array.isArray(freshCache) && freshCache.length > 0)
+      ? freshCache
+      : staleCache
+
+    if (Array.isArray(instantData) && instantData.length > 0) {
+      setEmpresas(instantData)
       setLoading(false)
     }
 
