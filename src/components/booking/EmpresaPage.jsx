@@ -509,25 +509,18 @@ export default function EmpresaPage() {
           <Link to="/" className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors flex-shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-<<<<<<< Updated upstream
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             {empresa?.logoUrl ? (
               <img
                 src={empresa.logoUrl}
                 alt={`Logo de ${empresa?.nombre || 'empresa'}`}
-                className="w-10 h-10 rounded-lg object-cover border border-slate-200"
+                className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0"
               />
             ) : (
-              <span className="text-2xl">{icono}</span>
+              <span className="text-2xl flex-shrink-0">{icono}</span>
             )}
-            <div>
-              <p className="font-bold text-slate-900 text-sm">{empresa?.nombre}</p>
-=======
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <span className="text-2xl flex-shrink-0">{icono}</span>
             <div className="min-w-0">
               <p className="font-black text-slate-900 text-sm truncate leading-tight">{empresa?.nombre}</p>
->>>>>>> Stashed changes
               {empresa?.tipoNegocio && (
                 <p className="text-[11px] text-blue-600 font-bold uppercase tracking-wide">{empresa.tipoNegocio}</p>
               )}

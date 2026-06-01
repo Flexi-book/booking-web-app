@@ -1,20 +1,12 @@
-<<<<<<< Updated upstream
-import { useEffect, useMemo, useState } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useAuth } from '../../auth/useAuth'
 import PageHeader from '../ui/PageHeader'
-import { Button } from '../ui/button'
-import { CheckCircle2, Upload, Image as ImageIcon } from 'lucide-react'
-import { companyProfileApi } from '../../services/companyProfileService'
-=======
-import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '../../auth/useAuth'
-import PageHeader from '../ui/PageHeader'
-import { CheckCircle2, MapPin, Clock, Wifi, Car, Wind, Coffee, Dumbbell, ParkingCircle, X, Navigation } from 'lucide-react'
+import { CheckCircle2, MapPin, Clock, Wifi, Car, Wind, Coffee, Dumbbell, ParkingCircle, X, Navigation, Upload, Image as ImageIcon } from 'lucide-react'
 import { empresaApi } from '../../services/gestionService'
+import { companyProfileApi } from '../../services/companyProfileService'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
->>>>>>> Stashed changes
 
 // Fix Leaflet default icon path issues
 import icon from 'leaflet/dist/images/marker-icon.png'
@@ -129,11 +121,17 @@ function LocationMarker({ position, setPosition }) {
 export default function PerfilPanel() {
   const { user, companyId, companyName } = useAuth()
 
-<<<<<<< Updated upstream
-  const [iconoActual, setIconoActual] = useState(
-    () => localStorage.getItem(getStorageKey(companyId)) ?? '🏢'
-  )
-  const [guardado, setGuardado] = useState(false)
+  const [icono,       setIcono]       = useState('🏢')
+  const [descripcion, setDescripcion] = useState('')
+  const [direccion,   setDireccion]   = useState('')
+  const [horario,     setHorario]     = useState('')
+  const [tipoAtencion,setTipoAtencion]= useState('presencial')
+  const [amenidades,  setAmenidades]  = useState([])
+  const [position,    setPosition]    = useState(null)
+  
+  const [guardado,    setGuardado]    = useState(false)
+  const [loading,     setLoading]     = useState(true)
+
   const [logoUrl, setLogoUrl] = useState('')
   const [logoPreview, setLogoPreview] = useState('')
   const [subiendoLogo, setSubiendoLogo] = useState(false)
@@ -145,42 +143,9 @@ export default function PerfilPanel() {
 
   useEffect(() => {
     let active = true
-    companyProfileApi.obtenerMiEmpresa()
-      .then((data) => {
-        if (!active) return
-        const currentLogo = data?.logoUrl || ''
-        setLogoUrl(currentLogo)
-        setLogoPreview(currentLogo)
-      })
-      .catch(() => {
-        if (!active) return
-        setLogoError('No se pudo cargar el logo actual.')
-      })
-    return () => { active = false }
-  }, [])
-
-  const previewNode = useMemo(() => {
-    if (logoPreview) {
-      return <img src={logoPreview} alt="Logo empresa" className="w-full h-full object-cover" />
-    }
-    return <span className="text-3xl">{iconoActual}</span>
-  }, [logoPreview, iconoActual])
-=======
-  const [icono,       setIcono]       = useState('🏢')
-  const [descripcion, setDescripcion] = useState('')
-  const [direccion,   setDireccion]   = useState('')
-  const [horario,     setHorario]     = useState('')
-  const [tipoAtencion,setTipoAtencion]= useState('presencial')
-  const [amenidades,  setAmenidades]  = useState([])
-  const [position,    setPosition]    = useState(null)
-  
-  const [guardado,    setGuardado]    = useState(false)
-  const [loading,     setLoading]     = useState(true)
->>>>>>> Stashed changes
-
-  useEffect(() => {
     if (companyId) {
       empresaApi.obtener(companyId).then(data => {
+        if (!active) return
         if (data.icono) setIcono(data.icono)
         if (data.descripcion) setDescripcion(data.descripcion)
         if (data.direccion) setDireccion(data.direccion)
@@ -194,9 +159,29 @@ export default function PerfilPanel() {
         if (data.latitud && data.longitud) {
           setPosition({ lat: data.latitud, lng: data.longitud })
         }
-      }).finally(() => setLoading(false))
+      }).finally(() => { if (active) setLoading(false) })
+
+      companyProfileApi.obtenerMiEmpresa()
+        .then((data) => {
+          if (!active) return
+          const currentLogo = data?.logoUrl || ''
+          setLogoUrl(currentLogo)
+          setLogoPreview(currentLogo)
+        })
+        .catch(() => {
+          if (!active) return
+          setLogoError('No se pudo cargar el logo actual.')
+        })
     }
+    return () => { active = false }
   }, [companyId])
+
+  const previewNode = useMemo(() => {
+    if (logoPreview) {
+      return <img src={logoPreview} alt="Logo empresa" className="w-full h-full object-cover" />
+    }
+    return <span className="text-6xl">{icono}</span>
+  }, [logoPreview, icono])
 
   const toggleAmenidad = (id) => {
     setAmenidades(prev =>
@@ -204,7 +189,6 @@ export default function PerfilPanel() {
     )
   }
 
-<<<<<<< Updated upstream
   async function handleUploadLogo(event) {
     const file = event.target.files?.[0]
     if (!file || !companyId) return
@@ -261,7 +245,6 @@ export default function PerfilPanel() {
     }
   }
 
-=======
   const guardar = async () => {
     if (!companyId) return
     
@@ -296,7 +279,6 @@ export default function PerfilPanel() {
 
   const defaultCenter = { lat: 40.416775, lng: -3.703790 } // Default to Madrid if no position
 
->>>>>>> Stashed changes
   return (
     <div className="space-y-6 max-w-2xl pb-12">
       <PageHeader
@@ -305,20 +287,11 @@ export default function PerfilPanel() {
       />
 
       {/* Vista previa */}
-<<<<<<< Updated upstream
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <p className="text-sm font-medium text-gray-500 mb-4">Vista previa de tu tarjeta</p>
-        <div className="border border-gray-100 rounded-xl p-5 bg-gray-50/50 flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden
-                          flex items-center justify-center text-3xl flex-shrink-0 border border-blue-100">
-            {previewNode}
-=======
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Vista previa</p>
         <div className="border border-gray-100 rounded-xl overflow-hidden bg-gray-50">
-          <div className="h-28 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-6xl relative">
-            {icono}
->>>>>>> Stashed changes
+          <div className="h-28 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center relative">
+            {previewNode}
           </div>
           <div className="p-4">
             <p className="font-bold text-gray-900">{companyName ?? 'Mi Empresa'}</p>
@@ -328,7 +301,6 @@ export default function PerfilPanel() {
         </div>
       </div>
 
-<<<<<<< Updated upstream
       {/* Carga de imagen/logo */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <p className="text-sm font-medium text-gray-700 mb-1">Logo o imagen de empresa</p>
@@ -361,17 +333,10 @@ export default function PerfilPanel() {
         )}
       </div>
 
-      {/* Selector de icono */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <p className="text-sm font-medium text-gray-700 mb-1">Elige el icono de tu negocio</p>
-        <p className="text-xs text-gray-400 mb-4">El icono aparecerá en el directorio público de Flexibook.</p>
-
-=======
       {/* Icono */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <p className="text-sm font-semibold text-gray-700 mb-1">Icono del negocio</p>
-        <p className="text-xs text-gray-400 mb-4">Elige el que mejor representa tu actividad</p>
->>>>>>> Stashed changes
+        <p className="text-xs text-gray-400 mb-4">Elige el que mejor representa tu actividad (se usa si no tienes logo)</p>
         <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
           {ICONOS.map(({ emoji, label }) => (
             <button key={emoji} onClick={() => setIcono(emoji)} title={label}
