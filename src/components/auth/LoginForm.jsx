@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import GoogleLoginButton from './GoogleLoginButton'
@@ -15,6 +15,12 @@ export default function LoginForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    // Preload del panel para acelerar la transición post-login.
+    import('../../components/dashboard/Dashboard')
+    import('../../components/layout/Sidebar')
+  }, [])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -22,6 +28,7 @@ export default function LoginForm() {
 
     try {
       await login(email, password)
+      setLoading(false)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data || 'Credenciales incorrectas. Intenta nuevamente.')
