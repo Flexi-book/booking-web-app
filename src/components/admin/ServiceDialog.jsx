@@ -181,9 +181,9 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
         disponibilidades:  finalDisponibilidades,
         precio:            Number(formData.precio) || 0,
         duracionMinutos:   Number(formData.duracionMinutos) || 30,
-        estadoServicioId:  formData.estado === 'activo' ? 'activo' : 'inactivo',
+        estado:            formData.estado === 'activo' ? 'activo' : 'inactivo',
       }
-      delete payload.estado // evitar duplicado
+      delete payload.estadoServicioId // El backend resolverá el ID basado en 'estado'
 
       if (service?.id) {
         await serviciosApi.actualizar(service.id, payload)

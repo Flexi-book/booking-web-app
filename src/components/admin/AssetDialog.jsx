@@ -57,8 +57,8 @@ export default function AssetDialog({ open, onOpenChange, asset, onSave }) {
         setFormData({
           nombre: asset.nombreActivo || asset.nombre || '',
           descripcion: asset.descripcion || '',
-          tipoActivo: asset.tipoActivoId || asset.tipoActivo || '',
-          estadoDisponibilidad: asset.estadoDisponibilidadId || asset.estadoDisponibilidad || 'disponible'
+          tipoActivo: (asset.tipoActivo || asset.tipoActivoId || '').toLowerCase(),
+          estadoDisponibilidad: (asset.estadoDisponibilidad || asset.estadoDisponibilidadId || 'disponible').toLowerCase()
         })
       } else {
         setFormData(emptyForm)

@@ -9,24 +9,24 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
     <DayPicker
       locale={es}
       showOutsideDays={showOutsideDays}
-      className={cn("p-4 select-none w-full", className)}
+      className={cn("p-4 select-none w-full relative", className)}
       classNames={{
         months:        "flex flex-col",
         month:         "w-full",
-        month_caption: "flex items-center justify-between mb-4 px-1",
+        month_caption: "flex justify-center pt-1 relative items-center mb-4",
         caption_label: "text-sm font-semibold text-slate-700 capitalize",
-        nav:           "flex items-center gap-1",
+        nav:           "flex items-center justify-between absolute top-4 w-full px-4 left-0 pointer-events-none",
         button_previous: cn(
-          "h-7 w-7 rounded-lg border border-slate-200 bg-white",
+          "h-7 w-7 rounded-lg border border-slate-200 bg-white pointer-events-auto",
           "flex items-center justify-center text-slate-500",
           "hover:bg-slate-50 hover:text-slate-700 transition-all",
-          "disabled:opacity-30 disabled:cursor-not-allowed"
+          "disabled:opacity-30 disabled:cursor-not-allowed z-10"
         ),
         button_next: cn(
-          "h-7 w-7 rounded-lg border border-slate-200 bg-white",
+          "h-7 w-7 rounded-lg border border-slate-200 bg-white pointer-events-auto",
           "flex items-center justify-center text-slate-500",
           "hover:bg-slate-50 hover:text-slate-700 transition-all",
-          "disabled:opacity-30 disabled:cursor-not-allowed"
+          "disabled:opacity-30 disabled:cursor-not-allowed z-10"
         ),
         month_grid:  "w-full border-collapse",
         weekdays:    "flex w-full mb-1",
