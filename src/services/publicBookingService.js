@@ -4,22 +4,39 @@ import axios from 'axios'
 // En prod → URLs directas de los servicios
 const isDev = import.meta.env.DEV
 
+function normalizeBaseUrl(rawUrl = '', fallback = '') {
+  if (!rawUrl) return fallback
+  try {
+    const parsed = new URL(rawUrl)
+    return `${parsed.origin}${parsed.pathname}`
+      .replace(/\/+$/, '')
+      .replace(/\/servicios?$/i, '')
+      .replace(/\/+$/, '')
+  } catch {
+    return rawUrl
+      .replace(/[?#].*$/, '')
+      .replace(/\/+$/, '')
+      .replace(/\/servicios?$/i, '')
+      .replace(/\/+$/, '') || fallback
+  }
+}
+
 // catalog-service — listado público de empresas
 const catalogBase = isDev
   ? '/proxy/catalog'
-  : import.meta.env.VITE_CATALOG_API_URL
+  : normalizeBaseUrl(import.meta.env.VITE_CATALOG_API_URL, '')
 const catalogPublic = axios.create({ baseURL: catalogBase })
 
 // bff-backoffice — servicios y activos por empresaId (UUID)
 const backofficeBase = isDev
   ? '/proxy/backoffice'
-  : import.meta.env.VITE_BACKOFFICE_URL
+  : normalizeBaseUrl(import.meta.env.VITE_BACKOFFICE_URL, '')
 const backofficePublic = axios.create({ baseURL: backofficeBase })
 
 // bff-user — crear reserva
 const userBase = isDev
   ? '/proxy/bff-user'
-  : import.meta.env.VITE_BOOKING_API_URL
+  : normalizeBaseUrl(import.meta.env.VITE_BOOKING_API_URL, '')
 const userPublic = axios.create({ baseURL: userBase })
 
 const EMPRESAS_CACHE_KEY = 'public_empresas_cache_v1'
