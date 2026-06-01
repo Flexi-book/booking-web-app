@@ -503,10 +503,17 @@ export default function LandingPage() {
                     <span className="text-sm font-semibold text-blue-600 group-hover:underline">
                       Reservar hora →
                     </span>
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      Disponible
-                    </div>
+                    {Number(empresa.totalResenas || 0) > 0 ? (
+                      <div className="flex items-center gap-1 text-xs text-amber-600 font-semibold">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        {Number(empresa.ratingPromedio || 0).toFixed(1)}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-gray-400">
+                        <Clock className="w-3.5 h-3.5" />
+                        Disponible
+                      </div>
+                    )}
                   </div>
                 </div>
               </Link>
