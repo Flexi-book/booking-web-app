@@ -86,7 +86,15 @@ export default function LandingPage() {
                 {/* Banner con icono elegido */}
                 <div className="w-full h-32 bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100
                                 flex items-center justify-center text-6xl select-none">
-                  {getEmpresaIcono(empresa.empresaId, empresa.tipoNegocio)}
+                  {empresa.logoUrl ? (
+                    <img
+                      src={empresa.logoUrl}
+                      alt={`Logo de ${empresa.nombre}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    getEmpresaIcono(empresa.empresaId, empresa.tipoNegocio)
+                  )}
                 </div>
 
                 <div className="p-5">
