@@ -90,6 +90,9 @@ function normalizeService(raw = {}) {
     disponibilidades: Array.isArray(raw.disponibilidades)
       ? raw.disponibilidades.map(normalizeDisponibilidad)
       : [],
+    activosAsignados: Array.isArray(raw.activosAsignados)
+      ? raw.activosAsignados.map(normalizeActivo)
+      : [],
   }
 }
 
