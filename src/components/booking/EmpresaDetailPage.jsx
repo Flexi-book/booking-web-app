@@ -10,6 +10,7 @@ import { getEmpresaIcono } from '../admin/PerfilPanel'
 import { cn } from '@/lib/utils'
 import Footer from '../layout/Footer'
 import MapEmbed from '../ui/MapEmbed'
+import { LoadingScreen } from '../ui/loading-screen'
 import { serializarHorario, parsearHorario } from '../ui/HorarioPicker'
 
 function getLogoUrl(empresa) {
@@ -194,7 +195,15 @@ export default function EmpresaDetailPage() {
     }
   }
 
-  if (loading) return <Skeleton />
+  if (loading) {
+    return (
+      <LoadingScreen
+        visible
+        title="Cargando empresa..."
+        description="Estamos preparando el catálogo y las reseñas."
+      />
+    )
+  }
 
   if (error || !empresa) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
