@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { TableLoader } from "@/components/ui/table-loader"
+import { LoadingScreen } from "@/components/ui/loading-screen"
 import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
 
 import ReservationDialog from './ReservationDialog'
@@ -52,7 +53,8 @@ export default function ReservasPanel() {
   const [reservas, setReservas] = useState([])
   const [activos, setActivos] = useState([])
   const [servicios, setServicios] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [catalogLoading, setCatalogLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -68,20 +70,26 @@ export default function ReservasPanel() {
 
   async function cargarTodo() {
     setLoading(true)
+    setCatalogLoading(true)
     setError('')
     try {
-      const [res, act, serv] = await Promise.all([
-        reservasApi.listar(),
+      const reservasPromise = reservasApi.listar()
+      const catalogPromise = Promise.allSettled([
         activosApi.listar(),
-        serviciosApi.listar()
+        serviciosApi.listar(),
       ])
+
+      const res = await reservasPromise
       setReservas(res || [])
-      setActivos(act || [])
-      setServicios(serv || [])
+
+      const [actResult, servResult] = await catalogPromise
+      if (actResult.status === 'fulfilled') setActivos(actResult.value || [])
+      if (servResult.status === 'fulfilled') setServicios(servResult.value || [])
     } catch (err) {
       setError('Error al sincronizar datos de reservas')
     } finally {
       setLoading(false)
+      setCatalogLoading(false)
     }
   }
 
@@ -180,6 +188,13 @@ export default function ReservasPanel() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {(loading && reservas.length === 0) && (
+        <LoadingScreen
+          visible
+          title="Cargando reservas..."
+          description="Estamos sincronizando citas, activos y servicios."
+        />
+      )}
       
       {/* HEADER SECTION - SHADCN STYLE */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -243,7 +258,7 @@ export default function ReservasPanel() {
         <TabsContent value="list" className="mt-0 focus-visible:outline-none animate-in fade-in duration-300">
           <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
             <CardContent className="p-0">
-              {loading ? (
+              {loading && reservas.length === 0 ? (
                 <div className="p-12"><TableLoader rows={5} columns={6} /></div>
               ) : (
                 <div className="overflow-x-auto">
@@ -272,17 +287,17 @@ export default function ReservasPanel() {
                                   <span className="text-[11px] text-muted-foreground mt-1 truncate hidden sm:block">{r.customerEmail || 'Sin correo'}</span>
                                   {/* En mobile mostramos el servicio bajo el nombre */}
                                   <span className="sm:hidden text-[11px] text-slate-500 mt-0.5 truncate">
-                                    {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio}
+                                    {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio || 'Cargando servicio...'}
                                   </span>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell className="hidden sm:table-cell text-sm font-medium text-slate-700 max-w-[160px] truncate">
-                              {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio}
+                              {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio || (catalogLoading ? 'Cargando...' : 'Sin servicio')}
                             </TableCell>
                             <TableCell className="hidden lg:table-cell">
                               <span className="text-xs font-medium text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 truncate max-w-[120px] block">
-                                {activos.find(a => a.id === r.assetId)?.nombreActivo}
+                                {activos.find(a => a.id === r.assetId)?.nombreActivo || (catalogLoading ? 'Cargando...' : 'Sin recurso')}
                               </span>
                             </TableCell>
                             <TableCell>
@@ -320,7 +335,7 @@ export default function ReservasPanel() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={6} className="h-32 text-center">
+                            <TableCell colSpan={6} className="h-32 text-center">
                             <p className="text-sm text-muted-foreground">No hay registros de reservas en este momento.</p>
                           </TableCell>
                         </TableRow>
