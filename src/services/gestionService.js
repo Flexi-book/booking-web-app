@@ -10,6 +10,18 @@ const CACHE_KEYS = {
 
 const LIST_TTL_MS = 30000
 
+function scopedCacheKey(baseKey, scope = tokenStore.companyId || 'global') {
+  return `${baseKey}:${scope}`
+}
+
+function listWithScope(baseKey, fetcher, options = {}) {
+  const scopeKey = scopedCacheKey(baseKey, options.companyId)
+  if (options.force) {
+    clearCacheKeys([scopeKey])
+  }
+  return fetchWithCache(scopeKey, fetcher, LIST_TTL_MS)
+}
+
 // ── Helper: lanza error legible ──────────────────────────────────────────────
 function apiCall(promise) {
   return promise.then(r => r.data).catch(err => {
@@ -19,10 +31,10 @@ function apiCall(promise) {
 
 // ── Activos ───────────────────────────────────────────────────────────────────
 export const activosApi = {
-  listar: () => fetchWithCache(
+  listar: (options = {}) => listWithScope(
     CACHE_KEYS.activos,
     () => apiCall(adminClient.get('/activos')),
-    LIST_TTL_MS,
+    options,
   ),
   crear: (activo) => apiCall(adminClient.post('/activos', activo)).then((data) => {
     clearCacheKeys([CACHE_KEYS.activos, CACHE_KEYS.reservas])
@@ -40,10 +52,10 @@ export const activosApi = {
 
 // ── Servicios ────────────────────────────────────────────────────────────────
 export const serviciosApi = {
-  listar: () => fetchWithCache(
+  listar: (options = {}) => listWithScope(
     CACHE_KEYS.servicios,
     () => apiCall(adminClient.get('/servicios')),
-    LIST_TTL_MS,
+    options,
   ),
   crear: (servicio) => apiCall(adminClient.post('/servicios', servicio)).then((data) => {
     clearCacheKeys([CACHE_KEYS.servicios, CACHE_KEYS.reservas])
@@ -61,10 +73,10 @@ export const serviciosApi = {
 
 // ── Reservas ─────────────────────────────────────────────────────────────────
 export const reservasApi = {
-  listar: () => fetchWithCache(
+  listar: (options = {}) => listWithScope(
     CACHE_KEYS.reservas,
     () => apiCall(adminClient.get('/reservations')),
-    LIST_TTL_MS,
+    options,
   ),
   crear: (reserva) => apiCall(adminClient.post('/reservations', reserva)).then((data) => {
     clearCacheKeys([CACHE_KEYS.reservas])
