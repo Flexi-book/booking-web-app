@@ -10,6 +10,7 @@ import { getEmpresaIcono } from '../admin/PerfilPanel'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Calendar } from '../ui/calendar'
+import { LoadingScreen } from '../ui/loading-screen'
 
 const BUFFER_MIN = 10  // debe coincidir con ReservationService.BUFFER_MINUTES
 
@@ -532,6 +533,13 @@ export default function EmpresaPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/80">
+      {enviando && (
+        <LoadingScreen
+          visible
+          title="Confirmando reserva..."
+          description="Estamos enviando tu reserva y guardando la confirmación."
+        />
+      )}
 
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="bg-white/90 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-20 shadow-sm">
