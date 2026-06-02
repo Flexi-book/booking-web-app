@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { LoadingScreen } from "@/components/ui/loading-screen"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { warmDashboardData } from '../../services/dashboardWarmup'
+import { warmAuthService } from '../../services/authWarmup'
 
 export default function LoginForm() {
   const navigate = useNavigate()
@@ -15,6 +16,10 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    warmAuthService()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

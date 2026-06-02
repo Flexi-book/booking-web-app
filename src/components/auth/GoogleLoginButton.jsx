@@ -1,4 +1,4 @@
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'
+import { GoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../../auth/useAuth'
@@ -11,6 +11,7 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
   const { googleLogin } = useAuth()
   const [internalLoading, setInternalLoading] = useState(false)
   const [error, setError] = useState('')
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
   const setLoading = (val) => {
     setInternalLoading(val)
@@ -45,8 +46,8 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
     setError('No se pudo completar la autenticación con Google.')
   }
 
-  return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+  if (!googleClientId) {
+    return (
       <div className="w-full space-y-4">
         {error && (
           <Alert variant="destructive" className="py-2">
@@ -55,25 +56,40 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
             </AlertDescription>
           </Alert>
         )}
-        
-        <div className="flex flex-col items-center justify-center gap-3">
-          <div className="relative w-full flex justify-center">
-            {internalLoading && (
-              <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-md">
-                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-              </div>
-            )}
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              size="large"
-              text={isRegister ? 'signup_with' : 'signin_with'}
-              width="100%"
-              disabled={internalLoading}
-            />
-          </div>
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+          El login con Google no está configurado en este entorno.
         </div>
       </div>
-    </GoogleOAuthProvider>
+    )
+  }
+
+  return (
+    <div className="w-full space-y-4">
+      {error && (
+        <Alert variant="destructive" className="py-2">
+          <AlertDescription className="text-xs text-center font-medium">
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <div className="flex flex-col items-center justify-center gap-3">
+        <div className="relative w-full flex justify-center">
+          {internalLoading && (
+            <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-md">
+              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+            </div>
+          )}
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            size="large"
+            text={isRegister ? 'signup_with' : 'signin_with'}
+            width="100%"
+            disabled={internalLoading}
+          />
+        </div>
+      </div>
+    </div>
   )
 }

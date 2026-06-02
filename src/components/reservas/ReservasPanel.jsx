@@ -155,14 +155,22 @@ export default function ReservasPanel() {
     const prevMonthDaysTotal = new Date(year, month, 0).getDate()
     
     for (let i = startDay - 1; i >= 0; i--) {
-      days.push({ day: prevMonthDaysTotal - i, currentMonth: false })
+      days.push({
+        day: prevMonthDaysTotal - i,
+        currentMonth: false,
+        date: new Date(year, month - 1, prevMonthDaysTotal - i),
+      })
     }
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({ day: i, currentMonth: true, date: new Date(year, month, i) })
     }
     const remaining = 42 - days.length
     for (let i = 1; i <= remaining; i++) {
-      days.push({ day: i, currentMonth: false })
+      days.push({
+        day: i,
+        currentMonth: false,
+        date: new Date(year, month + 1, i),
+      })
     }
     return days
   }, [currentDate])
@@ -401,7 +409,7 @@ export default function ReservasPanel() {
                 {calendarDays.map((dayObj, i) => {
                   const dayReservas   = getReservasForDate(dayObj.date)
                   const total         = dayReservas.length
-                  const isToday       = dayObj.date.toDateString() === new Date().toDateString()
+                  const isToday       = dayObj.date?.toDateString?.() === new Date().toDateString()
                   const MAX_VISIBLE   = 3
 
                   return (
