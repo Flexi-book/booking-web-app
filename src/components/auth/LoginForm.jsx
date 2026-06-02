@@ -5,6 +5,7 @@ import GoogleLoginButton from './GoogleLoginButton'
 import { Button } from "@/components/ui/button"
 import { LoadingScreen } from "@/components/ui/loading-screen"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
+import { warmDashboardData } from '../../services/dashboardWarmup'
 
 export default function LoginForm() {
   const navigate = useNavigate()
@@ -15,12 +16,6 @@ export default function LoginForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    // Preload del panel para acelerar la transición post-login.
-    import('../../components/dashboard/Dashboard')
-    import('../../components/layout/Sidebar')
-  }, [])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -28,6 +23,7 @@ export default function LoginForm() {
 
     try {
       await login(email, password)
+      warmDashboardData()
       setLoading(false)
       navigate('/dashboard')
     } catch (err) {

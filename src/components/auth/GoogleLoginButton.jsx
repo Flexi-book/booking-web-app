@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useAuth } from '../../auth/useAuth'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
+import { warmDashboardData } from '../../services/dashboardWarmup'
 
 export default function GoogleLoginButton({ isRegister = false, setLoading: setParentLoading }) {
   const navigate = useNavigate()
@@ -21,6 +22,7 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
     setLoading(true)
     try {
       const response = await googleLogin(credentialResponse.credential)
+      warmDashboardData()
       
       if (isRegister) {
         navigate('/register-success', { 

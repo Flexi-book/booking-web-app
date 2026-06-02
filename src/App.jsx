@@ -23,10 +23,10 @@ const EmpresaDetailPage   = lazy(() => import('./components/booking/EmpresaDetai
 
 function PageLoader() {
   return (
-    <div className="flex items-center justify-center h-full min-h-[60vh]">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-slate-400">Cargando...</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+        <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm font-medium text-slate-500">Cargando vista...</p>
       </div>
     </div>
   )

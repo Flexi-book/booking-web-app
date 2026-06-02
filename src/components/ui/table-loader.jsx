@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react'
 
 export function TableLoader({ rows = 5, columns = 4 }) {
   return (
-    <div className="w-full bg-white rounded-2xl border border-slate-100 overflow-hidden animate-pulse">
+    <div className="relative w-full bg-white rounded-2xl border border-slate-100 overflow-hidden animate-pulse min-h-[220px]">
       <div className="h-12 bg-slate-50 border-b border-slate-100 flex items-center px-8 gap-4">
         {[...Array(columns)].map((_, i) => (
           <div key={i} className="h-4 bg-slate-200 rounded-full flex-1" />

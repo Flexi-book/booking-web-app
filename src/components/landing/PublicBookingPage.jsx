@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { publicBookingApi } from '../../services/publicBookingService'
+import { LoadingScreen } from '../ui/loading-screen'
 
 const emptyForm = {
   serviceOfferingId: '',
@@ -313,7 +314,13 @@ export default function PublicBookingPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-50 p-8">Cargando...</div>
+    return (
+      <LoadingScreen
+        visible
+        title="Cargando reserva..."
+        description="Estamos preparando el catálogo y la disponibilidad."
+      />
+    )
   }
 
   if (error && !catalogo) {
