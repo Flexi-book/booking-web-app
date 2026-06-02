@@ -43,7 +43,7 @@ export default function ServiciosPanel() {
   const cargarServicios = async () => {
     setLoading(true)
     try {
-      const data = await serviciosApi.listar({ force: true })
+      const data = await serviciosApi.listar()
       setServicios(data || [])
     } catch (err) {
       console.error("Error al cargar servicios:", err)
