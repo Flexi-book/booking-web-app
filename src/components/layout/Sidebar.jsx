@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, CalendarCheck, Scissors,
+  LayoutDashboard, Scissors,
   Boxes, CalendarDays, Bell, History,
   Settings2, LogOut, ChevronRight, Building2, HelpCircle, X
 } from 'lucide-react'
@@ -78,8 +78,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       {/* Logo */}
       <div className="px-5 py-5 border-b border-slate-100 flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center gap-3 group" onClick={() => setIsOpen && setIsOpen(false)}>
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-            <CalendarCheck className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden bg-white border border-slate-200">
+            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-full h-full object-contain p-1" />
           </div>
           <div>
             <p className="font-bold text-slate-900 text-sm leading-tight">Flexibook</p>
