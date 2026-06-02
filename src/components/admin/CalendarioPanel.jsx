@@ -56,7 +56,7 @@ export default function CalendarioPanel() {
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([reservasApi.listar(), serviciosApi.listar()])
+    Promise.all([reservasApi.listar({ force: true }), serviciosApi.listar({ force: true })])
       .then(([r, s]) => { setReservas(r); setServicios(s) })
       .catch(() => setError('Error al cargar reservas'))
       .finally(() => setLoading(false))
