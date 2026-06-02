@@ -45,7 +45,7 @@ export default function ActivosPanel() {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}')
       const empresaId = user.empresaId || user.companyId
-      const data = await activosApi.listar({ companyId: empresaId, force: true })
+      const data = await activosApi.listar({ companyId: empresaId })
       setActivos(data || [])
     } catch (err) {
       console.error("Error al cargar activos:", err)
