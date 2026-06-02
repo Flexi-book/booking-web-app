@@ -28,6 +28,14 @@ const toHHMM = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m %
 
 const getAssetId = (asset) => String(asset?.id ?? asset?.activoId ?? asset?.activo_id ?? '')
 
+function formatCLP(value) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0)
+}
+
 /**
  * Genera los slots disponibles para un servicio+activo en una fecha.
  * Usa disponibilidades configuradas en el servicio.
@@ -158,7 +166,7 @@ function ServiceCard({ s, selected, onSelect }) {
         </span>
         {s.precio > 0 && (
           <span className="text-sm font-black text-slate-700">
-            ${Number(s.precio).toLocaleString('es-CL')}
+            {formatCLP(s.precio)}
           </span>
         )}
       </div>
@@ -298,10 +306,10 @@ function ResumenPanel({ sel, empresa, icono, paso }) {
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Servicio</p>
-              {sel.servicio ? (
+                  {sel.servicio ? (
                 <>
                   <p className="text-sm font-bold text-slate-800 leading-tight">{sel.servicio.nombreServicio}</p>
-                  <p className="text-xs text-slate-500">{sel.servicio.duracionMinutos} min · ${Number(sel.servicio.precio || 0).toLocaleString('es-CL')}</p>
+                  <p className="text-xs text-slate-500">{sel.servicio.duracionMinutos} min · {formatCLP(sel.servicio.precio || 0)}</p>
                 </>
               ) : (
                 <p className="text-xs text-slate-400 italic">Sin elegir</p>
@@ -377,7 +385,7 @@ function ResumenPanel({ sel, empresa, icono, paso }) {
               {sel.servicio.precio > 0 && (
                 <div className="flex justify-between">
                   <span>Precio</span>
-                  <span className="font-bold">${Number(sel.servicio.precio).toLocaleString('es-CL')}</span>
+                  <span className="font-bold">{formatCLP(sel.servicio.precio)}</span>
                 </div>
               )}
             </div>
@@ -911,7 +919,7 @@ export default function EmpresaPage() {
               </div>
               {sel.servicio?.precio > 0 && (
                 <span className="flex-shrink-0 text-sm font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg">
-                  {Number(sel.servicio.precio).toLocaleString('es-CL')}€
+                  {formatCLP(sel.servicio.precio)}
                 </span>
               )}
             </div>
