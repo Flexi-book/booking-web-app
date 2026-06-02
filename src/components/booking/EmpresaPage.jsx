@@ -477,6 +477,11 @@ export default function EmpresaPage() {
   const activosDelServicio = useMemo(() => {
     if (!sel.servicio) return []
 
+    const activosAsignados = Array.isArray(sel.servicio.activosAsignados)
+      ? sel.servicio.activosAsignados
+      : []
+    if (activosAsignados.length > 0) return activosAsignados
+
     const activosPorId = new Map((activos || []).map((a) => [getAssetId(a), a]))
     const vistos = new Set()
     return (sel.servicio.disponibilidades || [])
