@@ -15,6 +15,12 @@ import {
 export function ServiceCard({ service, isAdmin = false, onEdit, onBook }) {
   const [imgError, setImgError] = useState(false)
 
+  const formatCLP = (value) => new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0)
+
   return (
     <Card className="relative group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       {/* Cover image */}
@@ -67,7 +73,7 @@ export function ServiceCard({ service, isAdmin = false, onEdit, onBook }) {
           </span>
           <span className="flex items-center gap-1 text-xs font-semibold text-slate-700">
             <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-            {service.precio ? service.precio.toLocaleString("es-CL") : "—"}
+            {service.precio ? formatCLP(service.precio) : "—"}
           </span>
         </div>
         <Button
