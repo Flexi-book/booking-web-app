@@ -135,18 +135,25 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
   }
 
   const updateAvailability = (index, field, value) => {
-    const newAvs = [...formData.disponibilidades]
-    newAvs[index] = { ...newAvs[index], [field]: value }
-    setFormData(prev => ({ ...prev, disponibilidades: newAvs }))
+    setFormData(prev => {
+      const newAvs = [...prev.disponibilidades]
+      newAvs[index] = { ...newAvs[index], [field]: value }
+      return { ...prev, disponibilidades: newAvs }
+    })
   }
 
   const toggleDay = (avIndex, dayId) => {
-    const av = formData.disponibilidades[avIndex]
-    const current = av.diasSeleccionados || []
-    const updated = current.includes(dayId)
-      ? current.filter(id => id !== dayId)
-      : [...current, dayId].sort((a, b) => a - b)
-    updateAvailability(avIndex, 'diasSeleccionados', updated)
+    setFormData(prev => {
+      const newAvs = [...prev.disponibilidades]
+      const current = newAvs[avIndex].diasSeleccionados || []
+      newAvs[avIndex] = {
+        ...newAvs[avIndex],
+        diasSeleccionados: current.includes(dayId)
+          ? current.filter(id => id !== dayId)
+          : [...current, dayId].sort((a, b) => a - b)
+      }
+      return { ...prev, disponibilidades: newAvs }
+    })
   }
 
   const handleSubmit = async () => {
