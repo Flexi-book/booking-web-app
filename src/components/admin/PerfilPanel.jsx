@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { format, startOfMonth, endOfMonth } from 'date-fns'
+import { es } from 'date-fns/locale'
 import MapEmbed from '../ui/MapEmbed'
 import HorarioPicker from '../ui/HorarioPicker'
 import { useAuth } from '../../auth/useAuth'
 import PageHeader from '../ui/PageHeader'
-import { CheckCircle2, MapPin, Clock, Wifi, Car, Wind, Coffee, Dumbbell, ParkingCircle, X, Navigation, Upload, Image as ImageIcon } from 'lucide-react'
-import { empresaApi } from '../../services/gestionService'
+import { CheckCircle2, MapPin, Clock, Wifi, Car, Wind, Coffee, Dumbbell, ParkingCircle, X, Navigation, Upload, Image as ImageIcon, CalendarDays } from 'lucide-react'
+import { empresaApi, reservasApi } from '../../services/gestionService'
 import { companyProfileApi } from '../../services/companyProfileService'
+import { Calendar } from '../ui/calendar'
 
 /* ──────────────────────────────────────────────────────────────────────
    ICONOS DISPONIBLES
@@ -110,6 +114,19 @@ function normalizeSupabaseBaseUrl(rawUrl) {
   }
 }
 
+function getReservationDate(reserva) {
+  const rawDate =
+    reserva?.fechaInicio ??
+    reserva?.startTime ??
+    reserva?.fecha_inicio ??
+    reserva?.fecha ??
+    null
+
+  if (!rawDate) return null
+  const date = new Date(rawDate)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
 /* ──────────────────────────────────────────────────────────────────────
    MAIN
    ────────────────────────────────────────────────────────────────────── */
@@ -123,6 +140,10 @@ export default function PerfilPanel() {
   const [tipoAtencion,setTipoAtencion]= useState('presencial')
   const [amenidades,  setAmenidades]  = useState([])
   const [position,    setPosition]    = useState(null)
+  const [reservas,    setReservas]    = useState([])
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
+  const [loadingReservas, setLoadingReservas] = useState(false)
+  const [reservasError, setReservasError] = useState('')
   
   const [guardado,    setGuardado]    = useState(false)
   const [loading,     setLoading]     = useState(true)
@@ -164,6 +185,22 @@ export default function PerfilPanel() {
         }
       }).finally(() => { if (active) setLoading(false) })
 
+      setLoadingReservas(true)
+      setReservasError('')
+      reservasApi.listar({ companyId })
+        .then((data) => {
+          if (!active) return
+          setReservas(Array.isArray(data) ? data : [])
+        })
+        .catch(() => {
+          if (!active) return
+          setReservas([])
+          setReservasError('No se pudo cargar el calendario de reservas.')
+        })
+        .finally(() => {
+          if (active) setLoadingReservas(false)
+        })
+
       companyProfileApi.obtenerMiEmpresa()
         .then((data) => {
           if (!active) return
@@ -201,6 +238,27 @@ export default function PerfilPanel() {
       prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
     )
   }
+
+  const reservasConFecha = useMemo(
+    () => reservas
+      .map((reserva) => ({ ...reserva, fechaReserva: getReservationDate(reserva) }))
+      .filter((reserva) => reserva.fechaReserva),
+    [reservas]
+  )
+
+  const reservasDelMes = useMemo(() => {
+    const inicio = startOfMonth(calendarMonth)
+    const fin = endOfMonth(calendarMonth)
+    return reservasConFecha
+      .filter((reserva) => reserva.fechaReserva >= inicio && reserva.fechaReserva <= fin)
+      .sort((a, b) => a.fechaReserva - b.fechaReserva)
+      .slice(0, 5)
+  }, [calendarMonth, reservasConFecha])
+
+  const diasConReserva = useMemo(
+    () => reservasConFecha.map((reserva) => reserva.fechaReserva),
+    [reservasConFecha]
+  )
 
   async function handleUploadLogo(event) {
     const file = event.target.files?.[0]
@@ -495,6 +553,70 @@ export default function PerfilPanel() {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Calendario de reservas</p>
+                <p className="text-sm text-gray-500 mt-1">Vista rápida de las citas agendadas.</p>
+              </div>
+              <CalendarDays className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            </div>
+
+            {loadingReservas ? (
+              <div className="h-64 flex items-center justify-center text-sm text-gray-400">
+                Cargando calendario...
+              </div>
+            ) : (
+              <>
+                <Calendar
+                  mode="single"
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth}
+                  showOutsideDays
+                  modifiers={{ reservado: diasConReserva }}
+                  modifiersClassNames={{
+                    reservado: 'bg-blue-50 text-blue-700 font-semibold ring-1 ring-blue-200',
+                  }}
+                  className="p-0"
+                />
+
+                <div className="mt-4 space-y-2">
+                  {reservasError && (
+                    <p className="text-xs text-rose-500">{reservasError}</p>
+                  )}
+
+                  {reservasDelMes.length > 0 ? (
+                    reservasDelMes.map((reserva) => (
+                      <div
+                        key={reserva.id || `${reserva.fechaReserva.toISOString()}-${reserva.clienteNombre || 'cliente'}`}
+                        className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2"
+                      >
+                        <p className="text-xs font-semibold text-gray-900 truncate">
+                          {reserva.clienteNombre || reserva.customerName || 'Cliente'}
+                        </p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          {format(reserva.fechaReserva, "d 'de' MMMM, HH:mm", { locale: es })}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-400">
+                      No hay reservas registradas para este mes.
+                    </p>
+                  )}
+
+                  <Link
+                    to="/dashboard/calendario"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    Ver calendario completo
+                    <CalendarDays className="w-4 h-4" />
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
 
         </div>{/* fin columna derecha */}
