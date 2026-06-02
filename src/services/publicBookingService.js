@@ -27,12 +27,6 @@ const catalogBase = isDev
   : normalizeBaseUrl(import.meta.env.VITE_CATALOG_API_URL, '')
 const catalogPublic = axios.create({ baseURL: catalogBase })
 
-// bff-backoffice — servicios y activos por empresaId (UUID)
-const backofficeBase = isDev
-  ? '/proxy/backoffice'
-  : normalizeBaseUrl(import.meta.env.VITE_BACKOFFICE_URL, '')
-const backofficePublic = axios.create({ baseURL: backofficeBase })
-
 // bff-user — crear reserva
 const userBase = isDev
   ? '/proxy/bff-user'
@@ -149,28 +143,30 @@ export const publicBookingApi = {
         throw err
       }),
 
-  // Servicios activos de una empresa — bff-backoffice acepta UUID
+  // Servicios activos de una empresa — catalog-service público
   listarServiciosPublic: (empresaId) =>
-    backofficePublic.get('/servicios', { params: { empresaId } })
-      .then(r =>
-        normalizeArrayPayload(r.data)
+    catalogPublic.get(`/public/empresas/${empresaId}`)
+      .then(r => {
+        const payload = r.data?.data ?? r.data
+        return normalizeArrayPayload(payload?.servicios)
           .map(normalizeService)
-          .filter(
-            (s) => s.estadoServicioId === 'activo' || s.estado === 'activo'
-          )
-      ),
+          .filter((s) => s.estadoServicioId === 'activo' || s.estado === 'activo')
+      }),
 
-  // Activos disponibles de una empresa — bff-backoffice acepta UUID
+  // Activos disponibles de una empresa — catalog-service público
   listarActivosPublic: (empresaId) =>
-    backofficePublic.get('/activos', { params: { empresaId } })
-      .then(r => normalizeArrayPayload(r.data)
-        .map(normalizeActivo)
-        .filter(a =>
-          ['disponible', 'Disponible'].includes(a.estadoDisponibilidad ?? a.estadoDisponibilidadId)
-        )),
+    catalogPublic.get(`/public/empresas/${empresaId}`)
+      .then(r => {
+        const payload = r.data?.data ?? r.data
+        return normalizeArrayPayload(payload?.activos)
+          .map(normalizeActivo)
+          .filter(a =>
+            ['disponible', 'Disponible'].includes(a.estadoDisponibilidad ?? a.estadoDisponibilidadId)
+          )
+      }),
 
   obtenerCatalogoEmpresa: (empresaId) =>
-    backofficePublic.get('/catalog', { params: { empresaId } })
+    catalogPublic.get(`/public/empresas/${empresaId}`)
       .then(r => {
         const payload = r.data?.data ?? r.data
         const empresa = payload?.empresa ?? null

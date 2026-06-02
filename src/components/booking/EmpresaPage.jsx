@@ -434,16 +434,14 @@ export default function EmpresaPage() {
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([
-      publicBookingApi.listarEmpresas(),
-      publicBookingApi.listarServiciosPublic(id),
-      publicBookingApi.listarActivosPublic(id),
-    ]).then(([emps, svcs, acts]) => {
-      setEmpresa(emps.find(e => String(e.empresaId) === id) ?? { nombre: 'Empresa', empresaId: id })
-      setServicios(svcs)
-      setActivos(acts)
-    }).catch(() => setError('Error al cargar la información de la empresa.'))
-    .finally(() => setLoading(false))
+    publicBookingApi.obtenerCatalogoEmpresa(id)
+      .then((data) => {
+        setEmpresa(data?.empresa ?? { nombre: 'Empresa', empresaId: id })
+        setServicios(Array.isArray(data?.servicios) ? data.servicios : [])
+        setActivos(Array.isArray(data?.activos) ? data.activos : [])
+      })
+      .catch(() => setError('Error al cargar la información de la empresa.'))
+      .finally(() => setLoading(false))
   }, [id])
 
   const ir = useCallback(n => { setErrForm(''); setPaso(n) }, [])

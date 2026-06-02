@@ -24,6 +24,18 @@ function formatCLP(value) {
   }).format(Number(value) || 0)
 }
 
+function calcularResumenResenas(resenas) {
+  if (!Array.isArray(resenas) || resenas.length === 0) {
+    return { ratingPromedio: 0, totalResenas: 0 }
+  }
+  const total = resenas.length
+  const suma = resenas.reduce((acc, item) => acc + Number(item?.puntuacion || 0), 0)
+  return {
+    ratingPromedio: suma / total,
+    totalResenas: total,
+  }
+}
+
 
 function Skeleton() {
   return (
@@ -156,8 +168,9 @@ export default function EmpresaDetailPage() {
     ? servicios.filter(s => s.nombreServicio.toLowerCase().includes(busqueda.toLowerCase()))
     : servicios
 
-  const ratingPromedio = Number(empresa?.ratingPromedio || 0)
-  const totalResenas = Number(empresa?.totalResenas || resenas.length || 0)
+  const resumenResenas = calcularResumenResenas(resenas)
+  const ratingPromedio = Number(empresa?.ratingPromedio ?? resumenResenas.ratingPromedio ?? 0)
+  const totalResenas = Number(empresa?.totalResenas ?? resumenResenas.totalResenas ?? 0)
 
   async function enviarResena(e) {
     e.preventDefault()
