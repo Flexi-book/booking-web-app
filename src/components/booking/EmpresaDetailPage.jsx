@@ -385,13 +385,18 @@ export default function EmpresaDetailPage() {
                 required
               />
               <div className="flex items-center gap-3">
-                <select
-                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm"
-                  value={nuevaResena.puntuacion}
-                  onChange={(e) => setNuevaResena((p) => ({ ...p, puntuacion: Number(e.target.value) }))}
-                >
-                  {[5,4,3,2,1].map((v) => <option key={v} value={v}>{v} estrellas</option>)}
-                </select>
+                <div className="flex items-center gap-1">
+                  {[1,2,3,4,5].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setNuevaResena((p) => ({ ...p, puntuacion: v }))}
+                      className={`text-2xl transition-colors ${v <= nuevaResena.puntuacion ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'}`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
                 <button
                   type="submit"
                   disabled={enviandoResena}
