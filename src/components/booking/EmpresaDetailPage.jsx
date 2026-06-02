@@ -6,7 +6,6 @@ import {
   SlidersHorizontal, Wifi, Car, Coffee, Share2, Heart, Building2, Mail, Globe
 } from 'lucide-react'
 import { publicBookingApi } from '../../services/publicBookingService'
-import { empresaApi } from '../../services/gestionService'
 import { getEmpresaIcono } from '../admin/PerfilPanel'
 import { cn } from '@/lib/utils'
 import Footer from '../layout/Footer'
@@ -98,21 +97,34 @@ export default function EmpresaDetailPage() {
   const [enviandoResena, setEnviandoResena] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
     setLoading(true)
-    Promise.all([
-      empresaApi.obtener(id).catch(err => {
-        console.warn("Could not load from empresaApi directly, falling back to public booking api list", err)
-        return publicBookingApi.listarEmpresas().then(emps => emps.find(e => String(e.empresaId) === id) ?? null)
-      }),
-      publicBookingApi.listarServiciosPublic(id),
-      publicBookingApi.listarResenasEmpresa(id).catch(() => []),
-    ]).then(([emp, svcs, reviews]) => {
-      setEmpresa(emp)
-      setServicios(svcs)
-      setResenas(Array.isArray(reviews) ? reviews : [])
-    })
-    .catch(() => setError('No pudimos cargar esta empresa.'))
-    .finally(() => setLoading(false))
+    setError('')
+
+    publicBookingApi.obtenerCatalogoEmpresa(id)
+      .then(({ empresa: emp, servicios: svcs }) => {
+        if (cancelled) return
+        setEmpresa(emp)
+        setServicios(Array.isArray(svcs) ? svcs : [])
+      })
+      .catch(() => {
+        if (!cancelled) setError('No pudimos cargar esta empresa.')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    publicBookingApi.listarResenasEmpresa(id)
+      .then((reviews) => {
+        if (!cancelled) setResenas(Array.isArray(reviews) ? reviews : [])
+      })
+      .catch(() => {
+        if (!cancelled) setResenas([])
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
   const icono  = getEmpresaIcono(id, empresa?.tipoNegocio)
@@ -160,11 +172,8 @@ export default function EmpresaDetailPage() {
       const updated = await publicBookingApi.listarResenasEmpresa(id)
       setResenas(updated)
       setNuevaResena({ nombreCliente: '', comentario: '', puntuacion: 5 })
-      const empresas = await publicBookingApi.listarEmpresas().catch(() => null)
-      if (Array.isArray(empresas)) {
-        const refreshed = empresas.find((e2) => String(e2.empresaId) === id)
-        if (refreshed) setEmpresa((prev) => ({ ...prev, ...refreshed }))
-      }
+      const refreshed = await publicBookingApi.obtenerCatalogoEmpresa(id).catch(() => null)
+      if (refreshed?.empresa) setEmpresa((prev) => ({ ...prev, ...refreshed.empresa }))
     } catch {
       setError('No se pudo enviar la reseña. Intenta nuevamente.')
     } finally {
