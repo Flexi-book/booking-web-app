@@ -73,6 +73,14 @@ function buildMonthDays(baseDate) {
   return cells
 }
 
+function formatCLP(value) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0)
+}
+
 export default function PublicBookingPage() {
   const { empresaId } = useParams()
   const servicesSectionRef = useRef(null)
@@ -365,7 +373,7 @@ export default function PublicBookingPage() {
                       <h3 className="text-lg font-bold text-gray-900">{servicio.nombreServicio}</h3>
                       {servicio.descripcion && <p className="text-sm text-gray-600 mt-1">{servicio.descripcion}</p>}
                     </div>
-                    <p className="text-blue-600 font-bold">${Number(servicio.precio).toLocaleString('es-CL')}</p>
+                    <p className="text-blue-600 font-bold">{formatCLP(servicio.precio)}</p>
                   </div>
                   <p className="text-xs text-gray-500 mt-3">Duración: {servicio.duracionMinutos} min</p>
 
@@ -538,7 +546,7 @@ export default function PublicBookingPage() {
 
             {servicioSeleccionado && (
               <p className="text-xs text-gray-500">
-                Duración estimada: <span className="font-semibold">{servicioSeleccionado.duracionMinutos} min</span> · Valor: <span className="font-semibold">${Number(servicioSeleccionado.precio).toLocaleString('es-CL')}</span>
+                Duración estimada: <span className="font-semibold">{servicioSeleccionado.duracionMinutos} min</span> · Valor: <span className="font-semibold">{formatCLP(servicioSeleccionado.precio)}</span>
               </p>
             )}
 

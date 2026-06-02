@@ -27,6 +27,14 @@ const emptyForm = {
   note: ""
 }
 
+function formatCLP(value) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0)
+}
+
 export default function ReservationDialog({ open, onOpenChange, onSave, servicios = [], activos = [] }) {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState(emptyForm)
@@ -191,7 +199,7 @@ export default function ReservationDialog({ open, onOpenChange, onSave, servicio
                         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{s.duracionMinutos} MINUTOS</p>
                       </div>
                     </div>
-                    <p className="text-lg font-semibold text-slate-900">${s.precio}</p>
+                    <p className="text-lg font-semibold text-slate-900">{formatCLP(s.precio)}</p>
                   </button>
                 ))}
               </div>
@@ -312,7 +320,7 @@ export default function ReservationDialog({ open, onOpenChange, onSave, servicio
                       </div>
                       <div className="text-right">
                         <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-widest">Precio</p>
-                        <p className="text-lg font-semibold text-blue-400">${selectedService?.precio}</p>
+                        <p className="text-lg font-semibold text-blue-400">{formatCLP(selectedService?.precio)}</p>
                       </div>
                     </div>
                     <div className="flex justify-between items-end pt-4 border-t border-white/10">

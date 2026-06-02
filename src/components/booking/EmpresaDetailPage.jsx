@@ -17,6 +17,14 @@ function getLogoUrl(empresa) {
   return empresa?.logoUrl || empresa?.logo_url || ''
 }
 
+function formatCLP(value) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0)
+}
+
 
 function Skeleton() {
   return (
@@ -62,7 +70,7 @@ function ServiceCard({ s, empresaId, popular }) {
         </span>
         {s.precio > 0 && (
           <span className="text-sm font-bold text-gray-800">
-            {Number(s.precio).toLocaleString('es-CL')}€
+            {formatCLP(s.precio)}
           </span>
         )}
       </div>
