@@ -137,6 +137,12 @@ export default function PublicBookingPage() {
 
   const profesionalesDelServicio = useMemo(() => {
     if (!servicioSeleccionado) return catalogo?.activos || []
+
+    const activosAsignados = Array.isArray(servicioSeleccionado.activosAsignados)
+      ? servicioSeleccionado.activosAsignados
+      : []
+    if (activosAsignados.length > 0) return activosAsignados
+
     const activosPorId = new Map((catalogo?.activos || []).map((a) => [getEntityId(a), a]))
     const vistos = new Set()
     return (servicioSeleccionado.disponibilidades || [])
