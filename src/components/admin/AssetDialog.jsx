@@ -36,7 +36,7 @@ const TIPOS = [
 const ESTADOS = [
   { id: 'disponible', nombre: 'Disponible' },
   { id: 'no_disponible', nombre: 'No Disponible' },
-  { id: 'mantenimiento', nombre: 'Mantenimiento' }
+  { id: 'inactivo', nombre: 'Inactivo' }
 ]
 
 const emptyForm = {
