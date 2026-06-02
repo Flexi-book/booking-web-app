@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Scissors,
+  LayoutDashboard, Scissors, CalendarCheck,
   Boxes, CalendarDays, Bell, History,
   Settings2, LogOut, ChevronRight, Building2, HelpCircle, X
 } from 'lucide-react'
