@@ -81,6 +81,10 @@ function formatCLP(value) {
   }).format(Number(value) || 0)
 }
 
+function getEntityId(entity) {
+  return String(entity?.id ?? entity?.activoId ?? entity?.activo_id ?? '')
+}
+
 export default function PublicBookingPage() {
   const { empresaId } = useParams()
   const servicesSectionRef = useRef(null)
@@ -133,13 +137,30 @@ export default function PublicBookingPage() {
 
   const profesionalesDelServicio = useMemo(() => {
     if (!servicioSeleccionado) return catalogo?.activos || []
-    const ids = new Set((servicioSeleccionado.disponibilidades || []).map((d) => d.activoId))
-    return (catalogo?.activos || []).filter((a) => ids.has(a.activoId))
+    const activosPorId = new Map((catalogo?.activos || []).map((a) => [getEntityId(a), a]))
+    const vistos = new Set()
+    return (servicioSeleccionado.disponibilidades || [])
+      .map((d) => {
+        const activoId = getEntityId(d)
+        if (!activoId || vistos.has(activoId)) return null
+        vistos.add(activoId)
+        const activoBase = activosPorId.get(activoId) || {}
+        const nombre = d.activoNombre || activoBase.nombreActivo || activoBase.nombre || 'Recurso'
+        return {
+          ...activoBase,
+          ...d,
+          id: activoId,
+          activoId,
+          nombre,
+          nombreActivo: nombre,
+        }
+      })
+      .filter(Boolean)
   }, [catalogo, servicioSeleccionado])
 
   const disponibilidadActiva = useMemo(() => {
     if (!servicioSeleccionado || !form.assetId) return []
-    return (servicioSeleccionado.disponibilidades || []).filter((d) => d.activoId === form.assetId)
+    return (servicioSeleccionado.disponibilidades || []).filter((d) => getEntityId(d) === String(form.assetId))
   }, [servicioSeleccionado, form.assetId])
 
   const weekdaysDisponibles = useMemo(() => {
@@ -164,12 +185,13 @@ export default function PublicBookingPage() {
         if (!dateKey) continue
         const selectedDay = selectedDayByService[serviceId]
         const disponibilidad = (servicio.disponibilidades || []).find((d) => Number(d.diaSemana) === Number(selectedDay))
-        if (!disponibilidad?.activoId) continue
-        const key = `${serviceId}|${disponibilidad.activoId}|${dateKey}`
+        const availabilityAssetId = getEntityId(disponibilidad)
+        if (!availabilityAssetId) continue
+        const key = `${serviceId}|${availabilityAssetId}|${dateKey}`
         try {
           const ocupados = await publicBookingApi.obtenerHorariosOcupados({
             serviceOfferingId: serviceId,
-            assetId: disponibilidad.activoId,
+            assetId: availabilityAssetId,
             date: dateKey,
           })
           updates[key] = new Set((ocupados || []).map((t) => String(t).slice(0, 5)))
@@ -230,7 +252,7 @@ export default function PublicBookingPage() {
   }
 
   function seleccionarServicio(servicio) {
-    const primerActivo = servicio.disponibilidades?.[0]?.activoId || ''
+    const primerActivo = getEntityId(servicio.disponibilidades?.[0])
     const primerDia = servicio.disponibilidades?.[0]?.diaSemana
     const fechaInicial = primerDia ? nextDateByWeekday(Number(primerDia)) : null
     const fechaInicialKey = fechaInicial ? toDateKey(fechaInicial) : ''
@@ -279,7 +301,7 @@ export default function PublicBookingPage() {
     setForm((f) => ({
       ...f,
       serviceOfferingId: servicioId,
-      assetId: disponibilidad.activoId,
+      assetId: getEntityId(disponibilidad),
       startTime: toIsoLocal(fecha),
     }))
   }
