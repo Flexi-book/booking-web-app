@@ -52,6 +52,47 @@ function normalizeEmpresa(raw = {}) {
   }
 }
 
+function normalizeActivo(raw = {}) {
+  const id = raw.id ?? raw.activoId ?? raw.activo_id ?? ''
+  return {
+    ...raw,
+    id,
+    activoId: id,
+    activo_id: id,
+    nombre: raw.nombre ?? raw.nombreActivo ?? raw.nombre_activo ?? '',
+    nombreActivo: raw.nombreActivo ?? raw.nombre ?? raw.nombre_activo ?? '',
+    tipoActivo: raw.tipoActivo ?? raw.tipo_activo ?? raw.tipoActivoNombre ?? '',
+  }
+}
+
+function normalizeDisponibilidad(raw = {}) {
+  const activoId = raw.activoId ?? raw.activo_id ?? ''
+  return {
+    ...raw,
+    activoId,
+    activo_id: activoId,
+    activoNombre: raw.activoNombre ?? raw.activo_nombre ?? '',
+    diaSemana: raw.diaSemana ?? raw.dia_semana ?? null,
+    dia_semana: raw.dia_semana ?? raw.diaSemana ?? null,
+    horaInicio: raw.horaInicio ?? raw.hora_inicio ?? '',
+    hora_inicio: raw.hora_inicio ?? raw.horaInicio ?? '',
+    horaFin: raw.horaFin ?? raw.hora_fin ?? '',
+    hora_fin: raw.hora_fin ?? raw.horaFin ?? '',
+  }
+}
+
+function normalizeService(raw = {}) {
+  return {
+    ...raw,
+    id: raw.id ?? raw.servicioId ?? raw.servicio_id ?? '',
+    servicioId: raw.servicioId ?? raw.id ?? raw.servicio_id ?? '',
+    estado: raw.estado ?? raw.estadoServicioNombre ?? raw.estado_servicio_nombre ?? '',
+    disponibilidades: Array.isArray(raw.disponibilidades)
+      ? raw.disponibilidades.map(normalizeDisponibilidad)
+      : [],
+  }
+}
+
 function normalizeArrayPayload(payload) {
   if (Array.isArray(payload)) return payload
   if (Array.isArray(payload?.data)) return payload.data
@@ -109,17 +150,40 @@ export const publicBookingApi = {
   listarServiciosPublic: (empresaId) =>
     backofficePublic.get('/servicios', { params: { empresaId } })
       .then(r =>
-        normalizeArrayPayload(r.data).filter(
-          (s) => s.estadoServicioId === 'activo' || s.estado === 'activo'
-        )
+        normalizeArrayPayload(r.data)
+          .map(normalizeService)
+          .filter(
+            (s) => s.estadoServicioId === 'activo' || s.estado === 'activo'
+          )
       ),
 
   // Activos disponibles de una empresa — bff-backoffice acepta UUID
   listarActivosPublic: (empresaId) =>
     backofficePublic.get('/activos', { params: { empresaId } })
-      .then(r => normalizeArrayPayload(r.data).filter(a =>
-        ['disponible', 'Disponible'].includes(a.estadoDisponibilidad ?? a.estadoDisponibilidadId)
-      )),
+      .then(r => normalizeArrayPayload(r.data)
+        .map(normalizeActivo)
+        .filter(a =>
+          ['disponible', 'Disponible'].includes(a.estadoDisponibilidad ?? a.estadoDisponibilidadId)
+        )),
+
+  obtenerCatalogoEmpresa: (empresaId) =>
+    backofficePublic.get('/catalog', { params: { empresaId } })
+      .then(r => {
+        const payload = r.data?.data ?? r.data
+        const empresa = payload?.empresa ?? null
+        const servicios = normalizeArrayPayload(payload?.servicios).map(normalizeService)
+        const activos = normalizeArrayPayload(payload?.activos).map(normalizeActivo)
+        return { empresa, servicios, activos }
+      }),
+
+  obtenerHorariosOcupados: ({ serviceOfferingId, assetId, date }) =>
+    userPublic.get('/reservations/ocupados', {
+      params: {
+        serviceOfferingId,
+        assetId,
+        date,
+      },
+    }).then(r => normalizeArrayPayload(r.data)),
 
   // Crear reserva — bff-user (reservations endpoint)
   crearReserva: (payload) =>

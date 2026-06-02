@@ -477,15 +477,27 @@ export default function EmpresaPage() {
   const activosDelServicio = useMemo(() => {
     if (!sel.servicio) return []
 
-    const idsAsignados = new Set(
-      (sel.servicio.disponibilidades || [])
-        .map((d) => getAssetId(d))
-        .filter(Boolean)
-    )
+    const activosPorId = new Map((activos || []).map((a) => [getAssetId(a), a]))
+    const vistos = new Set()
+    return (sel.servicio.disponibilidades || [])
+      .map((d) => {
+        const disponibilidadId = getAssetId(d)
+        if (!disponibilidadId || vistos.has(disponibilidadId)) return null
+        vistos.add(disponibilidadId)
 
-    if (idsAsignados.size === 0) return []
+        const activoBase = activosPorId.get(disponibilidadId) || {}
+        const nombre = d.activoNombre || activoBase.nombreActivo || activoBase.nombre || 'Recurso'
 
-    return activos.filter((a) => idsAsignados.has(getAssetId(a)))
+        return {
+          ...activoBase,
+          ...d,
+          id: disponibilidadId,
+          activoId: disponibilidadId,
+          nombre,
+          nombreActivo: nombre,
+        }
+      })
+      .filter(Boolean)
   }, [activos, sel.servicio])
 
   // Slots dinámicos basados en disponibilidad real del servicio+activo+fecha
