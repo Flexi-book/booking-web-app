@@ -21,10 +21,23 @@ function normalizeBaseUrl(rawUrl = '', fallback = '') {
   }
 }
 
+function resolveCatalogBaseUrl() {
+  const raw = import.meta.env.VITE_CATALOG_API_URL || ''
+  const fallback = 'https://flexibook-catalog-service.onrender.com/api'
+  const normalized = normalizeBaseUrl(raw, fallback)
+
+  if (!normalized) return fallback
+  if (normalized.includes('bff-backoffice') || normalized.includes('/api/backoffice')) {
+    return fallback
+  }
+
+  return normalized
+}
+
 // catalog-service — listado público de empresas
 const catalogBase = isDev
   ? '/proxy/catalog'
-  : normalizeBaseUrl(import.meta.env.VITE_CATALOG_API_URL, '')
+  : resolveCatalogBaseUrl()
 const catalogPublic = axios.create({ baseURL: catalogBase })
 
 // bff-user — crear reserva
