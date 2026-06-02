@@ -26,6 +26,8 @@ const toMin = h => { const [hh, mm] = h.split(':').map(Number); return hh * 60 +
 // Convierte minutos a "HH:MM"
 const toHHMM = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 
+const getAssetId = (asset) => String(asset?.id ?? asset?.activoId ?? asset?.activo_id ?? '')
+
 /**
  * Genera los slots disponibles para un servicio+activo en una fecha.
  * Usa disponibilidades configuradas en el servicio.
@@ -447,7 +449,7 @@ export default function EmpresaPage() {
     try {
       await publicBookingApi.crearReserva({
         serviceOfferingId: sel.servicio?.id,
-        assetId:           sel.activo?.id,
+        assetId:           getAssetId(sel.activo),
         customerName:      sel.nombre,
         customerEmail:     sel.email,
         customerPhone:     sel.telefono || undefined,
@@ -464,9 +466,24 @@ export default function EmpresaPage() {
   const icono    = getEmpresaIcono(id, empresa?.tipoNegocio)
   const minFecha = new Date().toISOString().split('T')[0]
 
+  const activosDelServicio = useMemo(() => {
+    if (!sel.servicio) return []
+
+    const idsAsignados = new Set(
+      (sel.servicio.disponibilidades || [])
+        .map((d) => getAssetId(d))
+        .filter(Boolean)
+    )
+
+    if (idsAsignados.size === 0) return []
+
+    return activos.filter((a) => idsAsignados.has(getAssetId(a)))
+  }, [activos, sel.servicio])
+
   // Slots dinámicos basados en disponibilidad real del servicio+activo+fecha
-  const slots = generarSlots(sel.servicio, sel.activo?.id, sel.fecha)
-  const sinDisponibilidad = sel.servicio && sel.activo && sel.fecha && slots.length === 0
+  const activoSeleccionadoId = getAssetId(sel.activo)
+  const slots = generarSlots(sel.servicio, activoSeleccionadoId, sel.fecha)
+  const sinDisponibilidad = sel.servicio && activoSeleccionadoId && sel.fecha && slots.length === 0
   const sinConfiguracion  = sel.servicio && !(sel.servicio.disponibilidades?.length)
 
   /* ── Loading ─────────────────────────────────────────────────────── */
@@ -569,7 +586,16 @@ export default function EmpresaPage() {
                   <div className="space-y-3">
                     {servicios.map(s => (
                       <ServiceCard key={s.id} s={s} selected={sel.servicio?.id === s.id}
-                        onSelect={sv => { setSel(p => ({ ...p, servicio: sv })); ir(1) }} />
+                        onSelect={sv => {
+                          setSel(p => ({
+                            ...p,
+                            servicio: sv,
+                            activo: null,
+                            fecha: '',
+                            hora: '',
+                          }))
+                          ir(1)
+                        }} />
                     ))}
                   </div>
                 )}
@@ -596,17 +622,20 @@ export default function EmpresaPage() {
                     </span>
                   </div>
                 )}
-                {activos.length === 0 ? (
+                {activosDelServicio.length === 0 ? (
                   <div className="py-16 text-center">
                     <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <User className="w-7 h-7 text-slate-300" />
                     </div>
-                    <p className="font-bold text-slate-500">Sin profesionales disponibles</p>
+                    <p className="font-bold text-slate-500">Sin profesionales asignados</p>
+                    <p className="text-sm text-slate-400 mt-1">
+                      Este servicio no tiene activos asignados para reservar.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {activos.map(a => (
-                      <AssetCard key={a.id} a={a} selected={sel.activo?.id === a.id}
+                    {activosDelServicio.map(a => (
+                      <AssetCard key={getAssetId(a)} a={a} selected={getAssetId(sel.activo) === getAssetId(a)}
                         onSelect={av => { setSel(p => ({ ...p, activo: av })); ir(2) }} />
                     ))}
                   </div>
