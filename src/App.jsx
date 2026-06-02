@@ -1,8 +1,9 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Search, Bell, Menu } from 'lucide-react'
 import { useAuth } from './auth/useAuth'
 import Sidebar from './components/layout/Sidebar'
+import { warmAuthService } from './services/authWarmup'
 
 // Lazy loading — reduce bundle inicial
 const LandingPage         = lazy(() => import('./components/landing/LandingPage'))
@@ -110,6 +111,15 @@ function DashboardLayout() {
 }
 
 export default function App() {
+  useEffect(() => {
+    warmAuthService()
+    const intervalId = window.setInterval(() => {
+      warmAuthService()
+    }, 4 * 60 * 1000)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
+
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Suspense fallback={<PageLoader />}>
