@@ -73,10 +73,10 @@ export default function ReservasPanel() {
     setCatalogLoading(true)
     setError('')
     try {
-      const reservasPromise = reservasApi.listar({ force: true })
+      const reservasPromise = reservasApi.listar()
       const catalogPromise = Promise.allSettled([
-        activosApi.listar({ force: true }),
-        serviciosApi.listar({ force: true }),
+        activosApi.listar(),
+        serviciosApi.listar(),
       ])
 
       const res = await reservasPromise

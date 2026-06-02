@@ -75,9 +75,9 @@ export default function Dashboard() {
     setLoading(true)
     try {
       const [res, act, serv] = await Promise.all([
-        reservasApi.listar({ force: true }),
-        activosApi.listar({ force: true }),
-        serviciosApi.listar({ force: true })
+        reservasApi.listar(),
+        activosApi.listar(),
+        serviciosApi.listar()
       ])
       setReservas(res || [])
       setActivos(act || [])

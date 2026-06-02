@@ -92,7 +92,7 @@ export default function ServiceDialog({ open, onOpenChange, service, onSave }) {
     setLoadingActivos(true)
     try {
       // empresaId lo inyecta el interceptor automáticamente
-      const data = await activosApi.listar({ force: true })
+      const data = await activosApi.listar()
       setActivos(Array.isArray(data) ? data : [])
     } catch (err) {
       console.warn('Error al cargar activos:', err.message)
