@@ -10,13 +10,13 @@ function normalizeBaseUrl(rawUrl = '', fallback = '') {
     const parsed = new URL(rawUrl)
     return `${parsed.origin}${parsed.pathname}`
       .replace(/\/+$/, '')
-      .replace(/\/servicios?$/i, '')
+      .replace(/\/(servicios?|reservations?|reservas?)$/i, '')
       .replace(/\/+$/, '')
   } catch {
     return rawUrl
       .replace(/[?#].*$/, '')
       .replace(/\/+$/, '')
-      .replace(/\/servicios?$/i, '')
+      .replace(/\/(servicios?|reservations?|reservas?)$/i, '')
       .replace(/\/+$/, '') || fallback
   }
 }
@@ -43,7 +43,10 @@ const catalogPublic = axios.create({ baseURL: catalogBase })
 // bff-user — crear reserva
 const userBase = isDev
   ? '/proxy/bff-user'
-  : normalizeBaseUrl(import.meta.env.VITE_BOOKING_API_URL, '')
+  : normalizeBaseUrl(
+      import.meta.env.VITE_BOOKING_API_URL,
+      'https://flexibook-booking-service.onrender.com/api'
+    )
 const userPublic = axios.create({ baseURL: userBase })
 
 const EMPRESAS_CACHE_KEY = 'public_empresas_cache_v1'
