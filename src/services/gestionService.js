@@ -1,4 +1,4 @@
-import { adminClient, authClient } from '../api/apiClients'
+import { adminClient, authClient, tokenStore } from '../api/apiClients'
 import { extractApiError } from '../utils/apiError'
 import { fetchWithCache, clearCacheKeys } from './requestCache'
 
@@ -22,6 +22,10 @@ function listWithScope(baseKey, fetcher, options = {}) {
   return fetchWithCache(scopeKey, fetcher, LIST_TTL_MS)
 }
 
+function clearScopedListKeys(baseKeys, scope = tokenStore.companyId || 'global') {
+  clearCacheKeys(baseKeys.map((baseKey) => scopedCacheKey(baseKey, scope)))
+}
+
 // ── Helper: lanza error legible ──────────────────────────────────────────────
 function apiCall(promise) {
   return promise.then(r => r.data).catch(err => {
@@ -37,15 +41,15 @@ export const activosApi = {
     options,
   ),
   crear: (activo) => apiCall(adminClient.post('/activos', activo)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.activos, CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.activos, CACHE_KEYS.reservas])
     return data
   }),
   actualizar: (id, activo) => apiCall(adminClient.put(`/activos/${id}`, activo)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.activos, CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.activos, CACHE_KEYS.reservas])
     return data
   }),
   eliminar: (id) => apiCall(adminClient.delete(`/activos/${id}`)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.activos, CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.activos, CACHE_KEYS.reservas])
     return data
   }),
 }
@@ -58,15 +62,15 @@ export const serviciosApi = {
     options,
   ),
   crear: (servicio) => apiCall(adminClient.post('/servicios', servicio)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.servicios, CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.servicios, CACHE_KEYS.reservas])
     return data
   }),
   actualizar: (id, servicio) => apiCall(adminClient.put(`/servicios/${id}`, servicio)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.servicios, CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.servicios, CACHE_KEYS.reservas])
     return data
   }),
   eliminar: (id) => apiCall(adminClient.delete(`/servicios/${id}`)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.servicios, CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.servicios, CACHE_KEYS.reservas])
     return data
   }),
 }
@@ -79,11 +83,11 @@ export const reservasApi = {
     options,
   ),
   crear: (reserva) => apiCall(adminClient.post('/reservations', reserva)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.reservas])
     return data
   }),
   cancelar: (id) => apiCall(adminClient.delete(`/reservations/${id}`)).then((data) => {
-    clearCacheKeys([CACHE_KEYS.reservas])
+    clearScopedListKeys([CACHE_KEYS.reservas])
     return data
   }),
 }
