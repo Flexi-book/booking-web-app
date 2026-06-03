@@ -7,6 +7,7 @@ import { LoadingScreen } from "@/components/ui/loading-screen"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { warmDashboardData } from '../../services/dashboardWarmup'
 import { warmAuthService } from '../../services/authWarmup'
+import { warmBackofficeService } from '../../services/backofficeWarmup'
 
 export default function LoginForm() {
   const navigate = useNavigate()
@@ -19,6 +20,7 @@ export default function LoginForm() {
 
   useEffect(() => {
     warmAuthService()
+    warmBackofficeService()
   }, [])
 
   const handleSubmit = async (e) => {
@@ -86,6 +88,7 @@ export default function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onFocus={warmAuthService}
                 placeholder="nombre@empresa.com"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
@@ -103,6 +106,7 @@ export default function LoginForm() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={warmAuthService}
                   placeholder="Ingresa tu contraseña"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
@@ -131,6 +135,8 @@ export default function LoginForm() {
             <button
               type="submit"
               disabled={loading}
+              onMouseEnter={warmAuthService}
+              onFocus={warmAuthService}
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Iniciando sesión...' : 'Entrar a mi Negocio'}

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { AuthContext } from './AuthContext'
 import { authClient, tokenStore } from '../api/apiClients'
+import { ensureAuthServiceReady, warmAuthService } from '../services/authWarmup'
 
 function loadSession() {
   try {
@@ -47,9 +48,24 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     setLoading(true)
     try {
-      const { data } = await authClient.post('/login', { email, password })
-      applySession(data)
-      return data
+      await ensureAuthServiceReady()
+
+      try {
+        const { data } = await authClient.post('/login', { email, password }, { timeout: 12000 })
+        applySession(data)
+        return data
+      } catch (error) {
+        const shouldRetry = error.code === 'ECONNABORTED' || error.response?.status === 503
+        if (!shouldRetry) throw error
+
+        await warmAuthService()
+        await ensureAuthServiceReady({ maxWaitMs: 10000 })
+
+        const { data } = await authClient.post('/login', { email, password }, { timeout: 12000 })
+        applySession(data)
+        return data
+      }
+
     } finally {
       setLoading(false)
     }
