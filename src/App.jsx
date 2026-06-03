@@ -4,6 +4,7 @@ import { Search, Bell, Menu } from 'lucide-react'
 import { useAuth } from './auth/useAuth'
 import Sidebar from './components/layout/Sidebar'
 import { warmAuthService } from './services/authWarmup'
+import { warmBackofficeService } from './services/backofficeWarmup'
 
 // Lazy loading — reduce bundle inicial
 const LandingPage         = lazy(() => import('./components/landing/LandingPage'))
@@ -113,8 +114,10 @@ function DashboardLayout() {
 export default function App() {
   useEffect(() => {
     warmAuthService()
+    warmBackofficeService()
     const intervalId = window.setInterval(() => {
       warmAuthService()
+      warmBackofficeService()
     }, 4 * 60 * 1000)
 
     return () => window.clearInterval(intervalId)
