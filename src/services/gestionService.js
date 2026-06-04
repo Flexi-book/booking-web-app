@@ -90,6 +90,10 @@ export const reservasApi = {
     clearScopedListKeys([CACHE_KEYS.reservas])
     return data
   }),
+  actualizarEstado: (id, status) => apiCall(adminClient.patch(`/reservations/${id}/status`, { status })).then((data) => {
+    clearScopedListKeys([CACHE_KEYS.reservas])
+    return data
+  }),
   cancelar: (id) => apiCall(adminClient.delete(`/reservations/${id}`)).then((data) => {
     clearScopedListKeys([CACHE_KEYS.reservas])
     return data
