@@ -78,7 +78,7 @@ export default function Dashboard() {
   async function cargarDatos() {
     setLoading(true)
     try {
-      const options = { companyId, force: true }
+      const options = { companyId }
       const [res, act, serv] = await Promise.all([
         reservasApi.listar(options),
         activosApi.listar(options),

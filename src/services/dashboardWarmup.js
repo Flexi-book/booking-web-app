@@ -1,10 +1,12 @@
-export function warmDashboardData() {
-  import('./gestionService')
+export function warmDashboardData(companyId) {
+  if (!companyId) return Promise.resolve()
+
+  return import('./gestionService')
     .then(({ reservasApi, activosApi, serviciosApi }) =>
       Promise.allSettled([
-        reservasApi.listar(),
-        activosApi.listar(),
-        serviciosApi.listar(),
+        reservasApi.listar({ companyId }),
+        activosApi.listar({ companyId }),
+        serviciosApi.listar({ companyId }),
       ])
     )
     .catch(() => {

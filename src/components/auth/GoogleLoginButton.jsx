@@ -23,7 +23,7 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
     setLoading(true)
     try {
       const response = await googleLogin(credentialResponse.credential)
-      warmDashboardData()
+      warmDashboardData(response?.companyId)
       
       if (isRegister) {
         navigate('/register-success', { 

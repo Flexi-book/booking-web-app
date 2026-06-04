@@ -8,7 +8,7 @@ const CACHE_KEYS = {
   reservas: 'gestion:reservas:list',
 }
 
-const LIST_TTL_MS = 30000
+const LIST_TTL_MS = 15000
 
 function scopedCacheKey(baseKey, scope = tokenStore.companyId || 'global') {
   return `${baseKey}:${scope}`
