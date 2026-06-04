@@ -5,7 +5,7 @@ let warmupInFlight = null
 export function warmBackofficeService() {
   if (warmupInFlight) return warmupInFlight
 
-  warmupInFlight = adminClient.get('/health', { timeout: 1500 })
+  warmupInFlight = adminClient.get('/health', { timeout: 5000 })
     .catch(() => null)
     .finally(() => {
       warmupInFlight = null
