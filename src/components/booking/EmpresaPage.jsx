@@ -429,6 +429,7 @@ export default function EmpresaPage() {
   const [confirmado, setConfirmado] = useState(false)
   const [enviando, setEnviando]     = useState(false)
   const [errForm, setErrForm]       = useState('')
+  const [occupiedSlots, setOccupiedSlots] = useState(new Set())
 
   const vacío = { servicio: null, activo: null, fecha: '', hora: '', nombre: '', email: '', telefono: '' }
   const [sel, setSel] = useState(vacío)
@@ -507,8 +508,45 @@ export default function EmpresaPage() {
   // Slots dinámicos basados en disponibilidad real del servicio+activo+fecha
   const activoSeleccionadoId = getAssetId(sel.activo)
   const slots = generarSlots(sel.servicio, activoSeleccionadoId, sel.fecha)
+  const slotsOcupados = useMemo(
+    () => new Set([...occupiedSlots].map((slot) => String(slot).slice(0, 5))),
+    [occupiedSlots],
+  )
   const sinDisponibilidad = sel.servicio && activoSeleccionadoId && sel.fecha && slots.length === 0
   const sinConfiguracion  = sel.servicio && !(sel.servicio.disponibilidades?.length)
+
+  useEffect(() => {
+    let active = true
+
+    async function cargarOcupados() {
+      if (!sel.servicio?.id || !activoSeleccionadoId || !sel.fecha) {
+        setOccupiedSlots(new Set())
+        return
+      }
+
+      try {
+        const ocupados = await publicBookingApi.obtenerHorariosOcupados({
+          serviceOfferingId: sel.servicio.id,
+          assetId: activoSeleccionadoId,
+          date: sel.fecha,
+        })
+        if (!active) return
+        setOccupiedSlots(new Set((ocupados || []).map((slot) => String(slot).slice(0, 5))))
+      } catch {
+        if (!active) return
+        setOccupiedSlots(new Set())
+      }
+    }
+
+    cargarOcupados()
+    return () => { active = false }
+  }, [sel.servicio?.id, activoSeleccionadoId, sel.fecha])
+
+  useEffect(() => {
+    if (sel.hora && slotsOcupados.has(sel.hora)) {
+      setSel((prev) => ({ ...prev, hora: '' }))
+    }
+  }, [sel.hora, slotsOcupados])
 
   /* ── Loading ─────────────────────────────────────────────────────── */
   if (loading) return (
@@ -751,19 +789,29 @@ export default function EmpresaPage() {
                             </span>
                           </div>
                           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                            {slots.map(h => (
-                              <button
-                                key={h}
-                                onClick={() => setSel(p => ({ ...p, hora: h }))}
-                                className={cn(
-                                  'py-3 rounded-xl text-sm font-bold border-2 transition-all duration-200',
-                                  sel.hora === h
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200'
-                                    : 'bg-white border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50'
-                                )}>
-                                {h}
-                              </button>
-                            ))}
+                            {slots.map(h => {
+                              const isOccupied = slotsOcupados.has(h)
+                              return (
+                                <button
+                                  key={h}
+                                  type="button"
+                                  disabled={isOccupied}
+                                  onClick={() => {
+                                    if (isOccupied) return
+                                    setSel(p => ({ ...p, hora: h }))
+                                  }}
+                                  className={cn(
+                                    'py-3 rounded-xl text-sm font-bold border-2 transition-all duration-200',
+                                    sel.hora === h
+                                      ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200'
+                                      : isOccupied
+                                        ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                                        : 'bg-white border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50'
+                                  )}>
+                                  {h}
+                                </button>
+                              )
+                            })}
                           </div>
                           <p className="text-xs text-slate-400 mt-2.5 text-center">
                             Cada sesión dura {sel.servicio?.duracionMinutos} min
