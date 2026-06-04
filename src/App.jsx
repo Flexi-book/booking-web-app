@@ -112,6 +112,8 @@ function DashboardLayout() {
 }
 
 export default function App() {
+  const { isAuthenticated, companyId } = useAuth()
+
   useEffect(() => {
     warmAuthService()
     warmBackofficeService()
@@ -122,6 +124,22 @@ export default function App() {
 
     return () => window.clearInterval(intervalId)
   }, [])
+
+  useEffect(() => {
+    if (!isAuthenticated || !companyId) return
+
+    import('./services/dashboardWarmup')
+      .then(({ warmDashboardData }) => warmDashboardData(companyId))
+      .catch(() => {})
+
+    const intervalId = window.setInterval(() => {
+      import('./services/dashboardWarmup')
+        .then(({ warmDashboardData }) => warmDashboardData(companyId))
+        .catch(() => {})
+    }, 2 * 60 * 1000)
+
+    return () => window.clearInterval(intervalId)
+  }, [isAuthenticated, companyId])
 
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

@@ -29,8 +29,8 @@ export default function LoginForm() {
     setLoading(true)
 
     try {
-      await login(email, password)
-      warmDashboardData()
+      const session = await login(email, password)
+      warmDashboardData(session?.companyId)
       setLoading(false)
       navigate('/dashboard')
     } catch (err) {

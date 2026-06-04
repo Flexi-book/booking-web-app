@@ -71,12 +71,12 @@ export default function ReservasPanel() {
     cargarTodo()
   }, [companyId])
 
-  async function cargarTodo() {
+  async function cargarTodo(force = false) {
     setLoading(true)
     setCatalogLoading(true)
     setError('')
     try {
-      const options = { companyId, force: true }
+      const options = { companyId, force }
       const reservasPromise = reservasApi.listar(options)
       const catalogPromise = Promise.allSettled([
         activosApi.listar(options),
@@ -103,7 +103,7 @@ export default function ReservasPanel() {
     try {
       await reservasApi.crear(payload)
       setSuccess('Reserva confirmada con éxito')
-      cargarTodo()
+      cargarTodo(true)
     } catch (err) {
       throw new Error(err.response?.data?.message || 'No hay disponibilidad en ese horario.')
     }
@@ -115,7 +115,7 @@ export default function ReservasPanel() {
     try {
       await reservasApi.cancelar(id)
       setSuccess('Reserva anulada correctamente')
-      cargarTodo()
+      cargarTodo(true)
     } catch {
       setError('No se pudo cancelar la reserva')
     }
