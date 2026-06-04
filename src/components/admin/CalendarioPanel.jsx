@@ -4,6 +4,7 @@ import { es } from 'date-fns/locale'
 import { format, isSameDay, startOfMonth, endOfMonth } from 'date-fns'
 import { Clock, User, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { reservasApi, serviciosApi } from '../../services/gestionService'
+import { useAuth } from '../../auth/useAuth'
 import PageHeader from '../ui/PageHeader'
 import { Badge } from '../ui/badge'
 
@@ -47,6 +48,7 @@ const DPC = {
 }
 
 export default function CalendarioPanel() {
+  const { companyId } = useAuth()
   const [reservas, setReservas]     = useState([])
   const [servicios, setServicios]   = useState([])
   const [loading, setLoading]       = useState(true)
@@ -55,12 +57,14 @@ export default function CalendarioPanel() {
   const [diaSelected, setDiaSelected] = useState(new Date())
 
   useEffect(() => {
+    if (!companyId) return
     setLoading(true)
-    Promise.all([reservasApi.listar(), serviciosApi.listar()])
+    const options = { companyId, force: true }
+    Promise.all([reservasApi.listar(options), serviciosApi.listar(options)])
       .then(([r, s]) => { setReservas(r); setServicios(s) })
       .catch(() => setError('Error al cargar reservas'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [companyId])
 
   const servicioById = useMemo(
     () => Object.fromEntries(servicios.map(s => [s.id, s])),
@@ -71,8 +75,9 @@ export default function CalendarioPanel() {
   const diasConReservas = useMemo(() => {
     const map = {}
     reservas.forEach(r => {
-      if (!r.fechaInicio) return
-      const key = format(new Date(r.fechaInicio), 'yyyy-MM-dd')
+      const start = r.startTime || r.fechaInicio
+      if (!start) return
+      const key = format(new Date(start), 'yyyy-MM-dd')
       if (!map[key]) map[key] = []
       map[key].push(r)
     })
@@ -82,8 +87,11 @@ export default function CalendarioPanel() {
   // Reservas del día seleccionado, ordenadas por hora
   const reservasDia = useMemo(() =>
     reservas
-      .filter(r => r.fechaInicio && isSameDay(new Date(r.fechaInicio), diaSelected))
-      .sort((a, b) => new Date(a.fechaInicio) - new Date(b.fechaInicio)),
+      .filter(r => {
+        const start = r.startTime || r.fechaInicio
+        return start && isSameDay(new Date(start), diaSelected)
+      })
+      .sort((a, b) => new Date(a.startTime || a.fechaInicio) - new Date(b.startTime || b.fechaInicio)),
     [reservas, diaSelected]
   )
 
@@ -91,8 +99,9 @@ export default function CalendarioPanel() {
   const kpis = useMemo(() => {
     const ini = startOfMonth(mes), fin = endOfMonth(mes)
     const del = reservas.filter(r => {
-      if (!r.fechaInicio) return false
-      const d = new Date(r.fechaInicio)
+      const start = r.startTime || r.fechaInicio
+      if (!start) return false
+      const d = new Date(start)
       return d >= ini && d <= fin
     })
     return {
@@ -236,9 +245,11 @@ export default function CalendarioPanel() {
             ) : (
               <div className="divide-y divide-gray-100">
                 {reservasDia.map(r => {
-                  const svc    = servicioById[r.servicioId]
-                  const hora   = r.fechaInicio ? format(new Date(r.fechaInicio), 'HH:mm') : '—'
-                  const horaFin = r.fechaFin   ? format(new Date(r.fechaFin),    'HH:mm') : '—'
+                  const svc = servicioById[r.serviceOfferingId || r.servicioId]
+                  const start = r.startTime || r.fechaInicio
+                  const end = r.endTime || r.fechaFin
+                  const hora = start ? format(new Date(start), 'HH:mm') : '—'
+                  const horaFin = end ? format(new Date(end), 'HH:mm') : '—'
 
                   return (
                     <div key={r.id} className="flex gap-4 px-5 py-4 hover:bg-gray-50/60 transition-colors">
@@ -256,10 +267,10 @@ export default function CalendarioPanel() {
                           <div>
                             <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
                               <User className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                              {r.clienteNombre || 'Sin nombre'}
+                              {r.customerName || r.clienteNombre || 'Sin nombre'}
                             </p>
-                            {r.clienteCorreo && (
-                              <p className="text-xs text-gray-400 ml-5">{r.clienteCorreo}</p>
+                            {(r.customerEmail || r.clienteCorreo) && (
+                              <p className="text-xs text-gray-400 ml-5">{r.customerEmail || r.clienteCorreo}</p>
                             )}
                           </div>
                           <StatusBadge status={r.estado} />
