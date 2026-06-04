@@ -46,10 +46,12 @@ import { Separator } from "@/components/ui/separator"
 import { TableLoader } from "@/components/ui/table-loader"
 import { LoadingScreen } from "@/components/ui/loading-screen"
 import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
+import { useAuth } from '../../auth/useAuth'
 
 import ReservationDialog from './ReservationDialog'
 
 export default function ReservasPanel() {
+  const { companyId } = useAuth()
   const [reservas, setReservas] = useState([])
   const [activos, setActivos] = useState([])
   const [servicios, setServicios] = useState([])
@@ -65,18 +67,20 @@ export default function ReservasPanel() {
   const [view, setView] = useState('list')
 
   useEffect(() => {
+    if (!companyId) return
     cargarTodo()
-  }, [])
+  }, [companyId])
 
   async function cargarTodo() {
     setLoading(true)
     setCatalogLoading(true)
     setError('')
     try {
-      const reservasPromise = reservasApi.listar()
+      const options = { companyId, force: true }
+      const reservasPromise = reservasApi.listar(options)
       const catalogPromise = Promise.allSettled([
-        activosApi.listar(),
-        serviciosApi.listar(),
+        activosApi.listar(options),
+        serviciosApi.listar(options),
       ])
 
       const res = await reservasPromise

@@ -26,6 +26,10 @@ function clearScopedListKeys(baseKeys, scope = tokenStore.companyId || 'global')
   clearCacheKeys(baseKeys.map((baseKey) => scopedCacheKey(baseKey, scope)))
 }
 
+function companyParams(options = {}) {
+  return options.companyId ? { params: { empresaId: options.companyId } } : undefined
+}
+
 // ── Helper: lanza error legible ──────────────────────────────────────────────
 function apiCall(promise) {
   return promise.then(r => r.data).catch(err => {
@@ -37,7 +41,7 @@ function apiCall(promise) {
 export const activosApi = {
   listar: (options = {}) => listWithScope(
     CACHE_KEYS.activos,
-    () => apiCall(adminClient.get('/activos')),
+    () => apiCall(adminClient.get('/activos', companyParams(options))),
     options,
   ),
   crear: (activo) => apiCall(adminClient.post('/activos', activo)).then((data) => {
@@ -58,7 +62,7 @@ export const activosApi = {
 export const serviciosApi = {
   listar: (options = {}) => listWithScope(
     CACHE_KEYS.servicios,
-    () => apiCall(adminClient.get('/servicios')),
+    () => apiCall(adminClient.get('/servicios', companyParams(options))),
     options,
   ),
   crear: (servicio) => apiCall(adminClient.post('/servicios', servicio)).then((data) => {
@@ -79,7 +83,7 @@ export const serviciosApi = {
 export const reservasApi = {
   listar: (options = {}) => listWithScope(
     CACHE_KEYS.reservas,
-    () => apiCall(adminClient.get('/reservations')),
+    () => apiCall(adminClient.get('/reservations', companyParams(options))),
     options,
   ),
   crear: (reserva) => apiCall(adminClient.post('/reservations', reserva)).then((data) => {

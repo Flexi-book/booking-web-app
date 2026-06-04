@@ -71,8 +71,9 @@ export function fetchWithCache(key, fetcher, ttlMs = 30000) {
             inflightStore.delete(key)
           })
         inflightStore.set(key, refresh)
+        return refresh
       }
-      return Promise.resolve(persisted.value)
+      return inflightPersisted
     }
   }
 
