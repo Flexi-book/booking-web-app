@@ -46,8 +46,10 @@ import { TableLoader } from "@/components/ui/table-loader"
 import authService from '../../services/authService'
 import { reservasApi, activosApi, serviciosApi } from '../../services/gestionService'
 import OnboardingWizard, { useOnboarding } from '../admin/OnboardingWizard'
+import { useAuth } from '../../auth/useAuth'
 
 export default function Dashboard() {
+  const { companyId } = useAuth()
   const [user, setUser]           = useState(authService.getUser())
   const [showWelcome, setShowWelcome] = useState(false)
   const [reservas, setReservas]   = useState([])
@@ -68,16 +70,19 @@ export default function Dashboard() {
     if (!isDone()) {
       setTimeout(() => setShowOnboarding(true), 600)
     }
-    cargarDatos()
-  }, [])
+    if (companyId) {
+      cargarDatos()
+    }
+  }, [companyId])
 
   async function cargarDatos() {
     setLoading(true)
     try {
+      const options = { companyId, force: true }
       const [res, act, serv] = await Promise.all([
-        reservasApi.listar(),
-        activosApi.listar(),
-        serviciosApi.listar()
+        reservasApi.listar(options),
+        activosApi.listar(options),
+        serviciosApi.listar(options)
       ])
       setReservas(res || [])
       setActivos(act || [])

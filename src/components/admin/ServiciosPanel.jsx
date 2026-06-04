@@ -25,11 +25,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { serviciosApi } from '../../services/gestionService'
+import { useAuth } from '../../auth/useAuth'
 import { TableLoader } from "@/components/ui/table-loader"
 import ServiceDialog from './ServiceDialog'
 import { Badge } from "@/components/ui/badge"
 
 export default function ServiciosPanel() {
+  const { companyId } = useAuth()
   const [servicios, setServicios] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -37,13 +39,14 @@ export default function ServiciosPanel() {
   const [selectedService, setSelectedService] = useState(null)
 
   useEffect(() => {
+    if (!companyId) return
     cargarServicios()
-  }, [])
+  }, [companyId])
 
   const cargarServicios = async () => {
     setLoading(true)
     try {
-      const data = await serviciosApi.listar()
+      const data = await serviciosApi.listar({ companyId, force: true })
       setServicios(data || [])
     } catch (err) {
       console.error("Error al cargar servicios:", err)
