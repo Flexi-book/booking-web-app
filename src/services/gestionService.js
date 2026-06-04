@@ -8,7 +8,7 @@ const CACHE_KEYS = {
   reservas: 'gestion:reservas:list',
 }
 
-const LIST_TTL_MS = 30000
+const LIST_TTL_MS = 15000
 
 function scopedCacheKey(baseKey, scope = tokenStore.companyId || 'global') {
   return `${baseKey}:${scope}`
@@ -87,6 +87,10 @@ export const reservasApi = {
     options,
   ),
   crear: (reserva) => apiCall(adminClient.post('/reservations', reserva)).then((data) => {
+    clearScopedListKeys([CACHE_KEYS.reservas])
+    return data
+  }),
+  actualizarEstado: (id, status) => apiCall(adminClient.patch(`/reservations/${id}/status`, { status })).then((data) => {
     clearScopedListKeys([CACHE_KEYS.reservas])
     return data
   }),
