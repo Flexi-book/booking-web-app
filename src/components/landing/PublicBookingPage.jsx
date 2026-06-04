@@ -389,7 +389,8 @@ export default function PublicBookingPage() {
               const effectiveDateKey = selectedDateByService[servicio.servicioId] || (selectedDia ? toDateKey(nextDateByWeekday(Number(selectedDia))) : '')
               const effectiveWeekday = weekdayFromDateKey(effectiveDateKey)
               const disponibilidadFecha = (grouped[effectiveWeekday] || [])[0] || disponibilidadDia
-              const occupiedKey = disponibilidadFecha?.activoId ? `${servicio.servicioId}|${disponibilidadFecha.activoId}|${effectiveDateKey}` : ''
+              const availabilityAssetId = getEntityId(disponibilidadFecha)
+              const occupiedKey = availabilityAssetId ? `${servicio.servicioId}|${availabilityAssetId}|${effectiveDateKey}` : ''
               const occupied = occupiedByKey[occupiedKey] || new Set()
 
               return (
@@ -479,16 +480,17 @@ export default function PublicBookingPage() {
                     {horarios.slice(0, 8).map((tramo, i) => (
                       (() => {
                         const [horaInicio] = String(tramo).split(' - ').map((x) => x.trim())
+                        const isOccupied = occupied.has(horaInicio)
                         const selected = selectedSlotByService[servicio.servicioId] === `${effectiveDateKey}T${horaInicio}`
                         return (
                           <button
                             key={`${servicio.servicioId}-${selectedDia}-${i}`}
                             type="button"
-                            disabled={occupied.has(horaInicio)}
+                            disabled={isOccupied}
                             onClick={(e) => {
                               e.stopPropagation()
                               if (!disponibilidadFecha) return
-                              if (occupied.has(horaInicio)) return
+                              if (isOccupied) return
                               seleccionarHorario(
                                 servicio.servicioId,
                                 disponibilidadFecha,
@@ -499,8 +501,8 @@ export default function PublicBookingPage() {
                             className={`text-xs px-2 py-1 rounded-md border ${
                               selected
                                 ? 'bg-blue-600 border-blue-600 text-white'
-                                : occupied.has(horaInicio)
-                                  ? 'bg-gray-100 border-gray-200 text-gray-400 opacity-50 cursor-not-allowed'
+                                : isOccupied
+                                  ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                                   : 'bg-white border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600'
                             }`}
                           >
