@@ -121,6 +121,19 @@ export default function ReservasPanel() {
     }
   }
 
+  async function actualizarEstadoReserva(id, estado, mensajeExito) {
+    setError('')
+    setSuccess('')
+    try {
+      await reservasApi.actualizarEstado(id, estado)
+      setSuccess(mensajeExito)
+      setDetailsOpen(false)
+      cargarTodo(true)
+    } catch {
+      setError('No se pudo actualizar el estado de la reserva')
+    }
+  }
+
   const verDetalles = (reserva) => {
     setSelectedReserva(reserva)
     setDetailsOpen(true)
@@ -337,6 +350,16 @@ export default function ReservasPanel() {
                                   <DropdownMenuItem onClick={() => verDetalles(r)} className="cursor-pointer text-xs font-medium gap-2.5 py-2">
                                     <Eye className="h-3.5 w-3.5 text-slate-500" /> Ver detalles
                                   </DropdownMenuItem>
+                                  {r.estado === 'pendiente' && (
+                                    <DropdownMenuItem onClick={() => actualizarEstadoReserva(r.id, 'confirmada', 'Reserva confirmada correctamente')} className="cursor-pointer text-xs font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50 gap-2.5 py-2">
+                                      <CheckCircle2 className="h-3.5 w-3.5" /> Confirmar reserva
+                                    </DropdownMenuItem>
+                                  )}
+                                  {(r.estado === 'pendiente' || r.estado === 'confirmada') && (
+                                    <DropdownMenuItem onClick={() => actualizarEstadoReserva(r.id, 'completada', 'Reserva marcada como completada')} className="cursor-pointer text-xs font-medium text-blue-600 focus:text-blue-600 focus:bg-blue-50 gap-2.5 py-2">
+                                      <CheckCircle2 className="h-3.5 w-3.5" /> Marcar completada
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuItem onClick={() => cancelarReserva(r.id)} className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2" disabled={r.estado === 'cancelada'}>
                                     <Trash2 className="h-3.5 w-3.5" /> Anular registro
                                   </DropdownMenuItem>
@@ -555,6 +578,24 @@ export default function ReservasPanel() {
             <Button variant="outline" size="sm" onClick={() => setDetailsOpen(false)} className="h-8 text-xs font-medium border-slate-200">
               Cerrar
             </Button>
+            {selectedReserva?.estado === 'pendiente' && (
+              <Button 
+                size="sm"
+                onClick={() => actualizarEstadoReserva(selectedReserva.id, 'confirmada', 'Reserva confirmada correctamente')}
+                className="h-8 text-xs font-medium shadow-sm bg-emerald-600 hover:bg-emerald-700"
+              >
+                Confirmar
+              </Button>
+            )}
+            {(selectedReserva?.estado === 'pendiente' || selectedReserva?.estado === 'confirmada') && (
+              <Button 
+                size="sm"
+                onClick={() => actualizarEstadoReserva(selectedReserva.id, 'completada', 'Reserva marcada como completada')}
+                className="h-8 text-xs font-medium shadow-sm bg-blue-600 hover:bg-blue-700"
+              >
+                Completar
+              </Button>
+            )}
             {selectedReserva?.estado !== 'cancelada' && (
               <Button 
                 variant="destructive"
