@@ -3,10 +3,34 @@ import { AuthContext } from './AuthContext'
 import { authClient, tokenStore } from '../api/apiClients'
 import { ensureAuthServiceReady, warmAuthService } from '../services/authWarmup'
 
+function extractCompanyIdFromToken(token) {
+  try {
+    if (!token) return null
+    const payload = token.split('.')[1]
+    if (!payload) return null
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const decoded = JSON.parse(atob(normalized))
+    return decoded.companyId ?? null
+  } catch {
+    return null
+  }
+}
+
+function normalizeSession(data) {
+  if (!data) return data
+  const companyId = data.companyId ?? data.empresaId ?? extractCompanyIdFromToken(data.token)
+  return {
+    ...data,
+    companyId,
+    empresaId: data.empresaId ?? companyId,
+  }
+}
+
 function loadSession() {
   try {
     const token = localStorage.getItem('token')
-    const user  = JSON.parse(localStorage.getItem('user') || 'null')
+    const rawUser = JSON.parse(localStorage.getItem('user') || 'null')
+    const user = rawUser ? normalizeSession({ ...rawUser, token: rawUser.token ?? token }) : null
     return { token, user }
   } catch {
     return { token: null, user: null }
@@ -14,8 +38,9 @@ function loadSession() {
 }
 
 function saveSession(data) {
-  localStorage.setItem('token', data.token)
-  localStorage.setItem('user', JSON.stringify(data))
+  const normalized = normalizeSession(data)
+  localStorage.setItem('token', normalized.token)
+  localStorage.setItem('user', JSON.stringify(normalized))
 }
 
 function clearSession() {
@@ -39,10 +64,11 @@ export function AuthProvider({ children }) {
   const isAuthenticated = !!token
 
   const applySession = (data) => {
-    saveSession(data)
-    setToken(data.token)
-    setUser(data)
-    tokenStore.set(data.token, data.companyId ?? data.empresaId)
+    const normalized = normalizeSession(data)
+    saveSession(normalized)
+    setToken(normalized.token)
+    setUser(normalized)
+    tokenStore.set(normalized.token, normalized.companyId ?? normalized.empresaId)
   }
 
   const login = useCallback(async (email, password) => {
