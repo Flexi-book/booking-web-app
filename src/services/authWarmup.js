@@ -5,7 +5,7 @@ let warmupInFlight = null
 export function warmAuthService() {
   if (warmupInFlight) return warmupInFlight
 
-  warmupInFlight = authClient.get('/health', { timeout: 1500 })
+  warmupInFlight = authClient.get('/health', { timeout: 5000 })
     .catch(() => null)
     .finally(() => {
       warmupInFlight = null
@@ -19,8 +19,8 @@ function sleep(ms) {
 }
 
 export async function ensureAuthServiceReady({
-  maxWaitMs = 8000,
-  intervalMs = 1200,
+  maxWaitMs = 20000,
+  intervalMs = 1500,
 } = {}) {
   const deadline = Date.now() + maxWaitMs
 

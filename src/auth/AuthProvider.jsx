@@ -77,7 +77,7 @@ export function AuthProvider({ children }) {
       await ensureAuthServiceReady()
 
       try {
-        const { data } = await authClient.post('/login', { email, password }, { timeout: 12000 })
+        const { data } = await authClient.post('/login', { email, password }, { timeout: 20000 })
         applySession(data)
         return data
       } catch (error) {
@@ -85,9 +85,9 @@ export function AuthProvider({ children }) {
         if (!shouldRetry) throw error
 
         await warmAuthService()
-        await ensureAuthServiceReady({ maxWaitMs: 10000 })
+        await ensureAuthServiceReady({ maxWaitMs: 20000 })
 
-        const { data } = await authClient.post('/login', { email, password }, { timeout: 12000 })
+        const { data } = await authClient.post('/login', { email, password }, { timeout: 20000 })
         applySession(data)
         return data
       }
