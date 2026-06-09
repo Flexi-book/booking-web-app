@@ -59,6 +59,7 @@ function Skeleton() {
 
 /* ── Service Card ────────────────────────────────────────────────────── */
 function ServiceCard({ s, empresaId, popular }) {
+  const serviceId = s.id ?? s.servicioId ?? s.servicio_id ?? ''
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm
                     hover:shadow-md hover:border-blue-100 transition-all duration-200 flex flex-col">
@@ -87,7 +88,7 @@ function ServiceCard({ s, empresaId, popular }) {
         )}
       </div>
       <Link
-        to={`/empresa/${empresaId}/reservar`}
+        to={`/empresa/${empresaId}/reservar${serviceId ? `?service=${encodeURIComponent(serviceId)}` : ''}`}
         className="block text-center bg-blue-600 hover:bg-blue-700 text-white text-xs
                    font-semibold py-2.5 rounded-xl transition-all duration-200
                    hover:shadow-md hover:shadow-blue-200 mt-auto">

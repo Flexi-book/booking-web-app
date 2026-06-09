@@ -4,7 +4,7 @@ import {
   Clock, User, Mail, Phone, CalendarClock,
   Trash2, X, Plus, CheckCircle2, LayoutGrid, List as ListIcon,
   ChevronLeft, ChevronRight, Info, Eye, PhoneCall, History,
-  ExternalLink, ArrowUpRight
+  ExternalLink, ArrowUpRight, Loader2
 } from 'lucide-react'
 import { 
   Card, CardContent, CardHeader, CardTitle, CardDescription 
@@ -65,6 +65,7 @@ export default function ReservasPanel() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState('list')
+  const [actionLoading, setActionLoading] = useState(null)
 
   useEffect(() => {
     if (!companyId) return
@@ -110,28 +111,57 @@ export default function ReservasPanel() {
   }
 
   async function cancelarReserva(id) {
+    if (actionLoading) return
     if (!window.confirm("¿Estás seguro de anular esta reserva? El registro se mantendrá como 'Cancelado'.")) return
     setError('')
+    setSuccess('')
+    setActionLoading({ id, action: 'cancelada' })
     try {
       await reservasApi.cancelar(id)
+      actualizarReservaLocal(id, 'cancelada')
       setSuccess('Reserva anulada correctamente')
-      cargarTodo(true)
+      await cargarTodo(true)
     } catch {
       setError('No se pudo cancelar la reserva')
+    } finally {
+      setActionLoading(null)
     }
   }
 
   async function actualizarEstadoReserva(id, estado, mensajeExito) {
+    if (actionLoading) return
     setError('')
     setSuccess('')
+    setActionLoading({ id, action: estado })
     try {
       await reservasApi.actualizarEstado(id, estado)
+      actualizarReservaLocal(id, estado)
       setSuccess(mensajeExito)
       setDetailsOpen(false)
-      cargarTodo(true)
+      await cargarTodo(true)
     } catch {
       setError('No se pudo actualizar el estado de la reserva')
+    } finally {
+      setActionLoading(null)
     }
+  }
+
+  function actualizarReservaLocal(id, estado) {
+    setReservas((prev) => prev.map((reserva) =>
+      reserva.id === id
+        ? { ...reserva, estado, status: estado }
+        : reserva
+    ))
+    setSelectedReserva((prev) => (
+      prev?.id === id
+        ? { ...prev, estado, status: estado }
+        : prev
+    ))
+  }
+
+  function isActionLoading(id, action = null) {
+    if (!actionLoading || actionLoading.id !== id) return false
+    return action ? actionLoading.action === action : true
   }
 
   const verDetalles = (reserva) => {
@@ -351,17 +381,38 @@ export default function ReservasPanel() {
                                     <Eye className="h-3.5 w-3.5 text-slate-500" /> Ver detalles
                                   </DropdownMenuItem>
                                   {r.estado === 'pendiente' && (
-                                    <DropdownMenuItem onClick={() => actualizarEstadoReserva(r.id, 'confirmada', 'Reserva confirmada correctamente')} className="cursor-pointer text-xs font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50 gap-2.5 py-2">
-                                      <CheckCircle2 className="h-3.5 w-3.5" /> Confirmar reserva
+                                    <DropdownMenuItem
+                                      onClick={() => actualizarEstadoReserva(r.id, 'confirmada', 'Reserva confirmada correctamente')}
+                                      className="cursor-pointer text-xs font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50 gap-2.5 py-2"
+                                      disabled={isActionLoading(r.id)}
+                                    >
+                                      {isActionLoading(r.id, 'confirmada')
+                                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                      {isActionLoading(r.id, 'confirmada') ? 'Confirmando...' : 'Confirmar reserva'}
                                     </DropdownMenuItem>
                                   )}
                                   {(r.estado === 'pendiente' || r.estado === 'confirmada') && (
-                                    <DropdownMenuItem onClick={() => actualizarEstadoReserva(r.id, 'completada', 'Reserva marcada como completada')} className="cursor-pointer text-xs font-medium text-blue-600 focus:text-blue-600 focus:bg-blue-50 gap-2.5 py-2">
-                                      <CheckCircle2 className="h-3.5 w-3.5" /> Marcar completada
+                                    <DropdownMenuItem
+                                      onClick={() => actualizarEstadoReserva(r.id, 'completada', 'Reserva marcada como completada')}
+                                      className="cursor-pointer text-xs font-medium text-blue-600 focus:text-blue-600 focus:bg-blue-50 gap-2.5 py-2"
+                                      disabled={isActionLoading(r.id)}
+                                    >
+                                      {isActionLoading(r.id, 'completada')
+                                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                      {isActionLoading(r.id, 'completada') ? 'Actualizando...' : 'Marcar completada'}
                                     </DropdownMenuItem>
                                   )}
-                                  <DropdownMenuItem onClick={() => cancelarReserva(r.id)} className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2" disabled={r.estado === 'cancelada'}>
-                                    <Trash2 className="h-3.5 w-3.5" /> Anular registro
+                                  <DropdownMenuItem
+                                    onClick={() => cancelarReserva(r.id)}
+                                    className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2"
+                                    disabled={r.estado === 'cancelada' || isActionLoading(r.id)}
+                                  >
+                                    {isActionLoading(r.id, 'cancelada')
+                                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                      : <Trash2 className="h-3.5 w-3.5" />}
+                                    {isActionLoading(r.id, 'cancelada') ? 'Anulando...' : 'Anular registro'}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -581,19 +632,23 @@ export default function ReservasPanel() {
             {selectedReserva?.estado === 'pendiente' && (
               <Button 
                 size="sm"
-                onClick={() => actualizarEstadoReserva(selectedReserva.id, 'confirmada', 'Reserva confirmada correctamente')}
+                onClick={() => actualizarEstadoReserva(selectedReserva?.id, 'confirmada', 'Reserva confirmada correctamente')}
+                disabled={isActionLoading(selectedReserva?.id)}
                 className="h-8 text-xs font-medium shadow-sm bg-emerald-600 hover:bg-emerald-700"
               >
-                Confirmar
+                {isActionLoading(selectedReserva?.id, 'confirmada') && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                {isActionLoading(selectedReserva?.id, 'confirmada') ? 'Confirmando...' : 'Confirmar'}
               </Button>
             )}
             {(selectedReserva?.estado === 'pendiente' || selectedReserva?.estado === 'confirmada') && (
               <Button 
                 size="sm"
-                onClick={() => actualizarEstadoReserva(selectedReserva.id, 'completada', 'Reserva marcada como completada')}
+                onClick={() => actualizarEstadoReserva(selectedReserva?.id, 'completada', 'Reserva marcada como completada')}
+                disabled={isActionLoading(selectedReserva?.id)}
                 className="h-8 text-xs font-medium shadow-sm bg-blue-600 hover:bg-blue-700"
               >
-                Completar
+                {isActionLoading(selectedReserva?.id, 'completada') && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                {isActionLoading(selectedReserva?.id, 'completada') ? 'Actualizando...' : 'Completar'}
               </Button>
             )}
             {selectedReserva?.estado !== 'cancelada' && (
@@ -601,12 +656,14 @@ export default function ReservasPanel() {
                 variant="destructive"
                 size="sm"
                 onClick={() => {
-                  cancelarReserva(selectedReserva.id);
+                  cancelarReserva(selectedReserva?.id);
                   setDetailsOpen(false);
                 }}
+                disabled={isActionLoading(selectedReserva?.id)}
                 className="h-8 text-xs font-medium shadow-sm"
               >
-                Anular Cita
+                {isActionLoading(selectedReserva?.id, 'cancelada') && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                {isActionLoading(selectedReserva?.id, 'cancelada') ? 'Anulando...' : 'Anular Cita'}
               </Button>
             )}
           </div>

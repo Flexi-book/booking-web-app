@@ -120,6 +120,15 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  const updateSessionUser = useCallback((partialUser) => {
+    setUser((current) => {
+      if (!current) return current
+      const nextUser = normalizeSession({ ...current, ...partialUser })
+      saveSession(nextUser)
+      return nextUser
+    })
+  }, [])
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -132,6 +141,7 @@ export function AuthProvider({ children }) {
       googleLogin,
       register,
       logout,
+      updateSessionUser,
     }}>
       {children}
     </AuthContext.Provider>

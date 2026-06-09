@@ -101,6 +101,7 @@ function Field({ label, children }) {
 
 const inputCls = `w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm
   focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition`
+
 function normalizeSupabaseBaseUrl(rawUrl) {
   if (!rawUrl) return ''
   try {
@@ -131,8 +132,9 @@ function getReservationDate(reserva) {
    MAIN
    ────────────────────────────────────────────────────────────────────── */
 export default function PerfilPanel() {
-  const { user, companyId, companyName } = useAuth()
+  const { user, companyId, companyName, updateSessionUser } = useAuth()
 
+  const [nombreEmpresa, setNombreEmpresa] = useState('')
   const [icono,       setIcono]       = useState('🏢')
   const [descripcion, setDescripcion] = useState('')
   const [direccion,   setDireccion]   = useState('')
@@ -152,16 +154,25 @@ export default function PerfilPanel() {
   const [logoPreview, setLogoPreview] = useState('')
   const [subiendoLogo, setSubiendoLogo] = useState(false)
   const [logoError, setLogoError] = useState('')
-
+  const storageMode = import.meta.env.VITE_STORAGE_MODE || 'local'
   const supabaseUrl = normalizeSupabaseBaseUrl(import.meta.env.VITE_SUPABASE_URL || '')
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
   const logoBucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'company-logos'
+  const isLocalHost = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  )
+  const useLocalStorageMode =
+    isLocalHost ||
+    storageMode === 'local' ||
+    (!supabaseUrl && !supabaseAnonKey)
 
   useEffect(() => {
     let active = true
     if (companyId) {
       empresaApi.obtener(companyId).then(data => {
         if (!active) return
+        setNombreEmpresa(data.nombre || companyName || '')
         if (data.icono) setIcono(data.icono)
         if (data.descripcion) setDescripcion(data.descripcion)
         if (data.direccion) setDireccion(data.direccion)
@@ -222,9 +233,11 @@ export default function PerfilPanel() {
             setLogoError('No se pudo cargar el logo actual.')
           }
         })
+    } else {
+      setNombreEmpresa(companyName || '')
     }
     return () => { active = false }
-  }, [companyId])
+  }, [companyId, companyName])
 
   const previewNode = useMemo(() => {
     if (logoPreview) {
@@ -265,51 +278,56 @@ export default function PerfilPanel() {
     if (!file || !companyId) return
 
     setLogoError('')
-    if (!supabaseUrl || !supabaseAnonKey) {
-      setLogoError('Faltan variables VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY en Render.')
-      return
-    }
-
-    const maxSize = 2 * 1024 * 1024
+    const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
-      setLogoError('La imagen supera 2MB.')
+      setLogoError('La imagen supera 10 MB.')
       return
     }
-    if (!file.type.startsWith('image/')) {
-      setLogoError('Debes subir un archivo de imagen.')
+    const allowedTypes = ['image/jpeg', 'image/png']
+    if (!allowedTypes.includes(file.type)) {
+      setLogoError('Solo se permiten imágenes JPG o PNG.')
       return
     }
 
     setSubiendoLogo(true)
     try {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-      const objectPath = `empresas/${companyId}/${Date.now()}-${safeName}`
-      const uploadUrl = `${supabaseUrl}/storage/v1/object/${logoBucket}/${objectPath}`
+      let finalLogoUrl = ''
 
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
-          'Content-Type': file.type,
-          'x-upsert': 'true',
-        },
-        body: file,
-      })
+      if (useLocalStorageMode) {
+        const updated = await companyProfileApi.subirLogo(file)
+        finalLogoUrl = updated?.logoUrl || updated?.logo_url || ''
+      } else {
+        if (!supabaseUrl || !supabaseAnonKey) {
+          const updated = await companyProfileApi.subirLogo(file)
+          finalLogoUrl = updated?.logoUrl || updated?.logo_url || ''
+        } else {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+          const objectPath = `empresas/${companyId}/${Date.now()}-${safeName}`
+          const uploadUrl = `${supabaseUrl}/storage/v1/object/${logoBucket}/${objectPath}`
 
-      if (!uploadRes.ok) {
-        const body = await uploadRes.text()
-        throw new Error(body || 'Error subiendo imagen')
+          const uploadRes = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+              apikey: supabaseAnonKey,
+              Authorization: `Bearer ${supabaseAnonKey}`,
+              'Content-Type': file.type,
+              'x-upsert': 'true',
+            },
+            body: file,
+          })
+
+          if (!uploadRes.ok) {
+            const body = await uploadRes.text()
+            throw new Error(body || 'Error subiendo imagen')
+          }
+
+          const publicUrl = `${supabaseUrl}/storage/v1/object/public/${logoBucket}/${objectPath}`
+          const updated = await companyProfileApi.actualizarLogo(publicUrl)
+          await empresaApi.actualizar(companyId, { logoUrl: publicUrl, logo_url: publicUrl })
+          finalLogoUrl = updated?.logoUrl || updated?.logo_url || publicUrl
+        }
       }
 
-      const publicUrl = `${supabaseUrl}/storage/v1/object/public/${logoBucket}/${objectPath}`
-      const updated = await companyProfileApi.actualizarLogo(publicUrl)
-
-      // Persistencia redundante: además del endpoint de logo, guardamos también en perfil de empresa.
-      // Evita que el logo "desaparezca" cuando un endpoint no refleja el valor.
-      await empresaApi.actualizar(companyId, { logoUrl: publicUrl, logo_url: publicUrl })
-
-      const finalLogoUrl = updated?.logoUrl || updated?.logo_url || publicUrl
       setLogoUrl(finalLogoUrl)
       setLogoPreview(finalLogoUrl)
       localStorage.setItem(getLogoKey(companyId), finalLogoUrl)
@@ -336,6 +354,7 @@ export default function PerfilPanel() {
     
     try {
       await empresaApi.actualizar(companyId, {
+        nombre: nombreEmpresa,
         descripcion,
         direccion,
         horario,
@@ -345,6 +364,7 @@ export default function PerfilPanel() {
         longitud: position?.lng,
         amenidades: JSON.stringify(amenidades)
       })
+      updateSessionUser?.({ companyName: nombreEmpresa })
       setGuardado(true)
       setTimeout(() => setGuardado(false), 3000)
     } catch (err) {
@@ -375,6 +395,9 @@ export default function PerfilPanel() {
         <p className="text-xs text-gray-400 mb-4">
           Esta imagen se mostrará en la vista pública para que tus clientes identifiquen tu marca.
         </p>
+        <p className="text-xs text-gray-500 mb-4">
+          Formatos permitidos: JPG y PNG. Tamaño máximo: 10 MB.
+        </p>
 
         <div className="flex items-center gap-4">
           <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center">
@@ -385,7 +408,7 @@ export default function PerfilPanel() {
             )}
           </div>
           <label className="inline-flex">
-            <input type="file" accept="image/*" className="hidden" onChange={handleUploadLogo} />
+            <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" className="hidden" onChange={handleUploadLogo} />
             <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
               <Upload className="w-4 h-4" />
               {subiendoLogo ? 'Subiendo...' : 'Subir imagen'}
@@ -422,6 +445,15 @@ export default function PerfilPanel() {
       {/* Info del negocio */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
         <p className="text-sm font-semibold text-gray-700">Información pública</p>
+
+        <Field label="Nombre del negocio">
+          <input
+            className={inputCls}
+            placeholder="Ej: Barberia ronaldo"
+            value={nombreEmpresa}
+            onChange={e => setNombreEmpresa(e.target.value)}
+          />
+        </Field>
 
         <Field label="Descripción del negocio">
           <textarea
