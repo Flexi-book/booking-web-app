@@ -3,6 +3,10 @@ import axios from 'axios'
 // En dev → proxy Vite (evita CORS)
 // En prod → URLs directas de los servicios
 const isDev = import.meta.env.DEV
+const isLocalBrowser = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+)
 
 function normalizeBaseUrl(rawUrl = '', fallback = '') {
   if (!rawUrl) return fallback
@@ -23,6 +27,7 @@ function normalizeBaseUrl(rawUrl = '', fallback = '') {
 
 function resolveCatalogBaseUrl() {
   const raw = import.meta.env.VITE_CATALOG_API_URL || ''
+  if (isLocalBrowser) return '/api/catalog'
   const fallback = 'https://flexibook-catalog-service.onrender.com/api'
   const normalized = normalizeBaseUrl(raw, fallback)
 
@@ -43,13 +48,15 @@ const catalogPublic = axios.create({ baseURL: catalogBase })
 // bff-user — crear reserva
 const userBase = isDev
   ? '/proxy/bff-user'
-  : normalizeBaseUrl(
+  : (isLocalBrowser
+      ? '/api/user'
+      : normalizeBaseUrl(
       import.meta.env.VITE_BOOKING_API_URL,
       'https://flexibook-booking-service.onrender.com/api'
-    )
+    ))
 const userPublic = axios.create({ baseURL: userBase })
 
-const EMPRESAS_CACHE_KEY = 'public_empresas_cache_v1'
+const EMPRESAS_CACHE_KEY = 'public_empresas_cache_v2'
 const EMPRESAS_CACHE_TTL_MS = 5 * 60 * 1000
 
 function normalizeEmpresa(raw = {}) {

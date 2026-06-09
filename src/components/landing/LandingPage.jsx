@@ -13,6 +13,16 @@ const TIPOS_FILTRO = [
   'Centro Médico', 'Salón de belleza', 'Petshop', 'Otro'
 ]
 
+const CATEGORIA_KEYWORDS = {
+  'Barbería': ['barberia', 'barbería', 'barber', 'barber shop'],
+  'Peluquería': ['peluqueria', 'peluquería', 'hair', 'cabello'],
+  'Spa': ['spa', 'masaje', 'wellness', 'relajacion', 'relajación'],
+  'Fitness': ['fitness', 'gym', 'gimnasio', 'deporte', 'deportivo', 'cancha', 'futbol', 'fútbol', 'entrenamiento'],
+  'Centro Médico': ['medico', 'médico', 'medicina', 'clinica', 'clínica', 'salud', 'odontologia', 'odontología'],
+  'Salón de belleza': ['salon de belleza', 'salón de belleza', 'belleza', 'manicure', 'pedicure', 'estetica', 'estética'],
+  'Petshop': ['petshop', 'pet shop', 'mascota', 'veterinaria', 'veterinario', 'pet'],
+}
+
 function normalizeText(value = '') {
   return value
     .toString()
@@ -20,6 +30,32 @@ function normalizeText(value = '') {
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase()
+}
+
+function matchesTipoFiltro(empresa, filtro) {
+  if (filtro === 'Todos') return true
+
+  const selected = normalizeText(filtro)
+  const tipo = normalizeText(empresa?.tipoNegocio)
+  const nombre = normalizeText(empresa?.nombre)
+  const descripcion = normalizeText(empresa?.descripcion)
+  const haystack = `${tipo} ${nombre} ${descripcion}`.trim()
+
+  if (!haystack) return filtro === 'Otro'
+
+  const keywords = CATEGORIA_KEYWORDS[filtro] || []
+  const hasKeywordMatch = keywords.some((keyword) => haystack.includes(normalizeText(keyword)))
+  if (hasKeywordMatch) return true
+
+  if (tipo === selected) return true
+  if (tipo.includes(selected)) return true
+
+  if (filtro === 'Otro') {
+    const knownKeywords = Object.values(CATEGORIA_KEYWORDS).flat().map(normalizeText)
+    return !knownKeywords.some((keyword) => haystack.includes(keyword))
+  }
+
+  return false
 }
 
 function getLogoUrl(empresa) {
@@ -214,14 +250,13 @@ export default function LandingPage() {
   const filtradas = useMemo(() => {
     let lista = [...empresas]
     if (busqueda.trim()) {
-      const q = busqueda.toLowerCase()
+      const q = normalizeText(busqueda)
       lista = lista.filter(e =>
-        `${e.nombre} ${e.tipoNegocio ?? ''} ${e.descripcion ?? ''}`.toLowerCase().includes(q)
+        normalizeText(`${e.nombre} ${e.tipoNegocio ?? ''} ${e.descripcion ?? ''}`).includes(q)
       )
     }
     if (tipoFiltro !== 'Todos') {
-      const selected = normalizeText(tipoFiltro)
-      lista = lista.filter((e) => normalizeText(e.tipoNegocio) === selected)
+      lista = lista.filter((empresa) => matchesTipoFiltro(empresa, tipoFiltro))
     }
     return lista.sort((a, b) =>
       orden === 'az'

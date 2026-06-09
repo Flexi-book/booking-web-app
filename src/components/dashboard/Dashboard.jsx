@@ -48,6 +48,19 @@ import { reservasApi, activosApi, serviciosApi } from '../../services/gestionSer
 import OnboardingWizard, { useOnboarding } from '../admin/OnboardingWizard'
 import { useAuth } from '../../auth/useAuth'
 
+function toSchemaDayOfWeek(date) {
+  const day = date.getDay()
+  return day === 0 ? 7 : day
+}
+
+function getServicePrice(service) {
+  return Number(service?.precio || 0)
+}
+
+function isReservationActive(reservation) {
+  return String(reservation?.estado || '').toLowerCase() !== 'cancelada'
+}
+
 export default function Dashboard() {
   const { companyId } = useAuth()
   const [user, setUser]           = useState(authService.getUser())
@@ -96,38 +109,66 @@ export default function Dashboard() {
 
   // Cálculos dinámicos de métricas
   const dashboardStats = useMemo(() => {
-    const hoy = new Date()
-    const hoyStr = hoy.toDateString()
+    const ahora = new Date()
+    const hoyStr = ahora.toDateString()
+    const diaSemanaHoy = toSchemaDayOfWeek(ahora)
     
-    // 1. Ingresos Totales (Solo confirmadas/completadas)
+    // 1. Ingresos Totales: reservas no canceladas ya ocurridas
     const ingresos = reservas
-      .filter(r => r.estado !== 'cancelada')
+      .filter((reservation) => {
+        if (!isReservationActive(reservation)) return false
+        const startTime = new Date(reservation.startTime)
+        return !Number.isNaN(startTime.getTime()) && startTime <= ahora
+      })
       .reduce((acc, r) => {
         const serv = servicios.find(s => s.id === r.serviceOfferingId)
-        return acc + (serv?.precio || 0)
+        return acc + getServicePrice(serv)
       }, 0)
 
     // 2. Citas de hoy
-    const citasHoy = reservas.filter(r => new Date(r.startTime).toDateString() === hoyStr).length
+    const citasHoy = reservas.filter((reservation) => {
+      const startTime = new Date(reservation.startTime)
+      return !Number.isNaN(startTime.getTime()) && startTime.toDateString() === hoyStr
+    }).length
 
     // 3. Clientes Únicos
     const clientesUnicos = new Set(reservas.map(r => r.customerEmail)).size
 
-    // 4. Ocupación (Activos con reservas hoy vs total activos)
-    const activosConReservaHoy = new Set(
-      reservas
-        .filter(r => new Date(r.startTime).toDateString() === hoyStr && r.estado !== 'cancelada')
-        .map(r => r.assetId)
-    ).size
-    const tasaOcupacion = activos.length > 0 ? Math.round((activosConReservaHoy / activos.length) * 100) : 0
+    // 4. Ocupación diaria: reservas activas de hoy / cupos configurados para hoy
+    const reservasActivasHoy = reservas.filter((reservation) => {
+      const startTime = new Date(reservation.startTime)
+      return (
+        !Number.isNaN(startTime.getTime()) &&
+        startTime.toDateString() === hoyStr &&
+        isReservationActive(reservation)
+      )
+    }).length
+
+    const cuposHoy = servicios.reduce((acc, service) => {
+      const disponibilidades = Array.isArray(service?.disponibilidades) ? service.disponibilidades : []
+      const cuposServicioHoy = disponibilidades
+        .filter((availability) => Number(availability?.diaSemana ?? availability?.dia_semana) === diaSemanaHoy)
+        .reduce((serviceAcc, availability) => serviceAcc + Number(availability?.cuposPorDia || 0), 0)
+
+      return acc + cuposServicioHoy
+    }, 0)
+
+    const tasaOcupacion = cuposHoy > 0
+      ? Math.round((reservasActivasHoy / cuposHoy) * 100)
+      : 0
+
+    const ingresosDesc = ingresos > 0 ? 'Reservas ya realizadas' : 'Sin reservas realizadas'
+    const ocupacionDesc = cuposHoy > 0
+      ? `${reservasActivasHoy}/${cuposHoy} cupos hoy`
+      : 'Sin cupos hoy'
 
     return [
-      { name: "Ingresos Totales", value: `$${ingresos.toLocaleString()}`, icon: DollarSign, trend: "+12%", desc: "Desde el inicio" },
+      { name: "Ingresos Totales", value: `$${ingresos.toLocaleString()}`, icon: DollarSign, trend: "+12%", desc: ingresosDesc },
       { name: "Citas para Hoy", value: citasHoy.toString(), icon: Clock, trend: "+5%", desc: "Día actual" },
       { name: "Clientes Reales", value: clientesUnicos.toString(), icon: Users, trend: "+8%", desc: "Usuarios únicos" },
-      { name: "Tasa Ocupación", value: `${tasaOcupacion}%`, icon: TrendingUp, trend: "+2%", desc: "Capacidad utilizada" }
+      { name: "Tasa Ocupación", value: `${tasaOcupacion}%`, icon: TrendingUp, trend: "+2%", desc: ocupacionDesc }
     ]
-  }, [reservas, servicios, activos])
+  }, [reservas, servicios])
 
   // Datos para la gráfica de tendencia (últimos 7 días)
   const chartData = useMemo(() => {

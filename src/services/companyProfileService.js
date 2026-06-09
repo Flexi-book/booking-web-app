@@ -35,4 +35,23 @@ export const companyProfileApi = {
       clearCacheKeys([PROFILE_CACHE_KEY])
       return r.data
     }),
+
+  subirLogo: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return authClient.post(
+      '/companies/me/logo/upload',
+      formData,
+      {
+        headers: {
+          ...authHeaders(),
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    ).then((r) => {
+      clearCacheKeys([PROFILE_CACHE_KEY])
+      return r.data
+    })
+  },
 }
