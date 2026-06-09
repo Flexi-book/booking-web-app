@@ -24,6 +24,10 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: path => path.replace(/^\/proxy\/auth/, '/api/auth'),
       },
+      '/uploads': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
       '/proxy/bff-user': {
         target: 'http://localhost:8090',
         changeOrigin: true,

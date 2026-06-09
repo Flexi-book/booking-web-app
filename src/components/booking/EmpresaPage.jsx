@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import {
   Check, CalendarDays, ArrowRight, User, AlertCircle, Phone, ArrowLeft, Heart, Search, MapPin, Star, Building2, Tag, Calendar as CalendarIcon, Hash,
   Clock, Mail, CheckCircle2, ChevronRight, Sparkles, Receipt
@@ -35,6 +35,56 @@ function formatCLP(value) {
     currency: 'CLP',
     maximumFractionDigits: 0,
   }).format(Number(value) || 0)
+}
+
+function sanitizePhoneInput(value = '') {
+  const trimmed = String(value).trim()
+  if (!trimmed) return ''
+
+  const hasPlus = trimmed.startsWith('+')
+  const digits = trimmed.replace(/\D/g, '')
+  return `${hasPlus ? '+' : ''}${digits}`
+}
+
+function formatChileanPhoneInput(value = '') {
+  const normalized = sanitizePhoneInput(value)
+  if (!normalized) return ''
+
+  const rawDigits = normalized.replace(/\D/g, '')
+  const useInternational = normalized.startsWith('+') || rawDigits.startsWith('56')
+
+  if (useInternational) {
+    const digits = rawDigits.startsWith('56') ? rawDigits.slice(2, 11) : rawDigits.slice(0, 9)
+    const first = digits.slice(0, 1)
+    const middle = digits.slice(1, 5)
+    const last = digits.slice(5, 9)
+
+    return ['+56', first, middle, last].filter(Boolean).join(' ')
+  }
+
+  const first = rawDigits.slice(0, 1)
+  const middle = rawDigits.slice(1, 5)
+  const last = rawDigits.slice(5, 9)
+
+  return [first, middle, last].filter(Boolean).join(' ')
+}
+
+function isValidChileanPhone(value = '') {
+  const normalized = sanitizePhoneInput(value)
+  if (!normalized) return true
+
+  const digits = normalized.replace(/\D/g, '')
+
+  if (digits.length === 9) {
+    return /^[2-9]\d{8}$/.test(digits)
+  }
+
+  if (digits.length === 11 && digits.startsWith('56')) {
+    const nationalNumber = digits.slice(2)
+    return /^[2-9]\d{8}$/.test(nationalNumber)
+  }
+
+  return false
 }
 
 /**
@@ -420,6 +470,7 @@ function Field({ icon: Icon, label, required, children }) {
    ────────────────────────────────────────────────────────────────────── */
 export default function EmpresaPage() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const [empresa, setEmpresa]       = useState(null)
   const [servicios, setServicios]   = useState([])
   const [activos, setActivos]       = useState([])
@@ -433,6 +484,8 @@ export default function EmpresaPage() {
 
   const vacío = { servicio: null, activo: null, fecha: '', hora: '', nombre: '', email: '', telefono: '' }
   const [sel, setSel] = useState(vacío)
+  const preselectedServiceId = searchParams.get('service') || ''
+  const telefonoValido = isValidChileanPhone(sel.telefono)
 
   useEffect(() => {
     setLoading(true)
@@ -446,11 +499,35 @@ export default function EmpresaPage() {
       .finally(() => setLoading(false))
   }, [id])
 
+  useEffect(() => {
+    if (!preselectedServiceId || !servicios.length || sel.servicio) return
+
+    const servicioInicial = servicios.find((service) => {
+      const serviceId = String(service?.id ?? service?.servicioId ?? service?.servicio_id ?? '')
+      return serviceId === String(preselectedServiceId)
+    })
+
+    if (!servicioInicial) return
+
+    setSel((prev) => ({
+      ...prev,
+      servicio: servicioInicial,
+      activo: null,
+      fecha: '',
+      hora: '',
+    }))
+    setPaso(1)
+  }, [preselectedServiceId, servicios, sel.servicio])
+
   const ir = useCallback(n => { setErrForm(''); setPaso(n) }, [])
 
   const confirmar = async () => {
     if (!sel.nombre.trim() || !sel.email.trim()) {
       setErrForm('Por favor completa tu nombre y correo electrónico.')
+      return
+    }
+    if (!telefonoValido) {
+      setErrForm('Ingresa un teléfono válido. Usa formato chileno como +56912345678 o 912345678.')
       return
     }
     setEnviando(true); setErrForm('')
@@ -460,7 +537,7 @@ export default function EmpresaPage() {
         assetId:           getAssetId(sel.activo),
         customerName:      sel.nombre,
         customerEmail:     sel.email,
-        customerPhone:     sel.telefono || undefined,
+        customerPhone:     sanitizePhoneInput(sel.telefono) || undefined,
         startTime:         `${sel.fecha}T${sel.hora}:00`,
       })
       setConfirmado(true)
@@ -898,11 +975,23 @@ export default function EmpresaPage() {
                       type="tel"
                       placeholder="+56 9 1234 5678"
                       value={sel.telefono}
-                      onChange={e => setSel(p => ({ ...p, telefono: e.target.value }))}
-                      className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-800
-                                 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                                 focus:border-blue-400 transition placeholder:text-slate-300"
+                      inputMode="tel"
+                      maxLength={16}
+                      onChange={e => setSel(p => ({ ...p, telefono: formatChileanPhoneInput(e.target.value) }))}
+                      className={cn(
+                        'w-full h-12 px-4 rounded-xl border bg-white text-slate-800 text-base transition placeholder:text-slate-300',
+                        'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400',
+                        telefonoValido ? 'border-slate-200' : 'border-red-300 bg-red-50/40'
+                      )}
                     />
+                    <p className={cn(
+                      'text-xs mt-1.5 ml-1',
+                      telefonoValido ? 'text-slate-400' : 'text-red-600'
+                    )}>
+                      {telefonoValido
+                        ? 'Formato válido: +56912345678 o 912345678'
+                        : 'Ingresa un teléfono chileno válido.'}
+                    </p>
                   </Field>
 
                   {/* Resumen final compact */}
