@@ -9,8 +9,8 @@
 
   <rect x="112" y="112" width="288" height="288" rx="72" stroke="url(#fbGrad)" stroke-width="34"/>
 
-  <rect x="164" y="66" width="30" height="56" rx="15" fill="#0D213D"/>
-  <rect x="318" y="66" width="30" height="56" rx="15" fill="#0D213D"/>
+  <rect x="164" y="66" width="30" height="56" rx="15" fill="#2B77D3"/>
+  <rect x="318" y="66" width="30" height="56" rx="15" fill="#8A4DFF"/>
 
-  <path d="M180 262 L238 320 L338 220" stroke="#0D213D" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M180 262 L238 320 L338 220" stroke="#EAF6FF" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

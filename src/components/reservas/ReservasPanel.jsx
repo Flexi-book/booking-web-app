@@ -173,13 +173,13 @@ export default function ReservasPanel() {
     const est = (estado || 'pendiente').toLowerCase()
     switch(est) {
       case 'confirmada':
-        return <Badge variant="outline" className="bg-emerald-50/50 text-emerald-600 border-emerald-100 font-medium px-2.5 py-0.5 rounded-full">Confirmada</Badge>
+        return <Badge variant="outline" className="bg-emerald-50/50 text-emerald-700 border-emerald-200 font-medium px-2.5 py-0.5 rounded-full dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30">Confirmada</Badge>
       case 'cancelada':
-        return <Badge variant="outline" className="bg-slate-50 text-slate-400 border-slate-200 font-medium px-2.5 py-0.5 rounded-full line-through">Cancelada</Badge>
+        return <Badge variant="outline" className="bg-slate-100 text-slate-500 border-slate-200 font-medium px-2.5 py-0.5 rounded-full line-through dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">Cancelada</Badge>
       case 'completada':
-        return <Badge variant="outline" className="bg-blue-50/50 text-blue-600 border-blue-100 font-medium px-2.5 py-0.5 rounded-full">Completada</Badge>
+        return <Badge variant="outline" className="bg-blue-50/50 text-blue-700 border-blue-200 font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30">Completada</Badge>
       default:
-        return <Badge variant="outline" className="bg-amber-50/50 text-amber-600 border-amber-100 font-medium px-2.5 py-0.5 rounded-full">Pendiente</Badge>
+        return <Badge variant="outline" className="bg-amber-50/50 text-amber-700 border-amber-200 font-medium px-2.5 py-0.5 rounded-full dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">Pendiente</Badge>
     }
   }
 
@@ -254,8 +254,8 @@ export default function ReservasPanel() {
       {/* HEADER SECTION - SHADCN STYLE */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Gestión de Reservas</h1>
-          <p className="text-sm text-muted-foreground font-medium">Administra y monitorea las citas de tu negocio.</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">Gestión de Reservas</h1>
+          <p className="text-sm text-muted-foreground font-medium dark:text-slate-400">Administra y monitorea las citas de tu negocio.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button 
@@ -274,14 +274,14 @@ export default function ReservasPanel() {
           { label: 'Confirmadas', value: stats.confirmadas, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50/50' },
           { label: 'Pendientes', value: stats.pendientes, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50/50' }
         ].map((stat, i) => (
-          <Card key={i} className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden group hover:border-slate-300 transition-colors">
+          <Card key={i} className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden group hover:border-slate-300 transition-colors dark:bg-slate-950 dark:border-slate-800 dark:hover:border-slate-700 dark:shadow-black/20">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className={`w-10 h-10 ${stat.bg} rounded-lg flex items-center justify-center transition-transform group-hover:scale-110`}>
+              <div className={`w-10 h-10 ${stat.bg} rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 dark:bg-slate-900`}>
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-tight">{stat.label}</p>
-                <p className="text-2xl font-semibold text-slate-950">{stat.value}</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-tight dark:text-slate-500">{stat.label}</p>
+                <p className="text-2xl font-semibold text-slate-950 dark:text-slate-100">{stat.value}</p>
               </div>
             </CardContent>
           </Card>
@@ -290,20 +290,20 @@ export default function ReservasPanel() {
 
       <Tabs value={view} onValueChange={setView} className="w-full">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <TabsList className="bg-slate-100 p-1 rounded-lg border border-slate-200/60">
-            <TabsTrigger value="list" className="rounded-md px-3 py-1.5 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+          <TabsList className="bg-slate-100 p-1 rounded-lg border border-slate-200/60 dark:bg-slate-900 dark:border-slate-800">
+            <TabsTrigger value="list" className="rounded-md px-3 py-1.5 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm dark:text-slate-400 dark:data-[state=active]:bg-slate-950 dark:data-[state=active]:text-slate-100">
               <ListIcon className="w-3.5 h-3.5 mr-2" /> Listado
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="rounded-md px-3 py-1.5 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger value="calendar" className="rounded-md px-3 py-1.5 text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm dark:text-slate-400 dark:data-[state=active]:bg-slate-950 dark:data-[state=active]:text-slate-100">
               <CalendarIcon className="w-3.5 h-3.5 mr-2" /> Calendario
             </TabsTrigger>
           </TabsList>
 
           <div className="relative w-full md:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground dark:text-slate-500" />
             <Input 
               placeholder="Filtrar por cliente..." 
-              className="pl-8 h-9 text-xs border-slate-200 bg-white rounded-md focus:ring-slate-400"
+              className="pl-8 h-9 text-xs border-slate-200 bg-white rounded-md focus:ring-slate-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -311,56 +311,56 @@ export default function ReservasPanel() {
         </div>
 
         <TabsContent value="list" className="mt-0 focus-visible:outline-none animate-in fade-in duration-300">
-          <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
+          <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
             <CardContent className="p-0">
               {loading && reservas.length === 0 ? (
                 <div className="p-12"><TableLoader rows={5} columns={6} /></div>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader className="bg-slate-50/50 border-b border-slate-200">
+                    <TableHeader className="bg-slate-50/50 border-b border-slate-200 dark:bg-slate-900/70 dark:border-slate-800">
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="font-semibold text-slate-900 py-3 px-4 sm:px-6">Cliente</TableHead>
-                        <TableHead className="hidden sm:table-cell font-semibold text-slate-900">Servicio</TableHead>
-                        <TableHead className="hidden lg:table-cell font-semibold text-slate-900">Recurso</TableHead>
-                        <TableHead className="font-semibold text-slate-900">Fecha</TableHead>
-                        <TableHead className="font-semibold text-slate-900">Estado</TableHead>
-                        <TableHead className="text-right font-semibold text-slate-900 px-4 sm:px-6">Acciones</TableHead>
+                        <TableHead className="font-semibold text-slate-900 py-3 px-4 sm:px-6 dark:text-slate-200">Cliente</TableHead>
+                        <TableHead className="hidden sm:table-cell font-semibold text-slate-900 dark:text-slate-200">Servicio</TableHead>
+                        <TableHead className="hidden lg:table-cell font-semibold text-slate-900 dark:text-slate-200">Recurso</TableHead>
+                        <TableHead className="font-semibold text-slate-900 dark:text-slate-200">Fecha</TableHead>
+                        <TableHead className="font-semibold text-slate-900 dark:text-slate-200">Estado</TableHead>
+                        <TableHead className="text-right font-semibold text-slate-900 px-4 sm:px-6 dark:text-slate-200">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredReservas.length > 0 ? (
                         filteredReservas.map((r) => (
-                          <TableRow key={r.id} className="hover:bg-slate-50/30 transition-colors border-slate-100">
+                          <TableRow key={r.id} className="hover:bg-slate-50/30 transition-colors border-slate-100 dark:border-slate-800 dark:hover:bg-slate-900/60">
                             <TableCell className="py-4 px-4 sm:px-6">
                               <div className="flex items-center gap-2.5 min-w-0">
-                                <div className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-semibold text-xs border border-slate-200">
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-semibold text-xs border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
                                   {(r.customerName || 'A').charAt(0)}
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                  <span className="font-medium text-slate-950 text-sm leading-none truncate">{r.customerName || 'Cliente Anónimo'}</span>
-                                  <span className="text-[11px] text-muted-foreground mt-1 truncate hidden sm:block">{r.customerEmail || 'Sin correo'}</span>
+                                  <span className="font-medium text-slate-950 text-sm leading-none truncate dark:text-slate-100">{r.customerName || 'Cliente Anónimo'}</span>
+                                  <span className="text-[11px] text-muted-foreground mt-1 truncate hidden sm:block dark:text-slate-400">{r.customerEmail || 'Sin correo'}</span>
                                   {/* En mobile mostramos el servicio bajo el nombre */}
-                                  <span className="sm:hidden text-[11px] text-slate-500 mt-0.5 truncate">
+                                  <span className="sm:hidden text-[11px] text-slate-500 mt-0.5 truncate dark:text-slate-400">
                                     {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio || 'Cargando servicio...'}
                                   </span>
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell text-sm font-medium text-slate-700 max-w-[160px] truncate">
+                            <TableCell className="hidden sm:table-cell text-sm font-medium text-slate-700 max-w-[160px] truncate dark:text-slate-200">
                               {servicios.find(s => s.id === r.serviceOfferingId)?.nombreServicio || (catalogLoading ? 'Cargando...' : 'Sin servicio')}
                             </TableCell>
                             <TableCell className="hidden lg:table-cell">
-                              <span className="text-xs font-medium text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 truncate max-w-[120px] block">
+                              <span className="text-xs font-medium text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50 truncate max-w-[120px] block dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700">
                                 {activos.find(a => a.id === r.assetId)?.nombreActivo || (catalogLoading ? 'Cargando...' : 'Sin recurso')}
                               </span>
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="text-sm font-medium text-slate-900 whitespace-nowrap">
+                                <span className="text-sm font-medium text-slate-900 whitespace-nowrap dark:text-slate-100">
                                   {new Date(r.startTime).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
                                 </span>
-                                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-[11px] text-muted-foreground flex items-center gap-1 dark:text-slate-400">
                                   <Clock className="w-3 h-3" />
                                   {new Date(r.startTime).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
@@ -370,20 +370,20 @@ export default function ReservasPanel() {
                             <TableCell className="text-right px-4 sm:px-6">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all">
-                                    <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                                  <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all dark:hover:border-slate-700 dark:hover:bg-slate-900">
+                                    <MoreHorizontal className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48 shadow-lg border-slate-200 rounded-lg p-1">
-                                  <DropdownMenuLabel className="text-[10px] font-semibold text-slate-400 uppercase px-2 py-1.5">Opciones</DropdownMenuLabel>
+                                <DropdownMenuContent align="end" className="w-48 shadow-lg border-slate-200 rounded-lg p-1 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
+                                  <DropdownMenuLabel className="text-[10px] font-semibold text-slate-400 uppercase px-2 py-1.5 dark:text-slate-500">Opciones</DropdownMenuLabel>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => verDetalles(r)} className="cursor-pointer text-xs font-medium gap-2.5 py-2">
-                                    <Eye className="h-3.5 w-3.5 text-slate-500" /> Ver detalles
+                                  <DropdownMenuItem onClick={() => verDetalles(r)} className="cursor-pointer text-xs font-medium gap-2.5 py-2 dark:focus:bg-slate-900 dark:focus:text-slate-100">
+                                    <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" /> Ver detalles
                                   </DropdownMenuItem>
                                   {r.estado === 'pendiente' && (
                                     <DropdownMenuItem
                                       onClick={() => actualizarEstadoReserva(r.id, 'confirmada', 'Reserva confirmada correctamente')}
-                                      className="cursor-pointer text-xs font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50 gap-2.5 py-2"
+                                      className="cursor-pointer text-xs font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50 gap-2.5 py-2 dark:text-emerald-300 dark:focus:bg-emerald-500/10 dark:focus:text-emerald-200"
                                       disabled={isActionLoading(r.id)}
                                     >
                                       {isActionLoading(r.id, 'confirmada')
@@ -395,7 +395,7 @@ export default function ReservasPanel() {
                                   {(r.estado === 'pendiente' || r.estado === 'confirmada') && (
                                     <DropdownMenuItem
                                       onClick={() => actualizarEstadoReserva(r.id, 'completada', 'Reserva marcada como completada')}
-                                      className="cursor-pointer text-xs font-medium text-blue-600 focus:text-blue-600 focus:bg-blue-50 gap-2.5 py-2"
+                                      className="cursor-pointer text-xs font-medium text-blue-600 focus:text-blue-600 focus:bg-blue-50 gap-2.5 py-2 dark:text-blue-300 dark:focus:bg-blue-500/10 dark:focus:text-blue-200"
                                       disabled={isActionLoading(r.id)}
                                     >
                                       {isActionLoading(r.id, 'completada')
@@ -406,7 +406,7 @@ export default function ReservasPanel() {
                                   )}
                                   <DropdownMenuItem
                                     onClick={() => cancelarReserva(r.id)}
-                                    className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2"
+                                    className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2 dark:text-red-300 dark:focus:bg-red-500/10 dark:focus:text-red-200"
                                     disabled={r.estado === 'cancelada' || isActionLoading(r.id)}
                                   >
                                     {isActionLoading(r.id, 'cancelada')
@@ -422,7 +422,7 @@ export default function ReservasPanel() {
                       ) : (
                         <TableRow>
                             <TableCell colSpan={6} className="h-32 text-center">
-                            <p className="text-sm text-muted-foreground">No hay registros de reservas en este momento.</p>
+                            <p className="text-sm text-muted-foreground dark:text-slate-400">No hay registros de reservas en este momento.</p>
                           </TableCell>
                         </TableRow>
                       )}
@@ -435,11 +435,11 @@ export default function ReservasPanel() {
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-0 focus-visible:outline-none animate-in fade-in duration-300">
-          <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
+          <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
             {/* ── Cabecera del calendario ── */}
-            <CardHeader className="border-b border-slate-100 bg-slate-50/30 flex flex-row items-center justify-between py-3 px-5">
+            <CardHeader className="border-b border-slate-100 bg-slate-50/30 flex flex-row items-center justify-between py-3 px-5 dark:border-slate-800 dark:bg-slate-900/50">
               <div className="flex items-center gap-3">
-                <CardTitle className="text-sm font-semibold text-slate-900 capitalize">
+                <CardTitle className="text-sm font-semibold text-slate-900 capitalize dark:text-slate-100">
                   {currentDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}
                 </CardTitle>
                 {/* Leyenda de estados */}
@@ -449,7 +449,7 @@ export default function ReservasPanel() {
                     { color: 'bg-amber-400',  label: 'Pendiente'  },
                     { color: 'bg-red-400',    label: 'Cancelada'  },
                   ].map(l => (
-                    <span key={l.label} className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                    <span key={l.label} className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
                       <span className={`w-2 h-2 rounded-full ${l.color}`} />
                       {l.label}
                     </span>
@@ -457,15 +457,15 @@ export default function ReservasPanel() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200"
+                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </Button>
-                <Button variant="outline" size="sm" className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider border-slate-200"
+                <Button variant="outline" size="sm" className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider border-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   onClick={() => setCurrentDate(new Date())}>
                   Hoy
                 </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200"
+                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Button>
@@ -474,9 +474,9 @@ export default function ReservasPanel() {
 
             <CardContent className="p-0">
               {/* ── Nombres de los días ── */}
-              <div className="grid grid-cols-7 border-b border-slate-100">
+              <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800">
                 {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
-                  <div key={d} className="py-2.5 text-center text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-r-0">
+                  <div key={d} className="py-2.5 text-center text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-r-0 dark:border-slate-800 dark:text-slate-500">
                     {d}
                   </div>
                 ))}
@@ -494,11 +494,11 @@ export default function ReservasPanel() {
                     <div
                       key={i}
                       className={cn(
-                        'border-r border-b border-slate-100 last:border-r-0 min-h-[90px] sm:min-h-[110px] lg:min-h-[130px]',
+                        'border-r border-b border-slate-100 last:border-r-0 min-h-[90px] sm:min-h-[110px] lg:min-h-[130px] dark:border-slate-800',
                         'p-1.5 sm:p-2 flex flex-col transition-colors',
-                        !dayObj.currentMonth && 'bg-slate-50/60',
-                        dayObj.currentMonth && total > 0 && 'hover:bg-blue-50/30 cursor-pointer',
-                        dayObj.currentMonth && total === 0 && 'hover:bg-slate-50/40',
+                        !dayObj.currentMonth && 'bg-slate-50/60 dark:bg-slate-900/40',
+                        dayObj.currentMonth && total > 0 && 'hover:bg-blue-50/30 cursor-pointer dark:hover:bg-slate-900',
+                        dayObj.currentMonth && total === 0 && 'hover:bg-slate-50/40 dark:hover:bg-slate-900/70',
                       )}
                       onClick={() => total > 0 && verDetalles(dayReservas[0])}
                     >
@@ -509,13 +509,13 @@ export default function ReservasPanel() {
                           isToday
                             ? 'bg-blue-600 text-white'
                             : dayObj.currentMonth
-                              ? 'text-slate-700'
-                              : 'text-slate-300'
+                              ? 'text-slate-700 dark:text-slate-200'
+                              : 'text-slate-300 dark:text-slate-600'
                         )}>
                           {dayObj.day}
                         </span>
                         {total > 0 && (
-                          <span className="text-[9px] sm:text-[10px] font-bold text-blue-600 bg-blue-50 rounded-full px-1.5 py-0.5 leading-none">
+                          <span className="text-[9px] sm:text-[10px] font-bold text-blue-600 bg-blue-50 rounded-full px-1.5 py-0.5 leading-none dark:bg-blue-500/15 dark:text-blue-300">
                             {total}
                           </span>
                         )}
@@ -526,10 +526,10 @@ export default function ReservasPanel() {
                         {dayReservas.slice(0, MAX_VISIBLE).map(r => {
                           const hora = new Date(r.startTime).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
                           const color = r.estado === 'cancelada'
-                            ? 'bg-slate-100 text-slate-400 border-slate-200 line-through'
+                            ? 'bg-slate-100 text-slate-500 border-slate-200 line-through dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                             : r.estado === 'pendiente'
-                              ? 'bg-amber-50 text-amber-800 border-amber-200'
-                              : 'bg-blue-50 text-blue-800 border-blue-200'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/20'
+                              : 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-500/10 dark:text-blue-200 dark:border-blue-500/20'
                           const dot = r.estado === 'cancelada'
                             ? 'bg-red-400'
                             : r.estado === 'pendiente'
@@ -564,69 +564,69 @@ export default function ReservasPanel() {
 
       {/* DIALOGO DE DETALLES - SHADCN CLEAN STYLE */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border border-slate-200 shadow-2xl rounded-xl bg-white animate-in zoom-in-95 duration-200">
-          <div className="p-6 pb-4 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-1">
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border border-slate-200 shadow-2xl rounded-xl bg-white animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-950">
+          <div className="p-6 pb-4 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-1 dark:border-slate-800 dark:bg-slate-900/50">
             <div className="flex items-center justify-between">
-              <Badge variant="outline" className="bg-white text-[10px] font-semibold uppercase border-slate-200 px-2 py-0.5">{selectedReserva?.estado || 'pendiente'}</Badge>
-              <span className="text-[10px] font-medium text-slate-400 tracking-tighter">REF: {selectedReserva?.id?.substring(0,8)}</span>
+              <Badge variant="outline" className="bg-white text-[10px] font-semibold uppercase border-slate-200 px-2 py-0.5 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100">{selectedReserva?.estado || 'pendiente'}</Badge>
+              <span className="text-[10px] font-medium text-slate-400 tracking-tighter dark:text-slate-500">REF: {selectedReserva?.id?.substring(0,8)}</span>
             </div>
-            <DialogTitle className="text-xl font-semibold text-slate-950 mt-2">{selectedReserva?.customerName || 'Cliente Anónimo'}</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-slate-950 mt-2 dark:text-slate-100">{selectedReserva?.customerName || 'Cliente Anónimo'}</DialogTitle>
           </div>
 
           <div className="p-6 space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Servicio</p>
-                <p className="text-sm font-medium text-slate-900">{servicios.find(s => s.id === selectedReserva?.serviceOfferingId)?.nombreServicio}</p>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest dark:text-slate-500">Servicio</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{servicios.find(s => s.id === selectedReserva?.serviceOfferingId)?.nombreServicio}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Recurso</p>
-                <p className="text-sm font-medium text-slate-900">{activos.find(a => a.id === selectedReserva?.assetId)?.nombreActivo}</p>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest dark:text-slate-500">Recurso</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{activos.find(a => a.id === selectedReserva?.assetId)?.nombreActivo}</p>
               </div>
             </div>
 
-            <Separator className="bg-slate-100" />
+            <Separator className="bg-slate-100 dark:bg-slate-800" />
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 dark:bg-slate-900 dark:text-slate-400">
                   <CalendarIcon className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Programación</p>
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest dark:text-slate-500">Programación</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                     {selectedReserva && new Date(selectedReserva.startTime).toLocaleString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 dark:bg-slate-900 dark:text-slate-400">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Contacto</p>
-                  <p className="text-sm font-medium text-slate-900">{selectedReserva?.customerEmail || 'No especificado'}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{selectedReserva?.customerPhone || 'Sin teléfono'}</p>
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest dark:text-slate-500">Contacto</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{selectedReserva?.customerEmail || 'No especificado'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 dark:text-slate-400">{selectedReserva?.customerPhone || 'Sin teléfono'}</p>
                 </div>
               </div>
 
               {selectedReserva?.note && (
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                  <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 dark:bg-slate-900 dark:text-slate-400">
                     <History className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Notas internas</p>
-                    <p className="text-xs text-slate-600 italic leading-relaxed mt-1">"{selectedReserva.note}"</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest dark:text-slate-500">Notas internas</p>
+                    <p className="text-xs text-slate-600 italic leading-relaxed mt-1 dark:text-slate-300">"{selectedReserva.note}"</p>
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setDetailsOpen(false)} className="h-8 text-xs font-medium border-slate-200">
+          <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-2 dark:bg-slate-950 dark:border-slate-800">
+            <Button variant="outline" size="sm" onClick={() => setDetailsOpen(false)} className="h-8 text-xs font-medium border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
               Cerrar
             </Button>
             {selectedReserva?.estado === 'pendiente' && (

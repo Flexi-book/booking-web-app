@@ -12,6 +12,8 @@ import Footer from '../layout/Footer'
 import MapEmbed from '../ui/MapEmbed'
 import { LoadingScreen } from '../ui/loading-screen'
 import { serializarHorario, parsearHorario } from '../ui/HorarioPicker'
+import ThemeToggle from '../ui/ThemeToggle'
+import LogoMark from '../ui/LogoMark'
 
 function getLogoUrl(empresa) {
   return empresa?.logoUrl || empresa?.logo_url || ''
@@ -41,15 +43,15 @@ function calcularResumenResenas(resenas) {
 function Skeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-56 bg-gray-200" />
+      <div className="h-56 bg-gray-200 dark:bg-slate-800" />
       <div className="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-8 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] gap-5 lg:gap-8">
         <div className="space-y-4">
-          {[1,2,3].map(i => <div key={i} className="h-28 bg-gray-100 rounded-2xl" />)}
+          {[1,2,3].map(i => <div key={i} className="h-28 bg-gray-100 rounded-2xl dark:bg-slate-900" />)}
         </div>
         <div className="space-y-4">
-          <div className="h-8 bg-gray-100 rounded-full w-1/3" />
+          <div className="h-8 bg-gray-100 rounded-full w-1/3 dark:bg-slate-900" />
           <div className="grid grid-cols-2 gap-4">
-            {[1,2,3,4].map(i => <div key={i} className="h-36 bg-gray-100 rounded-2xl" />)}
+            {[1,2,3,4].map(i => <div key={i} className="h-36 bg-gray-100 rounded-2xl dark:bg-slate-900" />)}
           </div>
         </div>
       </div>
@@ -207,23 +209,26 @@ export default function EmpresaDetailPage() {
   }
 
   if (error || !empresa) return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-      <p className="text-gray-400">{error || 'Empresa no encontrada'}</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 dark:bg-slate-950">
+      <p className="text-gray-400 dark:text-slate-400">{error || 'Empresa no encontrada'}</p>
       <Link to="/" className="text-blue-600 text-sm font-semibold hover:underline">← Volver al inicio</Link>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
 
       {/* ── HEADER ─────────────────────────────────────────────────── */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30">
+      <header className="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30 dark:border-slate-800 dark:bg-slate-950/90">
         <div className="max-w-6xl mx-auto px-5 py-3 flex items-center gap-3">
-          <Link to="/" className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
+          <Link to="/" className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors dark:text-slate-400 dark:hover:bg-slate-900">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <img src="/flexibook-logo.svg" alt="Flexibook" className="w-6 h-6 object-contain" />
-          <span className="text-sm font-semibold text-gray-700">Flexibook</span>
+          <LogoMark className="w-6 h-6" />
+          <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">Flexibook</span>
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

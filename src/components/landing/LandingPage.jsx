@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils'
 import { publicBookingApi } from '../../services/publicBookingService'
 import { getEmpresaIcono } from '../admin/PerfilPanel'
 import Footer from '../layout/Footer'
+import ThemeToggle from '../ui/ThemeToggle'
+import LogoMark from '../ui/LogoMark'
 
 const TIPOS_FILTRO = [
   'Todos', 'Barbería', 'Peluquería', 'Spa', 'Fitness',
@@ -73,13 +75,13 @@ function getLogoUrl(empresa) {
 /* ── Skeleton ────────────────────────────────────────────────────────── */
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
-      <div className="h-28 bg-gray-50" />
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse dark:border-slate-800 dark:bg-slate-900">
+      <div className="h-28 bg-gray-50 dark:bg-slate-900" />
       <div className="p-4 space-y-2">
-        <div className="h-2 bg-gray-100 rounded-full w-1/4" />
-        <div className="h-4 bg-gray-100 rounded-full w-2/3" />
-        <div className="h-2 bg-gray-100 rounded-full w-full" />
-        <div className="h-2 bg-gray-100 rounded-full w-3/4" />
+        <div className="h-2 bg-gray-100 rounded-full w-1/4 dark:bg-slate-800" />
+        <div className="h-4 bg-gray-100 rounded-full w-2/3 dark:bg-slate-800" />
+        <div className="h-2 bg-gray-100 rounded-full w-full dark:bg-slate-800" />
+        <div className="h-2 bg-gray-100 rounded-full w-3/4 dark:bg-slate-800" />
       </div>
     </div>
   )
@@ -94,9 +96,11 @@ function HeroCard({ empresa }) {
   return (
     <Link to={`/empresa/${empresa.empresaId}`}
       className="group block bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl
-                 transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+                 transition-all duration-300 hover:-translate-y-1 border border-gray-100
+                 dark:bg-slate-900 dark:border-slate-800">
       <div className="h-44 bg-gradient-to-br from-blue-50 to-indigo-50/60
-                      flex items-center justify-center overflow-hidden relative">
+                      flex items-center justify-center overflow-hidden relative
+                      dark:from-slate-800 dark:to-slate-900">
         {logoUrl ? (
           <img
             src={logoUrl}
@@ -110,16 +114,17 @@ function HeroCard({ empresa }) {
         )}
         {empresa.tipoNegocio && (
           <span className="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full
-                           bg-white/90 text-blue-700 border border-blue-100 shadow-sm">
+                           bg-white/90 text-blue-700 border border-blue-100 shadow-sm
+                           dark:bg-slate-950/90 dark:text-blue-300 dark:border-slate-700">
             {empresa.tipoNegocio}
           </span>
         )}
       </div>
       <div className="p-5">
-        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-1.5">
+        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-1.5 dark:text-slate-100">
           {empresa.nombre}
         </h3>
-        <p className="text-sm text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+        <p className="text-sm text-gray-400 line-clamp-2 mb-4 leading-relaxed dark:text-slate-400">
           {descripcion ?? 'Reserva tu hora de forma rápida y sin crear cuenta.'}
         </p>
         <span className="flex items-center gap-1 text-sm font-medium text-blue-600
@@ -142,11 +147,12 @@ function GridCard({ empresa, index }) {
     <div
       style={{ animationDelay: `${Math.min(index * 40, 400)}ms`, animationFillMode: 'both' }}
       className="group bg-white rounded-2xl shadow-sm hover:shadow-xl
-                 transition-all duration-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                 transition-all duration-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2
+                 dark:bg-slate-900 dark:shadow-black/20">
 
       {/* Foto / Imagen de la empresa */}
       <div className="relative h-44 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100
-                      flex items-center justify-center overflow-hidden">
+                      flex items-center justify-center overflow-hidden dark:from-slate-800 dark:via-slate-900 dark:to-slate-950">
         {logoUrl ? (
           <img
             src={logoUrl}
@@ -162,7 +168,8 @@ function GridCard({ empresa, index }) {
         {/* Rating badge */}
         {totalResenas > 0 && (
           <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/95 backdrop-blur-sm
-                          px-2 py-1 rounded-full shadow-sm text-xs font-bold text-gray-800">
+                          px-2 py-1 rounded-full shadow-sm text-xs font-bold text-gray-800
+                          dark:bg-slate-950/95 dark:text-slate-100">
             <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
             {rating}
           </div>
@@ -172,17 +179,17 @@ function GridCard({ empresa, index }) {
       {/* Info */}
       <div className="p-4">
         {empresa.tipoNegocio && (
-          <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">
+          <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1 dark:text-blue-300">
             {empresa.tipoNegocio}
           </p>
         )}
-        <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 mb-1.5">
+        <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 mb-1.5 dark:text-slate-100">
           {empresa.nombre}
         </h3>
 
         {/* Dirección / contacto */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-          <MapPin className="w-3 h-3 flex-shrink-0 text-gray-300" />
+        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3 dark:text-slate-400">
+          <MapPin className="w-3 h-3 flex-shrink-0 text-gray-300 dark:text-slate-500" />
           <span className="truncate">
             {empresa.correoContacto ?? 'Disponible online'}
           </span>
@@ -193,7 +200,8 @@ function GridCard({ empresa, index }) {
           to={`/empresa/${empresa.empresaId}`}
           className="block text-center text-sm font-semibold text-blue-600 bg-blue-50
                      border border-blue-100 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white
-                     hover:border-blue-600 transition-all duration-200">
+                     hover:border-blue-600 transition-all duration-200
+                     dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20 dark:hover:bg-blue-500 dark:hover:text-white">
           Ver agenda
         </Link>
       </div>
@@ -269,33 +277,36 @@ export default function LandingPage() {
   const limpiar   = () => { setBusqueda(''); setTipoFiltro('Todos') }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 
       {/* ── HEADER ─────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-8 h-8 object-contain" />
-            <span className="text-lg font-bold text-gray-900">Flexibook</span>
+            <LogoMark className="w-8 h-8" />
+            <span className="text-lg font-bold text-gray-900 dark:text-slate-100">Flexibook</span>
           </Link>
-          <Link to="/login"
-            className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-semibold
-                       px-4 py-2 rounded-xl hover:bg-blue-700 transition-all shadow-sm">
-            Ingreso empresa <ChevronRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link to="/login"
+              className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-semibold
+                         px-4 py-2 rounded-xl hover:bg-blue-700 transition-all shadow-sm">
+              Ingreso empresa <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* ── HERO ───────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-b from-slate-50 to-white py-16 px-5 border-b border-gray-100">
+      <section className="bg-gradient-to-b from-slate-50 via-white to-white py-16 px-5 border-b border-gray-100 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center">
 
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4 tracking-tight dark:text-slate-100">
             Reserva tu hora<br />
             <span className="text-blue-600">en segundos</span>
           </h1>
 
-          <p className="text-base text-gray-500 mb-10 max-w-xl mx-auto leading-relaxed">
+          <p className="text-base text-gray-500 mb-10 max-w-xl mx-auto leading-relaxed dark:text-slate-300">
             Descubre{' '}
             <span className="text-pink-500 font-semibold">peluquerías</span>,{' '}
             <span className="text-blue-500 font-semibold">centros médicos</span>,{' '}
@@ -306,7 +317,7 @@ export default function LandingPage() {
 
           {/* Buscador con dropdown instantáneo */}
           <div className="max-w-2xl mx-auto relative">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10 dark:text-slate-500" />
             <input
               type="text"
               value={busqueda}
@@ -315,12 +326,15 @@ export default function LandingPage() {
               className="w-full h-16 pl-14 pr-14 text-base bg-white rounded-2xl border border-gray-200
                          shadow-lg focus:shadow-xl focus:border-blue-500 focus:outline-none
                          focus:ring-4 focus:ring-blue-500/10 placeholder:text-gray-400
-                         text-gray-800 transition-all"
+                         text-gray-800 transition-all
+                         dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100
+                         dark:placeholder:text-slate-500 dark:shadow-black/20 dark:focus:bg-slate-900"
             />
             {busqueda && (
               <button onClick={limpiar}
                 className="absolute right-5 top-1/2 -translate-y-1/2 p-1.5 rounded-full z-10
-                           text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                           text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all
+                           dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -330,19 +344,20 @@ export default function LandingPage() {
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl
                               shadow-2xl border border-gray-100 overflow-hidden z-50
                               max-h-[60vh] overflow-y-auto
-                              animate-in fade-in slide-in-from-top-2 duration-200">
+                              animate-in fade-in slide-in-from-top-2 duration-200
+                              dark:bg-slate-900 dark:border-slate-700">
                 {filtradas.length === 0 ? (
-                  <div className="px-5 py-6 text-center text-gray-400 text-sm">
+                  <div className="px-5 py-6 text-center text-gray-400 text-sm dark:text-slate-400">
                     <div className="text-3xl mb-2">🔍</div>
-                    No encontramos "<strong className="text-gray-600">{busqueda}</strong>"
+                    No encontramos "<strong className="text-gray-600 dark:text-slate-200">{busqueda}</strong>"
                   </div>
                 ) : (
                   <>
-                    <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                      <p className="text-xs text-gray-500 font-medium">
+                    <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between dark:bg-slate-800 dark:border-slate-700">
+                      <p className="text-xs text-gray-500 font-medium dark:text-slate-400">
                         {filtradas.length} {filtradas.length === 1 ? 'resultado' : 'resultados'}
                       </p>
-                      <p className="text-xs text-gray-400">↵ para ver todos</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">↵ para ver todos</p>
                     </div>
                     {filtradas.slice(0, 5).map(e => {
                       const icono = getEmpresaIcono(e.empresaId, e.tipoNegocio)
@@ -352,23 +367,24 @@ export default function LandingPage() {
                           to={`/empresa/${e.empresaId}`}
                           onClick={limpiar}
                           className="flex items-center gap-4 px-5 py-3.5 hover:bg-blue-50
-                                     transition-colors group border-b border-gray-50 last:border-0">
+                                     transition-colors group border-b border-gray-50 last:border-0
+                                     dark:hover:bg-slate-800 dark:border-slate-800">
                           <span className="text-2xl flex-shrink-0">{icono}</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 group-hover:text-blue-700 truncate">
+                            <p className="text-sm font-semibold text-gray-800 group-hover:text-blue-700 truncate dark:text-slate-100">
                               {e.nombre}
                             </p>
                             {e.tipoNegocio && (
-                              <p className="text-xs text-gray-400">{e.tipoNegocio}</p>
+                              <p className="text-xs text-gray-400 dark:text-slate-400">{e.tipoNegocio}</p>
                             )}
                           </div>
-                          <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 flex-shrink-0 transition-colors" />
+                          <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 flex-shrink-0 transition-colors dark:text-slate-500 dark:group-hover:text-blue-400" />
                         </Link>
                       )
                     })}
                     {filtradas.length > 5 && (
-                      <div className="px-5 py-3 bg-gray-50 text-center">
-                        <p className="text-xs text-blue-600 font-semibold">
+                      <div className="px-5 py-3 bg-gray-50 text-center dark:bg-slate-800">
+                        <p className="text-xs text-blue-600 font-semibold dark:text-blue-300">
                           +{filtradas.length - 5} más en el directorio ↓
                         </p>
                       </div>
@@ -380,8 +396,8 @@ export default function LandingPage() {
           </div>
 
           {!loading && empresas.length > 0 && !busqueda && (
-            <p className="text-xs text-gray-400 mt-4">
-              <span className="font-semibold text-gray-600">{empresas.length}</span> negocios disponibles
+            <p className="text-xs text-gray-400 mt-4 dark:text-slate-400">
+              <span className="font-semibold text-gray-600 dark:text-slate-200">{empresas.length}</span> negocios disponibles
             </p>
           )}
         </div>
@@ -393,8 +409,8 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Destacados</h2>
-                <p className="text-sm text-gray-400">Desliza para explorar</p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Destacados</h2>
+                <p className="text-sm text-gray-400 dark:text-slate-400">Desliza para explorar</p>
               </div>
             </div>
 
@@ -413,7 +429,7 @@ export default function LandingPage() {
               {carrusel.map((_, i) => (
                 <button key={i} onClick={() => emblaApi?.scrollTo(i)}
                   className={cn('rounded-full transition-all duration-300',
-                    i === slideActual ? 'w-5 h-1.5 bg-blue-600' : 'w-1.5 h-1.5 bg-gray-200 hover:bg-gray-300'
+                    i === slideActual ? 'w-5 h-1.5 bg-blue-600 dark:bg-blue-400' : 'w-1.5 h-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600'
                   )} />
               ))}
             </div>
@@ -428,26 +444,27 @@ export default function LandingPage() {
         <div className="mb-6 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-gray-900">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">
                 Directorio
                 {!loading && (
-                  <span className="ml-2 text-sm font-normal text-gray-400">
+                  <span className="ml-2 text-sm font-normal text-gray-400 dark:text-slate-400">
                     · {filtradas.length} {filtradas.length === 1 ? 'negocio' : 'negocios'}
                   </span>
                 )}
               </h2>
               {hayFiltros && (
-                <button onClick={limpiar} className="text-xs text-blue-600 hover:underline mt-0.5">
+                <button onClick={limpiar} className="text-xs text-blue-600 hover:underline mt-0.5 dark:text-blue-300">
                   Limpiar filtros
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
               <SlidersHorizontal className="w-4 h-4" />
               <select value={orden} onChange={e => setOrden(e.target.value)}
                 className="border border-gray-200 rounded-xl px-3 py-1.5 bg-white text-gray-700
-                           text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition">
+                           text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition
+                           dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
                 <option value="az">A → Z</option>
                 <option value="za">Z → A</option>
               </select>
@@ -462,7 +479,7 @@ export default function LandingPage() {
                   'px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all duration-150',
                   tipoFiltro === tipo
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700 dark:hover:border-blue-400 dark:hover:text-blue-300'
                 )}>
                 {tipo}
               </button>
@@ -471,7 +488,7 @@ export default function LandingPage() {
         </div>
 
         {error && (
-          <div className="mb-5 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
+          <div className="mb-5 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-300">
             {error}
           </div>
         )}
@@ -483,10 +500,10 @@ export default function LandingPage() {
         ) : filtradas.length === 0 ? (
           <div className="py-20 text-center">
             <div className="text-5xl mb-4">🔍</div>
-            <p className="text-gray-600 font-medium mb-1">Sin resultados</p>
-            <p className="text-gray-400 text-sm mb-5">Prueba con otro término o categoría</p>
+            <p className="text-gray-600 font-medium mb-1 dark:text-slate-200">Sin resultados</p>
+            <p className="text-gray-400 text-sm mb-5 dark:text-slate-400">Prueba con otro término o categoría</p>
             <button onClick={limpiar}
-              className="text-sm text-blue-600 font-medium hover:underline">
+              className="text-sm text-blue-600 font-medium hover:underline dark:text-blue-300">
               Limpiar filtros
             </button>
           </div>
@@ -498,11 +515,13 @@ export default function LandingPage() {
                 key={empresa.empresaId}
                 to={`/empresa/${empresa.empresaId}`}
                 className="group bg-white rounded-2xl border border-gray-100 shadow-sm
-                           hover:shadow-lg hover:border-blue-100 transition-all duration-200 overflow-hidden"
+                           hover:shadow-lg hover:border-blue-100 transition-all duration-200 overflow-hidden
+                           dark:bg-slate-900 dark:border-slate-800 dark:hover:border-slate-700 dark:shadow-black/20"
               >
                 {/* Banner con icono elegido */}
                 <div className="w-full h-32 bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100
-                                flex items-center justify-center text-6xl select-none">
+                                flex items-center justify-center text-6xl select-none
+                                dark:from-slate-800 dark:via-slate-900 dark:to-slate-950">
                   {getLogoUrl(empresa) ? (
                     <img
                       src={getLogoUrl(empresa)}
@@ -518,33 +537,34 @@ export default function LandingPage() {
                   {/* Tipo badge */}
                   {empresa.tipoNegocio && (
                     <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold
-                                     bg-blue-50 text-blue-600 border border-blue-100 mb-3">
+                                     bg-blue-50 text-blue-600 border border-blue-100 mb-3
+                                     dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20">
                       {empresa.tipoNegocio}
                     </span>
                   )}
 
                   {/* Nombre */}
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors dark:text-slate-100">
                     {empresa.nombre}
                   </h3>
 
                   {/* Descripción o fallback */}
-                  <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 min-h-[40px]">
+                  <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 min-h-[40px] dark:text-slate-400">
                     {empresa.descripcion || 'Reserva tu hora de forma rápida y sencilla.'}
                   </p>
 
                   {/* CTA */}
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-blue-600 group-hover:underline">
+                    <span className="text-sm font-semibold text-blue-600 group-hover:underline dark:text-blue-300">
                       Reservar hora →
                     </span>
                     {Number(empresa.totalResenas || 0) > 0 ? (
-                      <div className="flex items-center gap-1 text-xs text-amber-600 font-semibold">
+                      <div className="flex items-center gap-1 text-xs text-amber-600 font-semibold dark:text-amber-300">
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                         {Number(empresa.ratingPromedio || 0).toFixed(1)}
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-slate-500">
                         <Clock className="w-3.5 h-3.5" />
                         Disponible
                       </div>

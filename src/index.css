@@ -94,11 +94,74 @@
   * {
     @apply border-border;
   }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-200;
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .dark .bg-white {
+    background-color: rgb(2 6 23);
+  }
+
+  .dark .bg-slate-50,
+  .dark .bg-gray-50 {
+    background-color: rgb(15 23 42);
+  }
+
+  .dark .bg-slate-100,
+  .dark .bg-gray-100 {
+    background-color: rgb(30 41 59);
+  }
+
+  .dark .border-slate-100,
+  .dark .border-slate-200,
+  .dark .border-gray-100,
+  .dark .border-gray-200 {
+    border-color: rgb(30 41 59);
+  }
+
+  .dark .text-slate-900,
+  .dark .text-slate-800,
+  .dark .text-gray-900,
+  .dark .text-gray-800 {
+    color: rgb(241 245 249);
+  }
+
+  .dark .text-slate-700,
+  .dark .text-slate-600,
+  .dark .text-gray-700,
+  .dark .text-gray-600 {
+    color: rgb(203 213 225);
+  }
+
+  .dark .text-slate-500,
+  .dark .text-slate-400,
+  .dark .text-gray-500,
+  .dark .text-gray-400 {
+    color: rgb(148 163 184);
+  }
+
+  .dark input:not([type='checkbox']):not([type='radio']),
+  .dark textarea,
+  .dark select {
+    border-color: rgb(51 65 85);
+    background-color: rgb(15 23 42);
+    color: rgb(241 245 249);
+  }
+
+  .dark input:not([type='checkbox']):not([type='radio'])::placeholder,
+  .dark textarea::placeholder {
+    color: rgb(100 116 139);
   }
 }
 

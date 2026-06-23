@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { publicBookingApi } from '../../services/publicBookingService'
 import { LoadingScreen } from '../ui/loading-screen'
+import LogoMark from '../ui/LogoMark'
 
 const emptyForm = {
   serviceOfferingId: '',
@@ -339,7 +340,7 @@ export default function PublicBookingPage() {
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-9 h-9" />
+            <LogoMark className="w-9 h-9" />
             <div>
               <p className="text-lg font-bold text-gray-900">Flexibook</p>
               <p className="text-xs text-gray-500">Reserva sin login</p>

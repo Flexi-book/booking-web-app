@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage, AvatarBadge } from "@/components/ui/avatar"
 import authService from "../../services/authService"
+import LogoMark from "../ui/LogoMark"
 
 export function AppSidebar({ ...props }) {
   const location = useLocation()
@@ -66,18 +67,14 @@ export function AppSidebar({ ...props }) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link to="/dashboard">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shrink-0 overflow-hidden">
-                  <img 
-                    src="/flexibook-logo.svg" 
-                    alt="Flexibook" 
-                    className="h-full w-full object-contain p-1" 
-                  />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shrink-0 overflow-hidden dark:bg-slate-900 dark:border dark:border-slate-800">
+                  <LogoMark className="h-full w-full p-1" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight ml-2">
                   <span className="truncate font-semibold text-slate-900 dark:text-white uppercase tracking-tight">
                     {user?.companyName || user?.nombreEmpresa || 'Mi Negocio'}
                   </span>
-                  <span className="truncate text-[10px] font-bold text-slate-400 uppercase tracking-widest">Panel de Gestión</span>
+                  <span className="truncate text-[10px] font-bold text-slate-400 uppercase tracking-widest dark:text-slate-500">Panel de Gestión</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -88,7 +85,7 @@ export function AppSidebar({ ...props }) {
       {/* ── MAIN NAVIGATION ─────────────────── */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase py-4">
+          <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase py-4 dark:text-slate-500">
             General
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -113,7 +110,7 @@ export function AppSidebar({ ...props }) {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase py-4">
+          <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase py-4 dark:text-slate-500">
             Sistema
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -149,9 +146,9 @@ export function AppSidebar({ ...props }) {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <div className="relative">
-                    <Avatar className="h-9 w-9 rounded-xl border border-slate-200">
+                    <Avatar className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-700">
                       <AvatarImage src={user?.avatarUrl} alt="User" />
-                      <AvatarFallback className="rounded-xl bg-slate-900 text-white font-bold text-xs">
+                      <AvatarFallback className="rounded-xl bg-slate-900 text-white font-bold text-xs dark:bg-slate-800">
                         {(user?.nombre || user?.name || 'A').charAt(0)}
                       </AvatarFallback>
                       <AvatarBadge className="bg-emerald-500 h-2.5 w-2.5" />
@@ -165,23 +162,23 @@ export function AppSidebar({ ...props }) {
                       {user?.email || 'admin@flexibook.app'}
                     </span>
                   </div>
-                  <ChevronDown className="ml-auto h-4 w-4 text-slate-400" />
+                  <ChevronDown className="ml-auto h-4 w-4 text-slate-400 dark:text-slate-500" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-56 rounded-xl p-2"
+                className="w-56 rounded-xl p-2 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 side="top"
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5" onClick={() => navigate("/admin/config")}>
-                  <User className="h-4 w-4 text-slate-400" /> Perfil
+                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5 dark:focus:bg-slate-800 dark:focus:text-slate-100" onClick={() => navigate("/admin/config")}>
+                  <User className="h-4 w-4 text-slate-400 dark:text-slate-500" /> Perfil
                 </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5" onClick={() => navigate("/admin/config")}>
-                  <Settings className="h-4 w-4 text-slate-400" /> Configuración
+                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5 dark:focus:bg-slate-800 dark:focus:text-slate-100" onClick={() => navigate("/admin/config")}>
+                  <Settings className="h-4 w-4 text-slate-400 dark:text-slate-500" /> Configuración
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-1" />
-                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5 text-red-600 focus:text-red-600 focus:bg-red-50" onClick={handleLogout}>
+                <DropdownMenuSeparator className="my-1 dark:bg-slate-800" />
+                <DropdownMenuItem className="rounded-lg gap-2 cursor-pointer py-2.5 text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-500/10 dark:focus:text-red-300" onClick={handleLogout}>
                   <LogOut className="h-4 w-4" /> Cerrar sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>

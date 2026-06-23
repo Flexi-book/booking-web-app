@@ -50,13 +50,13 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
     return (
       <div className="w-full space-y-4">
         {error && (
-          <Alert variant="destructive" className="py-2">
+          <Alert variant="destructive" className="py-2 dark:border-red-500/20 dark:bg-red-500/10">
             <AlertDescription className="text-xs text-center font-medium">
               {error}
             </AlertDescription>
           </Alert>
         )}
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
           El login con Google no está configurado en este entorno.
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
   return (
     <div className="w-full space-y-4">
       {error && (
-        <Alert variant="destructive" className="py-2">
+        <Alert variant="destructive" className="py-2 dark:border-red-500/20 dark:bg-red-500/10">
           <AlertDescription className="text-xs text-center font-medium">
             {error}
           </AlertDescription>
@@ -76,7 +76,7 @@ export default function GoogleLoginButton({ isRegister = false, setLoading: setP
       <div className="flex flex-col items-center justify-center gap-3">
         <div className="relative w-full flex justify-center">
           {internalLoading && (
-            <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-md">
+            <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-md dark:bg-slate-950/50">
               <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
             </div>
           )}
