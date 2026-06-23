@@ -77,7 +77,7 @@ export default function ActivosPanel() {
   const getStatusBadge = (estado) => {
     const isAvailable = (estado || '').toLowerCase() === 'disponible'
     return (
-      <Badge variant="outline" className={isAvailable ? "bg-emerald-50/50 text-emerald-600 border-emerald-100 font-medium" : "bg-slate-50 text-slate-400 border-slate-200 font-medium"}>
+      <Badge variant="outline" className={isAvailable ? "bg-emerald-50/50 text-emerald-700 border-emerald-200 font-medium dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30" : "bg-slate-100 text-slate-500 border-slate-200 font-medium dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"}>
         {isAvailable ? 'Disponible' : 'No Disponible'}
       </Badge>
     )
@@ -89,8 +89,8 @@ export default function ActivosPanel() {
       {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Recursos</h1>
-          <p className="text-sm text-muted-foreground font-medium">Gestiona tus profesionales, salas y equipos técnicos.</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">Recursos</h1>
+          <p className="text-sm text-muted-foreground font-medium dark:text-slate-400">Gestiona tus profesionales, salas y equipos técnicos.</p>
         </div>
         <Button 
           onClick={() => { setSelectedAsset(null); setDialogOpen(true) }}
@@ -101,15 +101,15 @@ export default function ActivosPanel() {
       </div>
 
       {/* MAIN TABLE CARD */}
-      <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
-        <CardHeader className="bg-slate-50/30 border-b border-slate-100 py-4 px-6">
+      <Card className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
+        <CardHeader className="bg-slate-50/30 border-b border-slate-100 py-4 px-6 dark:bg-slate-900/50 dark:border-slate-800">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="text-sm font-semibold text-slate-900">Inventario de Activos</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">Inventario de Activos</CardTitle>
             <div className="relative w-full md:w-64">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground dark:text-slate-500" />
               <Input 
                 placeholder="Buscar por nombre..." 
-                className="pl-8 h-8 text-xs border-slate-200 bg-white rounded-md focus:ring-slate-400"
+                className="pl-8 h-8 text-xs border-slate-200 bg-white rounded-md focus:ring-slate-400 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -124,36 +124,36 @@ export default function ActivosPanel() {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader className="bg-slate-50/50 border-b border-slate-200">
+                <TableHeader className="bg-slate-50/50 border-b border-slate-200 dark:bg-slate-900/70 dark:border-slate-800">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="font-semibold text-slate-900 py-3 px-4 sm:px-6 text-xs uppercase tracking-wider">Recurso</TableHead>
-                    <TableHead className="hidden sm:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider">Tipo</TableHead>
-                    <TableHead className="hidden md:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider">Capacidad</TableHead>
-                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider">Estado</TableHead>
-                    <TableHead className="text-right font-semibold text-slate-900 px-4 sm:px-6 text-xs uppercase tracking-wider">Acciones</TableHead>
+                    <TableHead className="font-semibold text-slate-900 py-3 px-4 sm:px-6 text-xs uppercase tracking-wider dark:text-slate-200">Recurso</TableHead>
+                    <TableHead className="hidden sm:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider dark:text-slate-200">Tipo</TableHead>
+                    <TableHead className="hidden md:table-cell font-semibold text-slate-900 text-xs uppercase tracking-wider dark:text-slate-200">Capacidad</TableHead>
+                    <TableHead className="font-semibold text-slate-900 text-xs uppercase tracking-wider dark:text-slate-200">Estado</TableHead>
+                    <TableHead className="text-right font-semibold text-slate-900 px-4 sm:px-6 text-xs uppercase tracking-wider dark:text-slate-200">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredActivos.length > 0 ? (
                     filteredActivos.map((a) => (
-                      <TableRow key={a.id} className="hover:bg-slate-50/30 transition-colors border-slate-100">
+                      <TableRow key={a.id} className="hover:bg-slate-50/30 transition-colors border-slate-100 dark:border-slate-800 dark:hover:bg-slate-900/60">
                         <TableCell className="py-4 px-4 sm:px-6">
                           <div className="flex flex-col min-w-0">
-                            <span className="font-medium text-slate-950 text-sm leading-none truncate">{a.nombreActivo || a.nombre}</span>
-                            <span className="text-[11px] text-muted-foreground mt-1.5 truncate">
+                            <span className="font-medium text-slate-950 text-sm leading-none truncate dark:text-slate-100">{a.nombreActivo || a.nombre}</span>
+                            <span className="text-[11px] text-muted-foreground mt-1.5 truncate dark:text-slate-400">
                               {a.descripcion || "Sin descripción registrada"}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
-                          <div className="flex items-center text-slate-600 font-medium bg-slate-100/50 w-fit px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider border border-slate-200/50">
-                            <Tag className="mr-1.5 h-3 w-3 text-slate-400" />
+                          <div className="flex items-center text-slate-600 font-medium bg-slate-100/50 w-fit px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider border border-slate-200/50 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700">
+                            <Tag className="mr-1.5 h-3 w-3 text-slate-400 dark:text-slate-500" />
                             {a.tipoActivoNombre || a.tipoActivo || "General"}
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          <div className="flex items-center text-sm font-medium text-slate-700">
-                            <Users className="mr-2 h-3.5 w-3.5 text-slate-400" />
+                          <div className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-200">
+                            <Users className="mr-2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                             {a.capacidad || 1}
                           </div>
                         </TableCell>
@@ -161,17 +161,17 @@ export default function ActivosPanel() {
                         <TableCell className="text-right px-4 sm:px-6">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all">
-                                <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                              <Button variant="ghost" className="h-8 w-8 p-0 rounded-md border border-transparent hover:border-slate-200 hover:bg-white transition-all dark:hover:border-slate-700 dark:hover:bg-slate-900">
+                                <MoreHorizontal className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 shadow-lg border-slate-200 rounded-lg p-1">
-                              <DropdownMenuLabel className="text-[10px] font-semibold text-slate-400 uppercase px-2 py-1.5 tracking-tight">Opciones</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" className="w-40 shadow-lg border-slate-200 rounded-lg p-1 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
+                              <DropdownMenuLabel className="text-[10px] font-semibold text-slate-400 uppercase px-2 py-1.5 tracking-tight dark:text-slate-500">Opciones</DropdownMenuLabel>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleEdit(a)} className="cursor-pointer text-xs font-medium gap-2.5 py-2">
-                                <Pencil className="h-3.5 w-3.5 text-slate-500" /> Editar datos
+                              <DropdownMenuItem onClick={() => handleEdit(a)} className="cursor-pointer text-xs font-medium gap-2.5 py-2 dark:focus:bg-slate-900 dark:focus:text-slate-100">
+                                <Pencil className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" /> Editar datos
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDelete(a.id)} className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2">
+                              <DropdownMenuItem onClick={() => handleDelete(a.id)} className="cursor-pointer text-xs font-medium text-red-600 focus:text-red-600 focus:bg-red-50 gap-2.5 py-2 dark:text-red-300 dark:focus:bg-red-500/10 dark:focus:text-red-200">
                                 <Trash2 className="h-3.5 w-3.5" /> Eliminar
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -182,7 +182,7 @@ export default function ActivosPanel() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="h-32 text-center">
-                        <p className="text-sm text-muted-foreground">No se encontraron recursos configurados.</p>
+                        <p className="text-sm text-muted-foreground dark:text-slate-400">No se encontraron recursos configurados.</p>
                       </TableCell>
                     </TableRow>
                   )}

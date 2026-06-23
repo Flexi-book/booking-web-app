@@ -4,8 +4,11 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider } from './auth/AuthProvider'
 import App from './App'
 import './index.css'
+import { applyTheme, getStoredTheme } from './lib/theme'
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+applyTheme(getStoredTheme())
 
 const app = (
   <AuthProvider>

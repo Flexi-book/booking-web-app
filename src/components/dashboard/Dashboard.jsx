@@ -192,29 +192,32 @@ export default function Dashboard() {
   const getStatusBadge = (estado) => {
     const est = (estado || 'pendiente').toLowerCase()
     switch(est) {
-      case 'confirmada': return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 font-medium">Confirmada</Badge>
-      case 'cancelada': return <Badge variant="destructive" className="bg-slate-50 text-slate-400 border-slate-200 line-through">Cancelada</Badge>
-      default: return <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-100">Pendiente</Badge>
+      case 'confirmada':
+        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 font-medium dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20">Confirmada</Badge>
+      case 'cancelada':
+        return <Badge variant="destructive" className="bg-slate-100 text-slate-500 border-slate-200 line-through dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">Cancelada</Badge>
+      default:
+        return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">Pendiente</Badge>
     }
   }
 
   if (loading) {
     return (
       <div className="space-y-8 p-4">
-        <div className="h-10 w-64 bg-slate-100 animate-pulse rounded-lg" />
+        <div className="h-10 w-64 bg-slate-100 animate-pulse rounded-lg dark:bg-slate-800" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-slate-50 animate-pulse rounded-xl" />)}
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-slate-50 animate-pulse rounded-xl dark:bg-slate-900" />)}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-7 gap-8">
-          <div className="md:col-span-4 h-64 bg-slate-50 animate-pulse rounded-xl" />
-          <div className="md:col-span-3 h-64 bg-slate-50 animate-pulse rounded-xl" />
+          <div className="md:col-span-4 h-64 bg-slate-50 animate-pulse rounded-xl dark:bg-slate-900" />
+          <div className="md:col-span-3 h-64 bg-slate-50 animate-pulse rounded-xl dark:bg-slate-900" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* Onboarding wizard */}
       {showOnboarding && (
@@ -223,7 +226,7 @@ export default function Dashboard() {
 
       {/* Welcome Banner */}
       {showWelcome && (
-        <Card className="relative overflow-hidden border-none bg-slate-900 text-white shadow-2xl">
+        <Card className="relative overflow-hidden border-none bg-slate-900 text-white shadow-2xl dark:bg-slate-900">
           <CardContent className="p-8 relative z-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-start gap-5">
@@ -259,27 +262,27 @@ export default function Dashboard() {
 
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Resumen Ejecutivo</h1>
-        <p className="text-slate-500 font-medium">Hola {user?.name}, esto es lo que ha ocurrido en {user?.companyName} esta semana.</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">Resumen Ejecutivo</h1>
+        <p className="text-slate-500 font-medium dark:text-slate-400">Hola {user?.name}, esto es lo que ha ocurrido en {user?.companyName} esta semana.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {dashboardStats.map((stat) => (
-          <Card key={stat.name} className="border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden hover:border-slate-300 transition-all group">
+          <Card key={stat.name} className="border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden hover:border-slate-300 transition-all group dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:shadow-black/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+              <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-widest dark:text-slate-500">
                 {stat.name}
               </CardTitle>
-              <stat.icon className="h-4 w-4 text-slate-400 group-hover:text-slate-900 transition-colors" />
+              <stat.icon className="h-4 w-4 text-slate-400 group-hover:text-slate-900 transition-colors dark:text-slate-500 dark:group-hover:text-slate-100" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-semibold text-slate-950">{stat.value}</div>
+              <div className="text-2xl font-semibold text-slate-950 dark:text-slate-100">{stat.value}</div>
               <div className="flex items-center gap-2 mt-2">
-                <span className="flex items-center text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                <span className="flex items-center text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md dark:bg-emerald-500/10 dark:text-emerald-300">
                   <TrendingUp className="h-3 w-3 mr-0.5" /> {stat.trend}
                 </span>
-                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{stat.desc}</span>
+                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider dark:text-slate-500">{stat.desc}</span>
               </div>
             </CardContent>
           </Card>
@@ -288,14 +291,14 @@ export default function Dashboard() {
 
       <div className="grid gap-6 lg:grid-cols-7">
         {/* Trend Chart */}
-        <Card className="lg:col-span-4 border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden">
+        <Card className="lg:col-span-4 border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
           <CardHeader className="pb-0">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold">Actividad Semanal</CardTitle>
-                <CardDescription className="text-xs">Número de reservas por día</CardDescription>
+                <CardTitle className="text-lg font-semibold dark:text-slate-100">Actividad Semanal</CardTitle>
+                <CardDescription className="text-xs dark:text-slate-400">Número de reservas por día</CardDescription>
               </div>
-              <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest dark:text-slate-500">
                 <div className="w-2 h-2 rounded-full bg-blue-600" /> Reservas
               </div>
             </div>
@@ -309,21 +312,21 @@ export default function Dashboard() {
                     <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fontWeight: 500, fill: '#94a3b8' }} 
+                  tick={{ fontSize: 10, fontWeight: 500, fill: 'hsl(var(--muted-foreground))' }} 
                   dy={10}
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fontWeight: 500, fill: '#94a3b8' }} 
+                  tick={{ fontSize: 10, fontWeight: 500, fill: 'hsl(var(--muted-foreground))' }} 
                 />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: '500' }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', boxShadow: '0 10px 25px -10px rgb(0 0 0 / 0.45)', fontSize: '12px', fontWeight: '500' }}
                 />
                 <Area 
                   type="monotone" 
@@ -340,14 +343,14 @@ export default function Dashboard() {
         </Card>
 
         {/* Recent Reservations Table */}
-        <Card className="lg:col-span-3 border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden flex flex-col">
+        <Card className="lg:col-span-3 border border-slate-200 shadow-sm bg-white rounded-2xl overflow-hidden flex flex-col dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold">Últimos Movimientos</CardTitle>
-                <CardDescription className="text-xs">Actualizado hace un momento</CardDescription>
+                <CardTitle className="text-lg font-semibold dark:text-slate-100">Últimos Movimientos</CardTitle>
+                <CardDescription className="text-xs dark:text-slate-400">Actualizado hace un momento</CardDescription>
               </div>
-              <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-blue-600 hover:bg-blue-50">
+              <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-blue-600 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10">
                 Ver todo
               </Button>
             </div>
@@ -357,11 +360,11 @@ export default function Dashboard() {
               <Table>
                 <TableBody>
                   {recentReservations.length > 0 ? recentReservations.map((res) => (
-                    <TableRow key={res.id} className="hover:bg-slate-50/50 border-slate-50 transition-colors">
+                    <TableRow key={res.id} className="hover:bg-slate-50/50 border-slate-50 transition-colors dark:border-slate-800 dark:hover:bg-slate-800/30">
                       <TableCell className="py-4 pl-6">
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-900">{res.customerName || 'Anónimo'}</span>
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter">
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{res.customerName || 'Anónimo'}</span>
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter dark:text-slate-500">
                             {new Date(res.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {servicios.find(s => s.id === res.serviceOfferingId)?.nombreServicio}
                           </span>
                         </div>
@@ -372,7 +375,7 @@ export default function Dashboard() {
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={2} className="h-48 text-center text-slate-400 font-medium">
+                      <TableCell colSpan={2} className="h-48 text-center text-slate-400 font-medium dark:text-slate-500">
                         Sin actividad reciente
                       </TableCell>
                     </TableRow>
@@ -382,13 +385,13 @@ export default function Dashboard() {
             </div>
           </CardContent>
           <div className="p-6 pt-0 mt-auto">
-             <div className="bg-slate-50 rounded-xl p-4 flex items-center gap-4 border border-slate-100">
-                <div className="h-10 w-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-100">
+             <div className="bg-slate-50 rounded-xl p-4 flex items-center gap-4 border border-slate-100 dark:bg-slate-800/60 dark:border-slate-700">
+                <div className="h-10 w-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-100 dark:shadow-emerald-950/40">
                   <Activity className="h-5 w-5" />
                 </div>
                 <div>
-                   <p className="text-xs font-semibold text-slate-900 uppercase">Sistema Operativo</p>
-                   <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-widest">Sincronización Activa</p>
+                   <p className="text-xs font-semibold text-slate-900 uppercase dark:text-slate-100">Sistema Operativo</p>
+                   <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-widest dark:text-emerald-300">Sincronización Activa</p>
                 </div>
              </div>
           </div>

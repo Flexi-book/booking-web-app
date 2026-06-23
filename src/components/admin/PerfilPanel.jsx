@@ -93,14 +93,16 @@ export function getEmpresaPerfil(companyId) {
 function Field({ label, children }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-semibold text-slate-700">{label}</label>
+      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</label>
       {children}
     </div>
   )
 }
 
 const inputCls = `w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm
-  focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition`
+  focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition
+  bg-white text-slate-900 placeholder:text-slate-400
+  dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500`
 
 function normalizeSupabaseBaseUrl(rawUrl) {
   if (!rawUrl) return ''
@@ -373,7 +375,7 @@ export default function PerfilPanel() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Cargando perfil...</div>
+  if (loading) return <div className="p-8 text-center text-gray-500 dark:text-slate-400">Cargando perfil...</div>
 
   const defaultCenter = { lat: 40.416775, lng: -3.703790 } // Default to Madrid if no position
 
@@ -390,26 +392,26 @@ export default function PerfilPanel() {
         <div className="space-y-6 min-w-0">
 
       {/* Carga de imagen/logo */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <p className="text-sm font-medium text-gray-700 mb-1">Logo o imagen de empresa</p>
-        <p className="text-xs text-gray-400 mb-4">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
+        <p className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Logo o imagen de empresa</p>
+        <p className="text-xs text-gray-400 mb-4 dark:text-slate-400">
           Esta imagen se mostrará en la vista pública para que tus clientes identifiquen tu marca.
         </p>
-        <p className="text-xs text-gray-500 mb-4">
+        <p className="text-xs text-gray-500 mb-4 dark:text-slate-500">
           Formatos permitidos: JPG y PNG. Tamaño máximo: 10 MB.
         </p>
 
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center">
+          <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center dark:border-slate-700 dark:bg-slate-900">
             {logoPreview ? (
               <img src={logoPreview} alt="Logo actual" className="w-full h-full object-cover" />
             ) : (
-              <ImageIcon className="w-6 h-6 text-gray-400" />
+              <ImageIcon className="w-6 h-6 text-gray-400 dark:text-slate-500" />
             )}
           </div>
           <label className="inline-flex">
             <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" className="hidden" onChange={handleUploadLogo} />
-            <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">
               <Upload className="w-4 h-4" />
               {subiendoLogo ? 'Subiendo...' : 'Subir imagen'}
             </span>
@@ -417,7 +419,7 @@ export default function PerfilPanel() {
         </div>
 
         {logoUrl && (
-          <p className="mt-3 text-xs text-gray-500 break-all">{logoUrl}</p>
+          <p className="mt-3 text-xs text-gray-500 break-all dark:text-slate-500">{logoUrl}</p>
         )}
         {logoError && (
           <p className="mt-3 text-sm text-red-600">{logoError}</p>
@@ -425,17 +427,17 @@ export default function PerfilPanel() {
       </div>
 
       {/* Icono */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-1">Icono del negocio</p>
-        <p className="text-xs text-gray-400 mb-4">Elige el que mejor representa tu actividad (se usa si no tienes logo)</p>
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
+        <p className="text-sm font-semibold text-gray-700 mb-1 dark:text-slate-200">Icono del negocio</p>
+        <p className="text-xs text-gray-400 mb-4 dark:text-slate-400">Elige el que mejor representa tu actividad (se usa si no tienes logo)</p>
         <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
           {ICONOS.map(({ emoji, label }) => (
             <button key={emoji} onClick={() => setIcono(emoji)} title={label}
               className={`aspect-square rounded-xl text-2xl flex items-center justify-center
                 border-2 transition-all hover:scale-110
                 ${icono === emoji
-                  ? 'border-blue-500 bg-blue-50 shadow-md scale-110'
-                  : 'border-transparent bg-gray-50 hover:border-gray-200'}`}>
+                  ? 'border-blue-500 bg-blue-50 shadow-md scale-110 dark:bg-blue-500/10 dark:border-blue-400'
+                  : 'border-transparent bg-gray-50 hover:border-gray-200 dark:bg-slate-900 dark:hover:border-slate-700'}`}>
               {emoji}
             </button>
           ))}
@@ -443,8 +445,8 @@ export default function PerfilPanel() {
       </div>
 
       {/* Info del negocio */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
-        <p className="text-sm font-semibold text-gray-700">Información pública</p>
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
+        <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Información pública</p>
 
         <Field label="Nombre del negocio">
           <input
@@ -463,7 +465,7 @@ export default function PerfilPanel() {
             value={descripcion}
             onChange={e => setDescripcion(e.target.value)}
           />
-          <p className="text-xs text-gray-400">{descripcion.length}/300 caracteres</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">{descripcion.length}/300 caracteres</p>
         </Field>
 
         <Field label={<span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-blue-500" />Dirección</span>}>
@@ -476,7 +478,7 @@ export default function PerfilPanel() {
         </Field>
 
         <Field label={<span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-blue-500" />Ubicación en el mapa</span>}>
-          <p className="text-xs text-gray-400 mb-2">
+          <p className="text-xs text-gray-400 mb-2 dark:text-slate-500">
             Escribe tu dirección arriba y pulsa "Localizar" para mostrarla en el mapa.
           </p>
           <MapEmbed
@@ -509,9 +511,9 @@ export default function PerfilPanel() {
       </div>
 
       {/* Amenidades */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-1">Servicios y comodidades</p>
-        <p className="text-xs text-gray-400 mb-4">Marca lo que ofreces en tu local</p>
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
+        <p className="text-sm font-semibold text-gray-700 mb-1 dark:text-slate-200">Servicios y comodidades</p>
+        <p className="text-xs text-gray-400 mb-4 dark:text-slate-500">Marca lo que ofreces en tu local</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {AMENIDADES_OPTS.map(({ id, icon: Icon, label }) => {
             const activa = amenidades.includes(id)
@@ -520,11 +522,11 @@ export default function PerfilPanel() {
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-sm
                             font-medium transition-all duration-150 text-left
                             ${activa
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}>
-                <Icon className={`w-4 h-4 flex-shrink-0 ${activa ? 'text-blue-500' : 'text-gray-400'}`} />
+                              ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200 dark:border-blue-400'
+                              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600'}`}>
+                <Icon className={`w-4 h-4 flex-shrink-0 ${activa ? 'text-blue-500 dark:text-blue-300' : 'text-gray-400 dark:text-slate-500'}`} />
                 {label}
-                {activa && <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 ml-auto flex-shrink-0" />}
+                {activa && <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 ml-auto flex-shrink-0 dark:text-blue-300" />}
               </button>
             )
           })}
@@ -539,10 +541,10 @@ export default function PerfilPanel() {
             Guardar cambios
           </button>
           {guardado && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4" /> Guardado correctamente
-            </span>
-          )}
+          <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium animate-in fade-in dark:text-emerald-300">
+            <CheckCircle2 className="w-4 h-4" /> Guardado correctamente
+          </span>
+        )}
         </div>
         </div>{/* fin columna izquierda */}
 
@@ -550,19 +552,19 @@ export default function PerfilPanel() {
         <div className="space-y-4 xl:sticky xl:top-6">
 
           {/* Vista previa */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Vista previa</p>
-            <div className="border border-gray-100 rounded-xl overflow-hidden">
-              <div className="h-24 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 dark:text-slate-500">Vista previa</p>
+            <div className="border border-gray-100 rounded-xl overflow-hidden dark:border-slate-800">
+              <div className="h-24 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center dark:from-slate-900 dark:to-slate-950">
                 {previewNode}
               </div>
-              <div className="p-3 bg-white">
-                <p className="font-bold text-gray-900 text-sm">{companyName ?? 'Mi Empresa'}</p>
+              <div className="p-3 bg-white dark:bg-slate-950">
+                <p className="font-bold text-gray-900 text-sm dark:text-slate-100">{companyName ?? 'Mi Empresa'}</p>
                 {descripcion && (
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">{descripcion}</p>
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2 dark:text-slate-400">{descripcion}</p>
                 )}
                 {direccion && (
-                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1 dark:text-slate-400">
                     <MapPin className="w-3 h-3 flex-shrink-0" />{direccion}
                   </p>
                 )}
@@ -571,38 +573,38 @@ export default function PerfilPanel() {
           </div>
 
           {/* Datos de la cuenta */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Datos de la cuenta</p>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 dark:text-slate-500">Datos de la cuenta</p>
             <div className="space-y-2 text-sm">
               {[
                 { l: 'Nombre',  v: user?.name || user?.nombre },
                 { l: 'Email',   v: user?.email },
                 { l: 'Empresa', v: companyName },
               ].map(({ l, v }) => (
-                <div key={l} className="flex flex-col gap-0.5 py-1.5 border-b border-gray-50 last:border-0">
-                  <span className="text-xs text-gray-400">{l}</span>
-                  <span className="font-medium text-gray-700 text-sm truncate">{v || '—'}</span>
+                <div key={l} className="flex flex-col gap-0.5 py-1.5 border-b border-gray-50 last:border-0 dark:border-slate-800">
+                  <span className="text-xs text-gray-400 dark:text-slate-500">{l}</span>
+                  <span className="font-medium text-gray-700 text-sm truncate dark:text-slate-200">{v || '—'}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 dark:bg-slate-950 dark:border-slate-800 dark:shadow-black/20">
             <div className="flex items-start justify-between gap-3 mb-3">
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Calendario de reservas</p>
-                <p className="text-sm text-gray-500 mt-1">Vista rápida de las citas agendadas.</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide dark:text-slate-500">Calendario de reservas</p>
+                <p className="text-sm text-gray-500 mt-1 dark:text-slate-400">Vista rápida de las citas agendadas.</p>
               </div>
               <CalendarDays className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
             </div>
 
             {loadingReservas ? (
-              <div className="h-64 flex items-center justify-center text-sm text-gray-400">
+              <div className="h-64 flex items-center justify-center text-sm text-gray-400 dark:text-slate-500">
                 Cargando calendario...
               </div>
             ) : (
               <>
-                <Calendar
+                  <Calendar
                   mode="single"
                   month={calendarMonth}
                   onMonthChange={setCalendarMonth}
@@ -619,29 +621,29 @@ export default function PerfilPanel() {
                     <p className="text-xs text-rose-500">{reservasError}</p>
                   )}
 
-                  {reservasDelMes.length > 0 ? (
+                {reservasDelMes.length > 0 ? (
                     reservasDelMes.map((reserva) => (
                       <div
                         key={reserva.id || `${reserva.fechaReserva.toISOString()}-${reserva.clienteNombre || 'cliente'}`}
-                        className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2"
+                        className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
                       >
-                        <p className="text-xs font-semibold text-gray-900 truncate">
+                        <p className="text-xs font-semibold text-gray-900 truncate dark:text-slate-100">
                           {reserva.clienteNombre || reserva.customerName || 'Cliente'}
                         </p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">
+                        <p className="text-[11px] text-gray-500 mt-0.5 dark:text-slate-400">
                           {format(reserva.fechaReserva, "d 'de' MMMM, HH:mm", { locale: es })}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-400 dark:text-slate-500">
                       No hay reservas registradas para este mes.
                     </p>
                   )}
 
                   <Link
                     to="/dashboard/calendario"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors dark:text-blue-300 dark:hover:text-blue-200"
                   >
                     Ver calendario completo
                     <CalendarDays className="w-4 h-4" />

@@ -48,16 +48,16 @@ export default function AdminLayout() {
 
       <SidebarInset>
         {/* ── HEADER ──────────────────────────────────────── */}
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-white/90 dark:bg-slate-900/90 backdrop-blur px-4 sticky top-0 z-20">
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur px-4 sticky top-0 z-20">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" />
+            <SidebarTrigger className="-ml-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800" />
             <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-5" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink
                     href="/dashboard"
-                    className="text-slate-400 hover:text-blue-600 text-xs font-medium transition-colors"
+                    className="text-slate-400 hover:text-blue-600 text-xs font-medium transition-colors dark:text-slate-500 dark:hover:text-blue-300"
                   >
                     Inicio
                   </BreadcrumbLink>
@@ -79,16 +79,16 @@ export default function AdminLayout() {
           <div className="flex items-center gap-3">
             {/* Search */}
             <div className="relative hidden sm:flex items-center">
-              <Search className="absolute left-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 h-4 w-4 text-slate-400 dark:text-slate-500" />
               <input
                 type="search"
                 placeholder="Buscar..."
-                className="h-9 w-52 lg:w-72 rounded-xl bg-slate-100/80 border border-transparent focus:bg-white focus:border-blue-200 pl-9 pr-4 text-sm outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                className="h-9 w-52 lg:w-72 rounded-xl bg-slate-100/80 border border-transparent focus:bg-white focus:border-blue-200 pl-9 pr-4 text-sm outline-none focus:ring-4 focus:ring-blue-500/10 transition-all dark:bg-slate-800/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800 dark:focus:border-slate-700"
               />
             </div>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+            <Button variant="ghost" size="icon" className="relative rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800">
               <Bell className="h-5 w-5" />
               <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
             </Button>

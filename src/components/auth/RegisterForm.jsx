@@ -9,6 +9,7 @@ import { LoadingScreen } from "@/components/ui/loading-screen"
 import { Loader2, UserPlus, Building2, UserRound } from "lucide-react"
 import authService from '../../services/authService'
 import GoogleLoginButton from './GoogleLoginButton'
+import LogoMark from '../ui/LogoMark'
 
 const BUSINESS_TYPES = [
   'Barbería',
@@ -118,7 +119,7 @@ export default function RegisterForm() {
       <div className="w-full max-w-lg">
         <div className="flex justify-center mb-8">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/flexibook-logo.svg" alt="Flexibook" className="w-14 h-14 object-contain" />
+            <LogoMark className="w-14 h-14" />
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
               Flexibook
             </span>

@@ -11,6 +11,7 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Calendar } from '../ui/calendar'
 import { LoadingScreen } from '../ui/loading-screen'
+import ThemeToggle from '../ui/ThemeToggle'
 
 const BUFFER_MIN = 10  // debe coincidir con ReservationService.BUFFER_MINUTES
 
@@ -627,14 +628,14 @@ export default function EmpresaPage() {
 
   /* ── Loading ─────────────────────────────────────────────────────── */
   if (loading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center dark:bg-slate-950">
       <div className="text-center space-y-4">
-        <div className="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto">
+        <div className="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto dark:bg-slate-900">
           <Building2 className="w-7 h-7 text-blue-600 animate-pulse" />
         </div>
         <div className="space-y-1">
-          <p className="text-slate-700 font-bold text-sm">Cargando información</p>
-          <p className="text-slate-400 text-xs">Un momento por favor...</p>
+          <p className="text-slate-700 font-bold text-sm dark:text-slate-200">Cargando información</p>
+          <p className="text-slate-400 text-xs dark:text-slate-400">Un momento por favor...</p>
         </div>
         <div className="flex justify-center gap-1">
           {[0,1,2].map(i => (
@@ -647,7 +648,7 @@ export default function EmpresaPage() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-50/80">
+    <div className="min-h-screen bg-slate-50/80 dark:bg-slate-950">
       {enviando && (
         <LoadingScreen
           visible
@@ -657,9 +658,9 @@ export default function EmpresaPage() {
       )}
 
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <header className="bg-white/90 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-20 shadow-sm">
+      <header className="bg-white/90 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-20 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
         <div className="max-w-5xl mx-auto px-4 py-3.5 flex items-center gap-3">
-          <Link to="/" className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors flex-shrink-0">
+          <Link to="/" className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors flex-shrink-0 dark:text-slate-400 dark:hover:bg-slate-900">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -679,6 +680,7 @@ export default function EmpresaPage() {
               )}
             </div>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 
